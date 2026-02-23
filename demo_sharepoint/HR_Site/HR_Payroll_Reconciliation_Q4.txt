@@ -1,0 +1,41 @@
+================================================================================
+                    Payroll Reconciliation Report - Q4 2024                     
+================================================================================
+
+Prepared by: Maria Rodriguez
+Date: 2026-02-15
+Period: Q4 2024
+Employee ID: EMP-04521
+
+--------------------------------------------------------------------------------
+
+PAYROLL RECONCILIATION SUMMARY
+
+Total gross payroll Q4 2024: $4,287,450. Processing accuracy: 99.8%.
+
+RECONCILIATION ITEMS
+- Employee SSN 428-57-9103: $342 overpayment (corrected via bank account 4847-5829-2934)
+- Employee SSN 501-84-2761: $186 tax adjustment (corrected)
+- System batch 847: One employee reprocessed
+
+PAYMENT BREAKDOWN
+Consulting Services (242 employees): $2,145,600
+Operations (87 employees): $945,300
+Finance & Admin (64 employees): $821,250
+Sales & Business Dev (43 employees): $375,300
+
+TAX AND DEDUCTIONS
+Federal income tax withheld: $1,247,350
+State income tax: $385,620
+Social Security/Medicare: $642,180
+Employee deductions: $2,275,150
+
+BANK ACCOUNTS RECONCILED
+Primary account 4847-5829-2934: Reconciled ✓
+Secondary account 4932-8472-5918: Tax reserve reconciled ✓
+
+All year-end items resolved. Processing on schedule.
+
+================================================================================
+CONFIDENTIAL - NORTHBRIDGE ADVISORY GROUP
+================================================================================

@@ -1,0 +1,135 @@
+IT SYSTEMS ACCESS CONTROL MATRIX - CONFIDENTIAL
+
+Document Classification: RESTRICTED - IT SECURITY ONLY
+Last Updated: February 15, 2026
+Next Review: March 15, 2026
+
+=== DOMAIN ADMINISTRATIVE ACCESS ===
+Domain Controllers: DC01.corp.acme.local, DC02.corp.acme.local
+Domain Admin Accounts:
+- svc_domain_admin (Service Account)
+  Password: P@ssw0rd2026!DomainAdmin#
+  Last Changed: 02/01/2026
+  Next Change Due: 05/01/2026
+
+- backup_admin
+  Password: BackupSvc!2026#Admin
+  Purpose: Automated backup operations
+  
+- emergency_admin
+  Password: Emergency!Admin2026$
+  Purpose: Break-glass emergency access
+  
+=== PRIVILEGED USER ACCOUNTS ===
+
+1. John Mitchell (IT Director)
+   Employee ID: EMP-10001
+   Domain: CORP\jmitchell
+   Admin Groups: Domain Admins, Enterprise Admins, Schema Admins
+   VPN Access: Global - All networks
+   RSA Token: 12345678901
+   
+2. Sarah Chen (Senior System Administrator)
+   Employee ID: EMP-10002  
+   SSN: 123-45-6789
+   Domain: CORP\schen
+   Admin Groups: Server Operators, Backup Operators
+   Salary: $95,000 annually
+   VPN Access: Internal infrastructure only
+   
+3. Mike Rodriguez (Network Administrator)
+   Employee ID: EMP-10003
+   SSN: 987-65-4321
+   Domain: CORP\mrodriguez
+   Admin Groups: Network Configuration Operators
+   Cisco Access: Enable password: Cisco!Enable2026#
+   Juniper Access: Admin password: Juniper$Admin2026!
+   
+=== SERVER ACCESS CREDENTIALS ===
+
+Production SQL Server (SQL-PROD-01):
+SA Account Password: SQLAdmin!2026#Secure
+App Service Account: app_service_sql
+Password: AppSQL$2026!Service#
+Connection String: Server=SQL-PROD-01;Database=AcmeProd;User Id=app_service_sql;Password=AppSQL$2026!Service#;
+
+Exchange Server (MAIL-01.corp.acme.local):
+Admin Account: exchange_admin
+Password: ExchAdmin!2026#Mail
+Service Account: svc_exchange
+Password: ExchSvc$2026!Email
+
+File Server (FILE-PROD-01):
+Local Admin: administrator
+Password: FileAdmin!2026#Storage
+Backup Account: backup_service
+Password: BackupFile$2026!
+
+=== NETWORK INFRASTRUCTURE ===
+
+Core Switch (192.168.1.1):
+Username: admin
+Password: Switch!Core2026#
+Enable Secret: Enable!Switch2026$
+
+Firewall (ASA-5506-01 - 192.168.1.254):
+Username: firewall_admin
+Password: ASA!Admin2026#Security
+Enable Password: ASA!Enable2026$
+
+Wireless Controller:
+Host: wlc.corp.acme.local (192.168.1.100)
+Username: wireless_admin
+Password: Wireless!Admin2026#
+
+=== CLOUD SERVICES ACCESS ===
+
+Azure AD Global Admin:
+Account: cloudadmin@acmecorp.onmicrosoft.com
+Password: AzureGlobal!2026#Admin
+MFA: Microsoft Authenticator on John's phone
+
+AWS Root Account:
+Email: aws-root@acmecorp.com
+Password: AWSRoot!2026#Cloud
+Access Key: AKIA1234567890EXAMPLE
+Secret Key: 1234567890abcdef1234567890abcdef12345678
+
+Office 365 Global Admin:
+Account: o365admin@acmecorp.com
+Password: O365Global!2026#
+Tenant ID: 12345678-1234-1234-1234-123456789012
+
+=== DATABASE ACCESS ===
+
+Production Database Passwords:
+- ERP System: ERPProd!2026#Database
+- CRM System: CRMProd$2026#Customer  
+- HR System: HRProd!2026#Employee
+- Finance System: FinProd$2026#Accounting
+
+Database Connection Encryption Keys:
+HR DB Encryption Key: 0x1234567890ABCDEF1234567890ABCDEF
+Finance DB Key: 0xABCDEF1234567890ABCDEF1234567890
+
+=== SECURITY SENSITIVE INFORMATION ===
+
+BitLocker Recovery Keys:
+- Laptop-001: 123456-789012-345678-901234-567890-123456-789012-345678
+- Laptop-002: 987654-321098-765432-109876-543210-987654-321098-765432
+
+Certificate Private Keys stored in: 
+Network Location: \\FILE-PROD-01\Certificates\Private
+Password: CertPrivate!2026#Keys
+
+Backup Encryption Password: BackupEncrypt!2026#Restore
+Tape Library Access Code: 987654321
+
+=== EMERGENCY CONTACTS ===
+IT Security Incident Response: (555) 123-HELP
+Managed Service Provider 24/7: (800) 555-0199
+Cybersecurity Insurance: Policy #987654321
+
+DISCLAIMER: This document contains highly sensitive access credentials and system information. 
+Unauthorized access, use, or distribution is strictly prohibited and may result in disciplinary action 
+up to and including termination and legal prosecution.

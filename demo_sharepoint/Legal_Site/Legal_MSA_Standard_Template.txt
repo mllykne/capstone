@@ -1,0 +1,75 @@
+================================================================================
+                         Master Service Agreement v3.2                          
+================================================================================
+
+Document Type: MSA
+Effective Date: 2026-02-01
+Version: 3.2
+Prepared by: Patricia Morrison, GC
+
+--------------------------------------------------------------------------------
+
+MASTER SERVICE AGREEMENT
+
+Consultant: NorthBridge Advisory Group, Inc. (Delaware)
+Effective Date: February 1, 2026
+Relationship: Independent contractor (no employment created)
+
+SERVICES AND COMPENSATION
+Standard Billing Rates:
+- Partner: $850/hour
+- Senior Manager: $425/hour
+- Manager: $285/hour
+- Consultant: $175/hour
+
+Engagement Models: Time-and-Materials or Fixed-Price (per SOW)
+Expenses: Travel, meals (<$75/day), approved supplies reimbursable at cost + 5%
+Invoicing: Monthly (T&M) or milestone-based (fixed-price)
+Payment Terms: Net 30 days; 1.5% monthly interest on late payments
+
+INTELLECTUAL PROPERTY OWNERSHIP
+Pre-existing IP: Retained by Consultant
+Client receives: Non-exclusive worldwide license for engagement use
+
+Work Product: All deliverables owned by Client
+Includes: Reports, recommendations, analysis, documentation
+
+Consultant Rights: Use anonymized learnings for methodology improvement
+
+CONFIDENTIALITY PROVISIONS
+Duration: 5 years post-engagement
+Exceptions: Public domain, legally required disclosure
+Scope: All Client information, vendor relationships, strategic plans
+
+LIMITATION OF LIABILITY
+General Rule: No liability for indirect, consequential, or lost profits damages
+Liability Cap: Lesser of (a) 12-month fees, or (b) $2,000,000
+Indemnification: Mutual indemnification for third-party claims
+
+INSURANCE COVERAGE
+Professional Liability: $2M per claim / $5M aggregate
+General Liability: $1M per occurrence
+Cyber Liability: $1M coverage
+Certificates: Updated annually upon request
+
+TERM AND TERMINATION
+Duration: Three (3) years, auto-renewing annually
+Termination for Convenience: 30 days notice by either party
+Termination for Cause: Immediate (material breach, insolvency)
+Survival: Confidentiality and indemnification survive termination
+
+DISPUTE RESOLUTION
+Governing Law: Delaware
+Exclusive Jurisdiction: Federal/State courts in Delaware
+Process: (1) Negotiation 30d, (2) Mediation 60d, (3) Binding arbitration (JAMS)
+Attorneys Fees: Prevailing party recovers reasonable fees and costs
+
+APPROVAL AND EXECUTION
+General Counsel: Patricia Morrison (authorization: LC-MSA-2026-001)
+External Counsel: Morrison & Foerster LLP (Robert Chang)
+Version: 3.2 incorporates GDPR DPA, Insurance Cert, SOW Template
+Execution: Effective upon signature by authorized representatives
+
+================================================================================
+CONFIDENTIAL - NORTHBRIDGE ADVISORY GROUP
+================================================================================

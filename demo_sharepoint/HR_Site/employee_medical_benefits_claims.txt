@@ -1,0 +1,214 @@
+EMPLOYEE MEDICAL BENEFITS & INSURANCE CLAIMS REGISTER
+HUMAN RESOURCES — BENEFITS ADMINISTRATION
+Q1 2026 | JANUARY 1 – MARCH 31, 2026
+
+Document Classification: STRICTLY CONFIDENTIAL — HIPAA PROTECTED
+Authorized Access: HR Director, Benefits Administrator, CFO ONLY
+Prepared By: Karen Mitchell, Benefits Administrator | EMP-20045
+Date Generated: April 2, 2026
+
+NOTICE: This document contains Protected Health Information (PHI) as defined
+under the Health Insurance Portability and Accountability Act (HIPAA).
+Unauthorized access, disclosure, or reproduction is a federal violation.
+
+==================================================================
+SECTION 1: INSURANCE PLAN DETAILS
+==================================================================
+
+Carrier:         BlueCross BlueShield of Georgia (BCBS GA)
+Group Policy #:  GRP-ACME-2026-0047
+Plan Name:       Acme Corp PPO Gold 80/20
+Employer EIN:    58-1234567
+HR Contact:      Karen Mitchell | kmpitchell@acme.com | (404) 555-0182
+BCBS Account Rep: Janine Caruso | jcaruso@bcbsga.com | (888) 555-0292
+
+Plan Year:       January 1 – December 31, 2026
+Employee Deductible (Individual): $1,500
+Employee Deductible (Family):     $3,000
+Out-of-Pocket Max (Individual):   $5,000
+Employer Contribution (monthly):  $650 per employee (individual)
+
+==================================================================
+SECTION 2: Q1 2026 CLAIMS REGISTER
+==================================================================
+
+────────────────────────────────────────────────────────────────
+CLAIM #1
+────────────────────────────────────────────────────────────────
+Employee Name:       Robert J. Harrington
+Employee ID:         EMP-10033
+SSN:                 314-55-7788
+Date of Birth:       09/17/1979
+Insurance Member ID: BCBS-GA-882345
+Dependent Covered:   Self
+
+Date of Service:     January 8, 2026
+Provider:            Northside Hospital Atlanta
+Provider NPI:        1234567890
+Admission Type:      Inpatient Surgical
+Primary Diagnosis:   Appendicitis, acute (ICD-10: K35.80)
+Secondary Diagnosis: Appendix perforation (ICD-10: K35.2)
+Procedure:           Laparoscopic appendectomy (CPT: 44950)
+Anesthesia:          General (CPT: 00840)
+Total Billed:        $47,250.00
+BCBS Allowed:        $28,900.00
+BCBS Paid (80%):     $23,120.00
+Employee Portion:    $5,780.00
+Deductible Applied:  $1,500.00
+Coinsurance:         $4,280.00
+Claims Status:       PAID — EFT deposited Feb 3, 2026
+
+Medications Prescribed (discharge):
+  - Hydrocodone-Acetaminophen 5/325mg x 20 tablets (Rx: 0087342)
+  - Metronidazole 500mg x 14 days (Rx: 0087343)
+
+────────────────────────────────────────────────────────────────
+CLAIM #2
+────────────────────────────────────────────────────────────────
+Employee Name:       Linda M. Patterson
+Employee ID:         EMP-20017
+SSN:                 425-66-8899
+Date of Birth:       03/22/1985
+Insurance Member ID: BCBS-GA-774421
+Dependent Covered:   Dependent — Tyler Patterson (DOB: 06/14/2015, SSN: 611-22-3344)
+
+Date of Service:     January 19, 2026
+Provider:            Children's Healthcare of Atlanta (CHOA)
+Provider NPI:        0987654321
+Service Type:        Outpatient — Emergency
+Primary Diagnosis:   Type 1 diabetes mellitus with hypoglycemia (ICD-10: E10.641)
+Procedure:           Emergency dept visit, high complexity (CPT: 99285)
+Diabetes Education:  Individual session 30 min (CPT: G0108)
+Total Billed:        $3,120.00
+BCBS Allowed:        $1,980.00
+BCBS Paid (80%):     $1,584.00
+Employee Portion:    $396.00
+Claims Status:       PAID — Feb 10, 2026
+
+Ongoing Prescriptions (monthly):
+  - Humalog 100 unit/mL U-100 insulin pen (Pharmacy claim separate)
+  - Dexcom G7 CGM sensors (DME claim #DME-2026-0441, $210/month)
+
+────────────────────────────────────────────────────────────────
+CLAIM #3
+────────────────────────────────────────────────────────────────
+Employee Name:       James T. Washington
+Employee ID:         EMP-30008
+SSN:                 536-77-9900
+Date of Birth:       11/04/1968
+Insurance Member ID: BCBS-GA-661234
+Dependent Covered:   Self
+
+Date of Service:     February 4, 2026
+Provider:            Emory University Hospital Midtown
+Provider NPI:        1122334455
+Admission Type:      Outpatient
+Primary Diagnosis:   Coronary artery disease w/ unstable angina (ICD-10: I20.0)
+Procedure:           Cardiac catheterization, left heart (CPT: 93458)
+Stress Test:         Nuclear myocardial perfusion imaging (CPT: 78452)
+Total Billed:        $18,400.00
+BCBS Allowed:        $11,650.00
+BCBS Paid (80%):     $9,320.00
+Employee Portion:    $2,330.00
+Claims Status:       PAID — Mar 1, 2026
+
+Follow-Up Scheduled: March 18, 2026 — Dr. Anita Rao, Cardiology (EMP notified)
+Ongoing Meds:
+  - Metoprolol Succinate 50mg (Rx: 0093217)
+  - Atorvastatin 40mg (Rx: 0093218)
+  - Aspirin 81mg daily
+
+────────────────────────────────────────────────────────────────
+CLAIM #4
+────────────────────────────────────────────────────────────────
+Employee Name:       Sophia E. Delgado
+Employee ID:         EMP-40022
+SSN:                 647-88-1122
+Date of Birth:       07/30/1992
+Insurance Member ID: BCBS-GA-559876
+Dependent Covered:   Self
+
+Date of Service:     February 20, 2026
+Provider:            Piedmont Healthcare, OB/GYN Dept
+Provider NPI:        9988776655
+Service Type:        Outpatient — Prenatal Care
+Primary Diagnosis:   Supervision of normal pregnancy, first trimester (ICD-10: Z34.01)
+Procedures:          OB panel labs (CPT: 80055), Dating ultrasound (CPT: 76801)
+Total Billed:        $1,240.00
+BCBS Allowed:        $890.00
+BCBS Paid (80%):     $712.00
+Employee Portion:    $178.00
+Claims Status:       PAID — Mar 5, 2026
+
+Expected Delivery Date: October 3, 2026
+FMLA Paperwork:         Submitted Mar 14, 2026 — leave planned Sep 1 – Dec 1, 2026
+STD Benefits:           Will activate upon delivery (coordinates with claims #STD-2026-0091)
+
+────────────────────────────────────────────────────────────────
+CLAIM #5 — BEHAVIORAL HEALTH (CONFIDENTIAL — restricted access)
+────────────────────────────────────────────────────────────────
+Employee Name:       [REDACTED PER 42 CFR PART 2]
+Employee ID:         EMP-50039
+SSN:                 758-99-3344
+Date of Birth:       [REDACTED]
+Insurance Member ID: BCBS-GA-443311
+Dependent Covered:   Self
+
+Dates of Service:    Jan 5 – Mar 28, 2026 (weekly sessions)
+Provider:            Atlanta Behavioral Health Associates
+Service Type:        Outpatient mental health — individual psychotherapy 45-min (CPT: 90834)
+Primary Diagnosis:   Major depressive disorder, recurrent, moderate (ICD-10: F33.1)
+Secondary Diagnosis: Generalized anxiety disorder (ICD-10: F41.1)
+Sessions Attended:   12
+Total Billed:        $3,600.00
+BCBS Paid (80%):     $2,880.00
+Employee Copay:      $720.00
+Claims Status:       PAID — Mar 30, 2026
+
+Note: Substance use records governed by 42 CFR Part 2 — not included in this file.
+EAP referral: Initial sessions (6) covered at 100% through ACME EAP Program.
+
+==================================================================
+SECTION 3: PHARMACY CLAIMS SUMMARY — Q1 2026
+==================================================================
+
+Total Pharmacy Spend Q1 2026: $41,220.00
+BCBS Pharmacy Fund Contribution: $33,000.00
+Employee Copays Collected:        $8,220.00
+
+Top Drug Classes by Spend:
+  Specialty / Biologics:     $19,800.00 (48%)
+  Cardiovascular:             $7,440.00 (18%)
+  Diabetes Management:        $6,200.00 (15%)
+  Mental Health:              $4,100.00 (10%)
+  Other:                      $3,680.00 ( 9%)
+
+High-Cost Claimant Alert (specialty pharmacy):
+  Employee ID: EMP-60014
+  Drug: Dupixent (dupilumab) 300mg injection — biologic for atopic dermatitis
+  Monthly Cost: $3,300.00 (paid by BCBS specialty pharmacy benefit)
+  Prior Auth #: PA-2026-0088-BCBSGA
+
+==================================================================
+SECTION 4: WORKERS' COMPENSATION CLAIMS — Q1 2026
+==================================================================
+
+Claim WC-2026-001:
+  Injured Employee: Marcus D. Brown | EMP-70011 | SSN: 869-00-4455
+  Date of Injury:   January 23, 2026
+  Incident:         Slip and fall in parking structure
+  Injury:           Fractured right wrist (radius) — ICD-10: S52.501A
+  Workers Comp Carrier: Travelers Property Casualty | Claim #: TRV-2026-WC-88231
+  Treatment:        Surgery + 6 weeks PT
+  Lost Time:        14 days (Jan 24 – Feb 6, 2026)
+  Indemnity Paid:   $4,850.00 (temp total disability @ 66.67% weekly wage)
+  Medical Paid:     $22,100.00
+  Claim Status:     OPEN — PT ongoing as of report date
+
+==================================================================
+DOCUMENT CONTROL
+==================================================================
+Retention:   7 years per HIPAA records retention requirements
+Storage:     Encrypted HR drive — \\acme-fs01\HR\BenefitsClaims\2026\ ONLY
+Next Audit:  July 1, 2026
+Approver:    Carla Jones, HR Director | EMP-00008

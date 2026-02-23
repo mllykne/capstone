@@ -1,0 +1,66 @@
+================================================================================
+                            Budget Forecast - FY2026                            
+================================================================================
+
+Prepared by: David Anderson, CFO
+Date: 2026-02-15
+Fiscal Year: FY 2026
+Board Approval: Pending 2/22/2026
+
+--------------------------------------------------------------------------------
+
+FY2026 BUDGET FORECAST
+
+Revenue Projection: $103.2M (18% growth)
+EBITDA Margin: 32.1% ($33.1M)
+Net Income Target: $18.7M (18.1% margin)
+
+KEY ASSUMPTIONS
+Consulting utilization: 78% (up from 76%)
+Billing rate inflation: 8%
+Headcount growth: 24 FTE
+Acquisition contingency: Two smaller firms (board approval req'd 3/31/2026)
+
+REVENUE BY SERVICE LINE
+Strategic Advisory: $38.4M (+23.1% from $31.2M)
+Transformation: $31.5M (+13.3% from $27.8M)
+Operations: $21.8M (+43.4% from $15.2M)
+Technology/AI (New): $11.5M (new practice launch)
+
+OPERATING EXPENSE BUDGET
+Consultant base salaries: $45.2M (+14%)
+Bonus accrual (25% NI): $8.3M
+Benefits & payroll taxes: $12.1M (27% of salary)
+Office & facilities: $2.4M (Austin, Denver expansion)
+Technology & systems: $2.8M (CRM platform)
+Travel & entertainment: $3.2M
+Marketing: $1.9M (AI practice focus)
+Professional fees: $840K
+
+PROFITABILITY METRICS
+Gross margin: 64.2% (120bp improvement vs FY2025)
+EBITDA margin: 32.1% (target band 30-33%)
+Capital expenditure: $3.2M
+Debt repayment: $4.5M on line of credit
+Dividend distribution: $6.2M (subject to board approval)
+
+CASH FLOW PROJECTION
+Operating cash flow: Positive throughout year
+Ending cash balance: $12.4M estimated
+Working capital optimization: $2.1M opportunity identified
+
+BUDGET RISK SENSITIVITIES
+If utilization declines to 76%: -$2.1M revenue impact
+If billing rate increase held to 5%: -$1.8M revenue impact
+If headcount acquisition delayed 1 quarter: +$1.2M cost savings
+Economic recession scenario (12% decline): Detailed model in appendix
+
+APPROVAL TIMELINE
+Monthly variance analysis begins January
+Quarterly Board reporting established
+Department heads accountable for monthly reconciliation
+Reforecasting: June and September reviews
+
+================================================================================
+CONFIDENTIAL - NORTHBRIDGE ADVISORY GROUP
+================================================================================

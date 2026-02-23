@@ -1,0 +1,66 @@
+================================================================================
+                       SEC Compliance Memo - 10-K Filing                        
+================================================================================
+
+Document Type: Memo
+Prepared by: James Wilson, CCO
+Date: 2026-02-13
+Status: ATTORNEY WORK PRODUCT
+
+--------------------------------------------------------------------------------
+
+SEC FORM 10-K FILING MEMORANDUM
+
+Company: NorthBridge Advisory Group, Inc.
+Ticker: NBAG (NASDAQ)
+Fiscal Year: FY 2025
+Filing Deadline: 60 days post year-end = March 31, 2026
+Expected Filing Date: March 28, 2026
+
+REQUIRED 10-K DISCLOSURES
+Business Description: Service lines, market position, competitive landscape
+Risk Factors: Client concentration (top 10 = 34% revenue), talent retention, market competition
+Financial Statements: Audited consolidated statements (PwC audit in progress)
+MD&A: Revenue trends, margin analysis, capital allocation strategy
+Executive Compensation: Named Executive Officers (5 NEOs) disclosure
+
+KEY RISK DISCLOSURES
+Client Concentration: Top 10 clients = 34% revenue (mitigation: diversification, new AI practice)
+Key Person Risk: CEO departure impact (mitigation: succession planning, retention bonuses)
+Market Competition: McKinsey, Bain & Company, others (mitigation: AI expertise differentiation)
+Economic Downturn: Consulting demand cyclical (mitigation: diversification, efficiency programs)
+
+NAMED EXECUTIVE OFFICER COMPENSATION
+CEO: Total comp $2,125K (base $850K + bonus $1,275K)
+CFO: Total comp $1,181K (base $525K + bonus $656K)
+COO: Total comp $1,069K (base $475K + bonus $594K)
+General Counsel: Total comp $956K (base $425K + bonus $531K)
+CTO: Total comp $1,125K (base $500K + bonus $625K)
+
+PAY RATIO DISCLOSURE
+CEO to Median Employee: 42:1 ratio
+Peer Average Range: 40-48:1
+Assessment: Within peer average range
+
+INTERNAL CONTROLS ASSESSMENT
+Management Assessment: EFFECTIVE (per SOX 404)
+Material Weaknesses: NONE identified
+PwC Auditor Opinion: To be provided in final audit
+
+AUDIT TIMELINE
+CFO financial statement review: 2/28/2026
+CEO business/risk review: 3/3/2026
+Audit Committee review: 3/10/2026
+Board approval: 3/15/2026
+SEC filing submission: 3/28/2026
+
+AUDITOR COORDINATION
+External Auditor: PwC (Big Four firm)
+Audit Partner: Susan Richardson (PwC Dallas office)
+Preliminary 10-Q: February 24, 2026
+Final 10-K audit: March 15, 2026
+Audit fees: $420K (10-Q), $580K (10-K)
+
+================================================================================
+CONFIDENTIAL - NORTHBRIDGE ADVISORY GROUP
+================================================================================

@@ -1,0 +1,175 @@
+INTERNATIONAL & DOMESTIC WIRE TRANSFER INSTRUCTIONS
+FINANCE DEPARTMENT — ACCOUNTS PAYABLE & TREASURY OPERATIONS
+
+Document Classification: CONFIDENTIAL — FINANCE DIRECTOR & AUTHORIZED SIGNATORIES ONLY
+Prepared By: Brian Nguyen, Treasury Manager | EMP-80021
+Approved By: Michelle Torres, Finance Director | EMP-00007
+Date: March 15, 2026
+Version: 2.1
+
+WARNING: This document contains bank account numbers, routing numbers, and SWIFT codes.
+Unauthorized disclosure could expose Acme Corp to wire fraud. Do not email or print.
+
+==================================================================
+SECTION 1: ACME CORP OPERATING ACCOUNTS
+==================================================================
+
+PRIMARY OPERATING ACCOUNT — JPMorgan Chase
+  Account Name:       Acme Corp LLC Operating
+  Bank:               JPMorgan Chase Bank, N.A.
+  ABA Routing #:      021000021
+  Account Number:     987654321098
+  Account Type:       Commercial Checking
+  SWIFT Code:         CHASUS33
+  Bank Address:       270 Park Avenue, New York, NY 10017
+  Treasury Contact:   Rachel Ortiz | (212) 555-0140
+  Online Access:      https://www.jpmorgan.com/treasury
+  User ID:            acme-treasury-mgr
+  Password:           JPM$Treasury2026!Secure#Acme
+
+PAYROLL ACCOUNT — Bank of America
+  Account Name:       Acme Corp LLC Payroll
+  Bank:               Bank of America, N.A.
+  ABA Routing #:      026009593
+  Account Number:     112233445566
+  Account Type:       Commercial Checking
+  SWIFT Code:         BOFAUS3N
+  Bank Address:       100 North Tryon Street, Charlotte, NC 28255
+  Treasury Contact:   Devon Mills | (704) 555-0277
+
+TAX RESERVE ACCOUNT — Wells Fargo
+  Account Name:       Acme Corp LLC Tax Reserve
+  Bank:               Wells Fargo Bank, N.A.
+  ABA Routing #:      121000248
+  Account Number:     553344221100
+  Account Type:       Commercial Money Market
+  SWIFT Code:         WFBIUS6S
+
+==================================================================
+SECTION 2: APPROVED VENDOR WIRE INSTRUCTIONS
+==================================================================
+
+────────────────────────────────────────────────────────────────
+VENDOR: Amazon Web Services (AWS Infrastructure)
+────────────────────────────────────────────────────────────────
+Payment Method:        ACH Debit (authorized pull)
+Beneficiary:           Amazon Web Services, Inc.
+Beneficiary Bank:      JPMorgan Chase
+Routing (ACH):         021000021
+Account Number:        334455667788
+Billing Contact:       aws-billing@amazon.com
+Monthly Invoice Avg:   $42,800.00
+Auto-Pay Authorization: Signed — Auth ID: ACH-2026-AWS-0033
+
+────────────────────────────────────────────────────────────────
+VENDOR: Meridian Office Partners (Commercial Lease)
+────────────────────────────────────────────────────────────────
+Payment Method:        Wire Transfer (monthly on 1st)
+Beneficiary:           Meridian Office Partners LLC
+Beneficiary Bank:      Citibank, N.A.
+ABA Routing #:         021000089
+Account Number:        667788990011
+SWIFT Code:            CITIUS33
+Payment Amount:        $28,500.00/month (HQ, Atlanta)
+Reference:             ACME-LEASE-ATL-001
+
+────────────────────────────────────────────────────────────────
+VENDOR: Inova Health Systems (Employee Benefits — Group Insurance Premium)
+────────────────────────────────────────────────────────────────
+Payment Method:        ACH / Wire
+Beneficiary:           BlueCross BlueShield of Georgia
+Bank:                  Truist Bank
+Routing #:             061000104
+Account Number:        778899001122
+Monthly Premium:       $63,200.00 (approx. 97 covered lives)
+Reference Format:      GRP-ACME-2026-0047-[YYYYMM]
+
+────────────────────────────────────────────────────────────────
+VENDOR: Tarkington & Hale LLP (Outside Legal Counsel)
+────────────────────────────────────────────────────────────────
+Payment Method:        Wire Transfer (upon invoice, net 15)
+Beneficiary:           Tarkington & Hale LLP Client Trust Account
+Bank:                  First Republic Bank
+ABA Routing #:         321081669
+Account Number:        889900112233
+Attorney of Record:    Charles Hale, Esq.
+Retainer on File:      $50,000.00
+Contact:               billing@tarkhale.com | (404) 555-0310
+
+────────────────────────────────────────────────────────────────
+VENDOR: SinoTech Solutions Ltd. (International — Software Vendor)
+────────────────────────────────────────────────────────────────
+Payment Method:        International Wire Transfer
+Beneficiary:           SinoTech Solutions Ltd.
+Beneficiary Bank:      Bank of China (Hong Kong)
+SWIFT Code:            BKCHUSHHXXX
+IBAN:                  HK12BKCH0000000012345678
+Account Number:        0012345678
+Bank Address:          1 Garden Road, Central, Hong Kong
+Remitter Reference:    ACME-VENDOR-SINOTECH-2026
+USD Amount:            $14,400.00/quarter
+Intermediary Bank:     JPMorgan Chase (CHASUS33) – use for USD clearing
+Beneficiary Name:      SinoTech Solutions Ltd.
+Note: FX conversion handled via Chase FX desk — broker code: ACME-FX-03
+
+──────────────────────────────────────────────────────────────── 
+VENDOR: GlobalStaff Nearshore S.A. de C.V. (International — Staffing, Mexico)
+────────────────────────────────────────────────────────────────
+Payment Method:        SWIFT Wire in USD
+Beneficiary:           GlobalStaff Nearshore S.A. de C.V.
+Beneficiary Bank:      BBVA Mexico
+SWIFT Code:            BCMRMXMM
+Account Number:        MX20012345678901234567890
+CLABE:                 012180001234567890
+USD Equivalent:        ~$19,500.00/month (FX spot rate applied)
+FX Conversion Broker:  Western Union Business Solutions — Account: WU-ACME-2026
+
+==================================================================
+SECTION 3: WIRE TRANSFER AUTHORIZATION MATRIX
+==================================================================
+
+Threshold                  | Required Signatories
+---------------------------|------------------------------------------
+Under $25,000              | Treasury Manager alone
+$25,000 – $100,000         | Treasury Manager + Finance Director
+$100,001 – $500,000        | Finance Director + CEO co-approval
+Over $500,000              | CFO + CEO co-approval + Board notification
+
+Authorized Signatories:
+  Name                    | Title                  | Employee ID  | Phone
+  ----------------------- | ---------------------- | ------------ | ----------------
+  Brian Nguyen            | Treasury Manager       | EMP-80021    | (404) 555-0183
+  Michelle Torres         | Finance Director       | EMP-00007    | (404) 555-0100
+  Alan Beck               | CFO                    | EXE-00004    | (404) 555-0098
+  Janet Lawson            | CEO                    | EXE-00001    | (404) 555-0001
+
+Dual-Control Requirement:
+  Wire entry and approval must be performed by two different individuals.
+  Finance Manager Brian Nguyen initiates; Finance Director or above approves.
+
+==================================================================
+SECTION 4: FRAUD PREVENTION & WIRE CONTROL PROCEDURES
+==================================================================
+
+1. NEVER change wire instructions based on an email request alone.
+   All beneficiary bank changes require:
+     a. Written request on vendor letterhead
+     b. Phone verification to known vendor number (NOT one provided in email)
+     c. Finance Director sign-off on Change Form WC-003
+
+2. Confirmed fraud attempt on file: Feb 28, 2026 — BEC attempt targeting
+   AWS payment (spoofed sender: aws-billing@amazon-billing.net — BLOCKED).
+   Refer to Security Incident Report IR-2026-0019.
+
+3. Outgoing wire cutoff times:
+   Domestic ACH:    2:00 PM ET same-day settlement
+   Domestic Wire:   4:00 PM ET
+   International:   12:00 PM ET (for next business day value)
+
+==================================================================
+DOCUMENT CONTROL
+==================================================================
+Distribution:    Michelle Torres (Finance Director), Alan Beck (CFO), Brian Nguyen only
+Paper copies:    PROHIBITED — electronic only, encrypted vault
+Next Review:     September 15, 2026
+Breach Contact:  Legal@acme.com + IT Security within 1 hour of suspected unauthorized access

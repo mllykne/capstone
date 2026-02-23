@@ -1,0 +1,15 @@
+Vendor Performance Review
+=========================
+
+Generated: 2026-02-20 13:27:54
+
+Vendor Performance Scorecard (Feb 2025): AWS (Infrastructure): Uptime 99.99%, support ticket resolution <30min. Avg score: 9.2/10. Slack (Communications): Uptime 99.98%, feature updates on track. Avg score: 8.8/10. Datadog (Monitoring): Integration reliability 99.92%, analytics performance good. Avg score: 8.6/10. Recommendations: Continue AWS partnership, consider Slack price renegotiation.
+
+Standard Operating Procedures v5.1 - Incident Management: Severity levels: Critical (P1) <1hr response, High (P2) <4hr response, Medium (P3) <24hr response. On-call schedule: Rotation of 8 engineers (1 week at a time). Escalation policy: Any incident unresolved in 2 hours escalates to manager. Post-incident reviews: Mandatory within 48 hours of incident resolution.
+
+Facility Management Plan: Primary office (HQ): 50,000 sq ft, 300 employee capacity, lease expires 6/30/2026. Secondary office (Tech Hub): 15,000 sq ft, 100 employee capacity, lease expires 12/31/2027. Maintenance: Monthly HVAC service, weekly facility cleaning, quarterly emergency response drills. Costs: ~$45K monthly (including utilities).
+
+Risk Assessment Matrix: Strategic risks: Competitive market pressure (likelihood: High, impact: High, mitigation: Product innovation). Financial risks: Dependent on key customer ($2.1M revenue concentration, likelihood: Medium, mitigation: Diversify customer base). Operational risks: Data center dependency (likelihood: Medium, mitigation: redundancy plan). Regulatory: GDPR compliance gaps (likelihood: Low, mitigation: Legal team action plan).
+
+OPERATIONAL METRICS - February 2025: Service uptime: 99.94% (target: 99.9%). Critical incidents: 1 (resolved in 2.3 hours). Major incidents: 3 (avg resolution time: 18 hours). MTTR (Mean Time to Repair): 1.2 hours. Customer satisfaction with support: 4.6/5.0. Ticket backlog: 42 tickets (target: <50). Team overtime hours: 28 hours (within budget).
+

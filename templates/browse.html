@@ -1,0 +1,2977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Documents — AI Document Classification</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233B82F6'%3E%3Cpath d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --primary-light: #60A5FA;
+            --navy: #0F172A;
+            --navy-light: #1E293B;
+            --slate: #334155;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg-light: #F8FAFC;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --border-light: #E2E8F0;
+            --brand-gradient: linear-gradient(135deg, #1E3A5F 0%, #0F172A 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F1F5F9;
+            padding-top: 0;
+        }
+
+        /* ── UNIFIED TOPBAR ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            height: 52px;
+            background: var(--navy);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,.25);
+        }
+        .topbar-brand {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .topbar-brand .brand-dot {
+            width: 8px; height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .topbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .topbar-nav a {
+            color: #94A3B8;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 0.35rem 0.7rem;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+        .topbar-nav a:hover { color: white; background: rgba(255,255,255,.07); }
+        .topbar-nav a.active { color: white; background: rgba(59,130,246,.25); }
+
+        .page-header {
+            background: var(--brand-gradient);
+            color: white;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .document-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: .75rem;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+            transition: box-shadow 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .document-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,.1);
+            border-color: #CBD5E1;
+        }
+
+        .document-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .document-meta {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-unclassified {
+            background: rgba(245, 158, 11, 0.15);
+            color: #B45309;
+        }
+
+        .status-classified {
+            background: rgba(16, 185, 129, 0.15);
+            color: #065F46;
+        }
+
+        .status-high-risk {
+            background: rgba(239, 68, 68, 0.15);
+            color: #B91C1C;
+        }
+
+        .risk-badge {
+            background: rgba(209, 52, 56, 0.2);
+            color: #D13438;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .site-section {
+            margin-bottom: 2rem;
+        }
+
+        .site-header {
+            background: linear-gradient(135deg, #1D4ED8, var(--primary));
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .btn-classify {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-classify:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(59, 130, 246, 0.25);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); opacity:.4; }
+            40% { transform: translateY(-6px); opacity:1; }
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,.4); }
+            50% { box-shadow: 0 0 0 10px rgba(59,130,246,0); }
+        }
+
+        .nav-tabs .nav-link {
+            color: #64748B;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary);
+            background: none;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .document-viewer {
+            max-height: 450px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+        
+        .document-header {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .document-body {
+            padding: 1.5rem;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .document-body h1, .document-body h2, .document-body h3 {
+            color: var(--navy-light);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .document-body h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+        
+        .document-body h2 {
+            font-size: 1.3rem;
+        }
+        
+        .document-body h3 {
+            font-size: 1.1rem;
+        }
+        
+        .document-body p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+        
+        .document-body ul, .document-body ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        
+        .document-body li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .document-body .highlight {
+            background: #fff3cd;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+        }
+        
+        .document-body .financial-data {
+            background: #EFF6FF;
+            padding: 0.8rem;
+            border-left: 4px solid var(--primary);
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        /* PII Highlight Classes */
+        mark.pii-ssn {
+            background: #fed7d7;
+            border-bottom: 2px solid #e53e3e;
+            border-radius: 2px;
+            padding: 0 2px;
+            cursor: help;
+        }
+        mark.pii-financial {
+            background: #feebc8;
+            border-bottom: 2px solid #dd6b20;
+            border-radius: 2px;
+            padding: 0 2px;
+            cursor: help;
+        }
+        mark.pii-credential {
+            background: #fde8e8;
+            border-bottom: 2px solid #c53030;
+            border-radius: 2px;
+            padding: 0 2px;
+            cursor: help;
+        }
+        mark.pii-general {
+            background: #fefcbf;
+            border-bottom: 2px solid #d69e2e;
+            border-radius: 2px;
+            padding: 0 2px;
+            cursor: help;
+        }
+        /* ── PII hover tooltip ── */
+        mark[data-label] { position: relative; }
+        mark[data-label]:hover::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 2px 8px rgba(0,0,0,.35);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .pii-legend {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 0.45rem 0.75rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.78rem;
+        }
+        .pii-legend .legend-title {
+            font-weight: 600;
+            color: #495057;
+        }
+        .pii-legend .legend-swatch {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pii-legend .swatch-box {
+            width: 13px;
+            height: 13px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+        
+        .document-body .date-stamp {
+            color: #666;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        #verificationSection .btn {
+            transition: all 0.2s;
+        }
+
+        #verificationSection .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Report modal tab active state */
+        #reportTabs .nav-link { color: #94A3B8 !important; border-bottom: 2px solid transparent !important; border-radius: 0; transition: color .15s, border-color .15s; }
+        #reportTabs .nav-link.active,
+        #reportTabs .nav-link:hover { color: #60A5FA !important; border-bottom-color: #60A5FA !important; }
+        #reportTabs .nav-link.active { color: white !important; border-bottom-color: #60A5FA !important; }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.4em 0.6em;
+        }
+
+        .modal-lg {
+            max-width: 800px;
+        }
+
+        .document-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .document-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .document-card.selected {
+            border-color: var(--primary);
+            background: #f8f9ff;
+        }
+
+        .document-card.high-risk-border {
+            border-left: 4px solid #dc3545;
+        }
+
+        .document-card .card-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            padding: 0.5rem 1rem;
+        }
+
+        .document-card .card-body {
+            padding: 1rem;
+        }
+
+        .category-section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .category-header {
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .table th {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .spinner-border {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        /* ── BATCH PROGRESS FLOATING POPUP ── */
+        #batchPopup {
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            z-index: 9999; width: 360px;
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp {
+            from { opacity:0; transform: translateY(20px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+        #batchPopup .popup-card {
+            background: var(--navy);
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0,0,0,.55);
+            border: 1px solid rgba(255,255,255,.1);
+            overflow: hidden;
+        }
+        #batchPopup .popup-header {
+            background: var(--brand-gradient);
+            padding: 0.75rem 1rem;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        #batchPopup .popup-header-text { flex: 1; min-width: 0; }
+        #batchPopup .popup-title {
+            color: white; font-weight: 700; font-size: 0.88rem; line-height: 1.2;
+        }
+        #batchPopup .popup-subtitle {
+            color: #94A3B8; font-size: 0.72rem; margin-top: 1px;
+        }
+        #batchPopup .popup-body {
+            padding: 0.75rem 1rem 0.65rem;
+        }
+        /* ---- chunky progress bar ---- */
+        #batchPopup .popup-bar-track {
+            height: 18px;
+            background: #1E293B;
+            border-radius: 99px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(255,255,255,.06);
+        }
+        #batchPopup .popup-bar-fill {
+            height: 100%;
+            background: repeating-linear-gradient(
+                -45deg,
+                #3B82F6,
+                #3B82F6 12px,
+                #2563EB 12px,
+                #2563EB 24px
+            );
+            background-size: 34px 100%;
+            width: 0%;
+            border-radius: 99px;
+            transition: width 0.35s ease;
+            animation: barMove 0.7s linear infinite;
+            position: relative;
+        }
+        @keyframes barMove {
+            from { background-position: 0 0; }
+            to   { background-position: 34px 0; }
+        }
+        #batchPopup .popup-bar-fill.done {
+            background: repeating-linear-gradient(
+                -45deg,
+                #22C55E,
+                #22C55E 12px,
+                #16A34A 12px,
+                #16A34A 24px
+            );
+            animation: none;
+        }
+        #batchPopup .popup-bar-pct {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.68rem; font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,.6);
+            pointer-events: none;
+            z-index: 1;
+        }
+        /* ---- doc name + count row ---- */
+        #batchPopup .popup-meta {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+        }
+        #batchPopup .popup-current {
+            color: #CBD5E1; font-size: 0.75rem;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+        }
+        #batchPopup .popup-count {
+            color: #94A3B8; font-size: 0.75rem; white-space: nowrap; font-weight: 600;
+        }
+        #batchPopup .popup-actions {
+            padding: 0 1rem 0.75rem;
+            display: flex; gap: 0.5rem;
+        }
+        #batchPopup .btn-popup-view {
+            background: #3B82F6; color: white; border: none;
+            border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+            padding: 0.3rem 0.85rem; cursor: pointer;
+        }
+        #batchPopup .btn-popup-view:hover { background: #2563EB; }
+        #batchPopup .btn-popup-dismiss {
+            background: transparent; color: #64748B; border: 1px solid #334155;
+            border-radius: 6px; font-size: 0.78rem; padding: 0.3rem 0.75rem; cursor: pointer;
+        }
+        #batchPopup .btn-popup-dismiss:hover { color: #94A3B8; }
+
+        .search-box {
+            position: sticky;
+            top: 52px;
+            z-index: 10;
+            background: white;
+            border-radius: 8px;
+            padding: 0.65rem 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .stats-bar {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.88rem;
+            padding: 0.5rem 0 0.75rem;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 1rem;
+        }
+        .stats-bar .stat-val {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation (unified dark topbar) -->
+    <nav class="topbar">
+        <a class="topbar-brand" href="/">
+            <span class="brand-dot"></span>
+            AI Document Classifier
+        </a>
+        <div class="topbar-nav">
+            <a href="/">Home</a>
+            <a href="/browse" class="active"><i class="fas fa-folder-open me-1"></i>Browse</a>
+            <a href="/upload">Upload</a>
+            <a href="/scan">Scanner</a>
+            <a href="/dashboard"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div style="max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem">
+            <div>
+                <h1 class="mb-0" style="font-size:1.4rem;font-weight:700;letter-spacing:-0.03em"><i class="fas fa-folder-open me-2" style="color:#60A5FA"></i>Document Browser</h1>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/upload" class="btn btn-sm" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;font-size:0.8rem"><i class="fas fa-upload me-1"></i>Upload</a>
+                <a href="/scan" class="btn btn-sm" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:white;font-size:0.8rem"><i class="fas fa-satellite-dish me-1"></i>Site Scan</a>
+                <a href="/dashboard" class="btn btn-sm" style="background:rgba(59,130,246,.25);border:1px solid rgba(59,130,246,.4);color:white;font-size:0.8rem"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- Stats bar -->
+        <div class="stats-bar" id="summaryCards">
+            <div><div class="stat-val" id="totalDocs">-</div><div class="text-muted" style="font-size:0.75rem">Total</div></div>
+            <div><div class="stat-val text-warning" id="unclassifiedDocs">-</div><div class="text-muted" style="font-size:0.75rem">Unclassified</div></div>
+            <div><div class="stat-val text-success" id="classifiedDocs">-</div><div class="text-muted" style="font-size:0.75rem">Classified</div></div>
+            <div><div class="stat-val text-secondary" id="totalSites">-</div><div class="text-muted" style="font-size:0.75rem">Sites</div></div>
+            <small class="text-muted ms-auto" id="documentCount"></small>
+        </div>
+
+        <!-- Search & Filter toolbar -->
+        <div class="search-box">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <input type="text" class="form-control form-control-sm" id="searchInput" style="max-width:200px" placeholder="Search...">
+                <select class="form-select form-select-sm" id="siteFilter" style="max-width:140px">
+                    <option value="">All Sites</option>
+                </select>
+                <select class="form-select form-select-sm" id="statusFilter" style="max-width:130px">
+                    <option value="">All Status</option>
+                    <option value="unclassified">Unclassified</option>
+                    <option value="classified">Classified</option>
+                    <option value="high-risk">High Risk</option>
+                </select>
+                <div class="ms-auto d-flex gap-2 align-items-center">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="toggleSelectAll()" id="selectAllBtn">
+                        <i class="fas fa-check-square me-1"></i><span id="selectAllBtnText">Select All</span>
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="classifySelectedDocuments()" id="batchClassifyBtn" disabled>
+                        <i class="fas fa-brain me-1"></i>Classify (<span id="selectedCount">0</span>)
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="unclassifySelected()" id="unclassifySelBtn" style="display:none" title="Remove classification from selected docs">
+                        <i class="fas fa-undo me-1"></i>Unclassify (<span id="unclassifySelCount">0</span>)
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="classifyAllUnclassified()" id="classifyAllBtn" title="Classify all unclassified documents">
+                        <i class="fas fa-bolt me-1"></i>All
+                    </button>
+                    <button class="btn btn-warning btn-sm" id="viewReportBtn" onclick="showSessionReport()" style="display:none">
+                        <i class="fas fa-chart-bar me-1"></i>Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch Classification Floating Popup (injected via JS) -->
+
+        <!-- Documents List -->
+        <div id="documentsContainer">
+            <div class="loading text-center py-4" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p class="mt-2">Loading documents...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         BATCH PROGRESS FLOATING POPUP
+    ================================================================ -->
+    <div id="batchPopup" style="display:none">
+        <div class="popup-card">
+            <div class="popup-header">
+                <div class="spinner-border spinner-border-sm text-info flex-shrink-0" id="batchPopupSpinner" style="width:1rem;height:1rem;border-width:2px"></div>
+                <div class="popup-header-text">
+                    <div class="popup-title" id="batchPopupTitle">Classifying Documents</div>
+                    <div class="popup-subtitle" id="batchPopupSubtitle">AI is analyzing your documents&hellip;</div>
+                </div>
+                <button onclick="document.getElementById('batchPopup').style.display='none'" style="background:none;border:none;color:#64748B;font-size:1.1rem;line-height:1;cursor:pointer;padding:0 0 0 0.5rem">&times;</button>
+            </div>
+            <div class="popup-body">
+                <div class="popup-bar-track">
+                    <div class="popup-bar-fill" id="batchPopupBar"></div>
+                    <div class="popup-bar-pct" id="batchPopupPct">0%</div>
+                </div>
+                <div class="popup-meta">
+                    <span class="popup-current" id="batchPopupText">Preparing&hellip;</span>
+                    <span class="popup-count" id="batchPopupCount"></span>
+                </div>
+            </div>
+            <div id="batchPopupCancel" style="padding:.5rem .75rem .25rem;display:none">
+                <button onclick="cancelBatchClassification()" id="batchCancelBtn" style="width:100%;background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;font-size:.78rem;font-weight:600;padding:.4rem;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem">
+                    <i class="fas fa-stop-circle"></i>Stop Classification
+                </button>
+            </div>
+            <div class="popup-actions" id="batchPopupActions" style="display:none">
+                <button class="btn-popup-view" onclick="document.getElementById('batchPopup').style.display='none'; showSessionReport()">
+                    <i class="fas fa-chart-bar me-1"></i>View Report
+                </button>
+                <button class="btn-popup-dismiss" onclick="document.getElementById('batchPopup').style.display='none'">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SESSION REPORT MODAL
+    ================================================================ -->
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content" style="border:none;border-radius:12px;overflow:hidden">
+                <div class="modal-header py-3 px-4" style="background:var(--brand-gradient);color:white;border:none">
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold"><i class="fas fa-shield-alt me-2" style="color:#60A5FA"></i>Classification Report</h5>
+                        <small id="reportTimestamp" class="opacity-50" style="font-size:.75rem"></small>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-sm btn-primary" onclick="downloadReport()"><i class="fas fa-download me-1"></i>PDF</button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                </div>
+                <!-- tabs nav -->
+                <div style="background:#1E293B;padding:0 1.25rem">
+                    <ul class="nav" id="reportTabs" role="tablist" style="gap:.25rem">
+                        <li class="nav-item"><button class="nav-link active px-3 py-2" id="rpt-summary-tab" data-bs-toggle="tab" data-bs-target="#rpt-summary" style="color:#94A3B8;border:none;background:none;font-size:.85rem;border-bottom:2px solid transparent">Summary</button></li>
+                        <li class="nav-item"><button class="nav-link px-3 py-2" id="rpt-docs-tab" data-bs-toggle="tab" data-bs-target="#rpt-docs" style="color:#94A3B8;border:none;background:none;font-size:.85rem;border-bottom:2px solid transparent">All Documents</button></li>
+                        <li class="nav-item"><button class="nav-link px-3 py-2" id="rpt-ai-tab" data-bs-toggle="tab" data-bs-target="#rpt-ai" style="color:#94A3B8;border:none;background:none;font-size:.85rem;border-bottom:2px solid transparent"><i class="fas fa-brain me-1" style="color:#818CF8"></i>AI Overview</button></li>
+                    </ul>
+                </div>
+                <div class="modal-body p-0" id="reportBody">
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="rpt-summary"></div>
+                        <div class="tab-pane fade" id="rpt-docs"></div>
+                        <div class="tab-pane fade" id="rpt-ai" style="background:#0F172A;min-height:400px"></div>
+                    </div>
+                </div>
+                <div class="modal-footer py-2" style="border-top:1px solid #E2E8F0">
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classification Modal -->
+    <div class="modal fade" id="classifyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title text-truncate" style="max-width:500px"><i class="fas fa-file-alt me-2 text-primary"></i><span id="modalDocName">Document</span></h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    
+                    <!-- Document Content Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="docTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="content-tab" data-bs-toggle="tab" data-bs-target="#content" type="button" role="tab">Document Content</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="classification-tab" data-bs-toggle="tab" data-bs-target="#classification" type="button" role="tab">AI Classification</button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="docTabsContent">
+                        <!-- Document Content Tab -->
+                        <div class="tab-pane fade show active" id="content" role="tabpanel">
+                            <div id="documentContent" class="document-viewer">
+                                <div class="document-header" id="docHeader" style="display: none;">
+                                    <h6 class="mb-1" id="docTitle"></h6>
+                                    <small class="text-muted" id="docMeta"></small>
+                                </div>
+                                <div class="document-body" id="docBody">Loading document content...</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Classification Tab -->
+                        <div class="tab-pane fade" id="classification" role="tabpanel">
+
+                            <!-- Empty state -->
+                            <div id="classifyButtonContainer">
+                                <div style="background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);border-radius:12px;padding:2rem 1.5rem;text-align:center;color:#fff">
+                                    <div style="width:56px;height:56px;background:rgba(59,130,246,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .85rem;animation:pulse 2.5s ease-in-out infinite">
+                                        <i class="fas fa-brain" style="font-size:1.5rem;color:#60A5FA"></i>
+                                    </div>
+                                    <div style="color:#F1F5F9;font-weight:700;font-size:1rem;margin-bottom:.4rem">AI Document Analysis</div>
+                                    <p style="color:#94A3B8;font-size:.82rem;margin-bottom:1.25rem;line-height:1.6;max-width:320px;margin-left:auto;margin-right:auto">Automatically classify this document, detect PII, score risk, and surface key findings using Gemini AI.</p>
+                                    <div style="display:flex;gap:.45rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem">
+                                        <span style="background:rgba(59,130,246,.15);color:#93C5FD;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid rgba(59,130,246,.3)"><i class="fas fa-tag me-1"></i>Category Detection</span>
+                                        <span style="background:rgba(239,68,68,.15);color:#FCA5A5;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid rgba(239,68,68,.3)"><i class="fas fa-shield-alt me-1"></i>PII Scanning</span>
+                                        <span style="background:rgba(245,158,11,.15);color:#FCD34D;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid rgba(245,158,11,.3)"><i class="fas fa-tachometer-alt me-1"></i>Risk Scoring</span>
+                                    </div>
+                                    <button type="button" onclick="runClassification()" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border:none;color:#fff;padding:.5rem 1.6rem;border-radius:8px;font-weight:600;font-size:.88rem;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+                                        <i class="fas fa-play me-2"></i>Run AI Classification
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Loading state -->
+                            <div id="modalLoading" style="display:none">
+                                <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:12px;padding:2rem 1.5rem;text-align:center;color:#fff">
+                                    <div style="width:56px;height:56px;background:rgba(59,130,246,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;animation:pulse 1.5s ease-in-out infinite">
+                                        <i class="fas fa-brain" style="font-size:1.5rem;color:#60A5FA"></i>
+                                    </div>
+                                    <div style="color:#F1F5F9;font-weight:600;margin-bottom:.3rem">Analyzing document&hellip;</div>
+                                    <div style="color:#64748B;font-size:.8rem;margin-bottom:1.1rem">Gemini AI is reading and classifying your document</div>
+                                    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:1.25rem">
+                                        <span style="width:7px;height:7px;background:#3B82F6;border-radius:50%;display:inline-block;animation:bounce 1.2s ease-in-out infinite"></span>
+                                        <span style="width:7px;height:7px;background:#3B82F6;border-radius:50%;display:inline-block;animation:bounce 1.2s ease-in-out infinite .2s"></span>
+                                        <span style="width:7px;height:7px;background:#3B82F6;border-radius:50%;display:inline-block;animation:bounce 1.2s ease-in-out infinite .4s"></span>
+                                    </div>
+                                    <button onclick="cancelSingleClassification()" id="cancelClassifyBtn" style="background:transparent;border:1px solid #475569;color:#94A3B8;padding:.35rem 1rem;border-radius:6px;font-size:.78rem;cursor:pointer" onmouseover="this.style.borderColor='#EF4444';this.style.color='#FCA5A5'" onmouseout="this.style.borderColor='#475569';this.style.color='#94A3B8'">
+                                        <i class="fas fa-stop me-1"></i>Cancel
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Results -->
+                            <div id="classificationResults" style="display:none"></div>
+
+                            <!-- Verification bar -->
+                            <div id="verificationSection" style="display:none;margin-top:.75rem">
+                                <div style="background:#0F172A;border-radius:10px;padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+                                    <div style="flex:1;min-width:120px">
+                                        <div style="font-size:.65rem;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:.07em;margin-bottom:3px">Review Status</div>
+                                        <div id="verificationStatus" style="font-size:.82rem;color:#94A3B8;font-weight:500">Pending review</div>
+                                    </div>
+                                    <div style="display:flex;gap:.45rem;flex-wrap:wrap" id="verificationActions">
+                                        <button id="acceptBtn" onclick="acceptClassification()" style="background:#10B981;border:none;color:#fff;font-weight:600;padding:.35rem .9rem;border-radius:6px;font-size:.82rem;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+                                            <i class="fas fa-check me-1"></i>Accept
+                                        </button>
+                                        <button id="modifyBtn" onclick="modifyClassification()" style="background:transparent;border:1px solid #475569;color:#94A3B8;font-weight:600;padding:.35rem .9rem;border-radius:6px;font-size:.82rem;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='#94A3B8';this.style.color='#E2E8F0'" onmouseout="this.style.borderColor='#475569';this.style.color='#94A3B8'">
+                                            <i class="fas fa-pencil-alt me-1"></i>Correct
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Override form -->
+                                <div id="modificationForm" style="display:none;background:#F8FAFC;border-radius:10px;padding:1rem;margin-top:.5rem;border:1px solid #E2E8F0">
+                                    <div style="font-size:.68rem;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem"><i class="fas fa-edit me-1"></i>Override Classification</div>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-md-6">
+                                            <label style="font-size:.76rem;color:#475569;font-weight:600;display:block;margin-bottom:3px">Functional Group</label>
+                                            <select class="form-select form-select-sm" id="correctedGroup">
+                                                <option value="HR">HR</option>
+                                                <option value="Finance and Accounting">Finance and Accounting</option>
+                                                <option value="Legal + Compliance">Legal + Compliance</option>
+                                                <option value="Customer / Client Documentation">Customer / Client Documentation</option>
+                                                <option value="Sales &amp; Business Development">Sales &amp; Business Development</option>
+                                                <option value="IT &amp; Systems">IT &amp; Systems</option>
+                                                <option value="Operations and Internal Documentation">Operations and Internal Documentation</option>
+                                                <option value="Product Development / R&amp;D">Product Development / R&amp;D</option>
+                                                <option value="Marketing &amp; Communications">Marketing &amp; Communications</option>
+                                                <option value="Outliers / Others">Outliers / Others</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label style="font-size:.76rem;color:#475569;font-weight:600;display:block;margin-bottom:3px">Sensitivity Level</label>
+                                            <select class="form-select form-select-sm" id="correctedSensitivity">
+                                                <option value="Low">Low</option>
+                                                <option value="Moderate">Moderate</option>
+                                                <option value="High">High</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label style="font-size:.76rem;color:#475569;font-weight:600;display:block;margin-bottom:3px">Reason for Change</label>
+                                        <textarea class="form-control form-control-sm" id="correctionReason" rows="2" placeholder="Explain why you're overriding this classification&hellip;" style="font-size:.82rem"></textarea>
+                                    </div>
+                                    <div style="display:flex;gap:.5rem">
+                                        <button class="btn btn-sm btn-primary" onclick="submitCorrection()" style="font-size:.8rem"><i class="fas fa-save me-1"></i>Save Override</button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('modificationForm').style.display='none'" style="font-size:.8rem">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="classifyTabBtn" onclick="runClassificationFromModal()"><i class="fas fa-brain me-1"></i>Classify</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Notification System -->
+    <div id="notificationContainer" style="position:fixed;top:1rem;right:1rem;z-index:10000;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jsPDF + AutoTable for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        let allDocuments = [];
+        let filteredDocuments = [];
+        let currentDocPath = '';
+        let currentDocName = '';
+        let currentClassification = null;
+        let selectedDocuments = new Set();
+        let viewMode = 'grid';
+        let classifiedDocuments = {};  // cache: path -> full API response
+        let docStatuses = {};           // path -> 'classified'|'accepted'|'corrected'|'rejected'
+        let batchMode = false;
+        let batchCancelled = false;
+        let classifyAbortController = null;
+        let aiInsightsController = null; // For cancelling AI insights requests
+
+        // Restore any previously classified records from localStorage
+        try {
+            const saved = localStorage.getItem('classifiedDocuments');
+            if (saved) classifiedDocuments = JSON.parse(saved);
+            const savedS = localStorage.getItem('docStatuses');
+            if (savedS) docStatuses = JSON.parse(savedS);
+        } catch(e) { /* ignore */ }
+        
+        function persistToLocalStorage() {
+            try {
+                // Strip large server-only fields (rag_context, text_preview) before storing
+                // to prevent localStorage quota exceeded errors silently dropping all data.
+                const slim = {};
+                Object.entries(classifiedDocuments).forEach(([path, data]) => {
+                    slim[path] = {
+                        file: data.file,
+                        classification: data.classification,
+                        risk_assessment: data.risk_assessment,
+                        status: data.status
+                    };
+                });
+                localStorage.setItem('classifiedDocuments', JSON.stringify(slim));
+                localStorage.setItem('docStatuses', JSON.stringify(docStatuses));
+                localStorage.setItem('classifiedAt', new Date().toISOString());
+            } catch(e) {
+                console.warn('localStorage persist failed:', e);
+            }
+        }
+
+        // Load documents on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDocuments().then(() => {
+                // If arriving from dashboard with a specific doc to open
+                const hash = window.location.hash;
+                if (hash.startsWith('#open=')) {
+                    const path = decodeURIComponent(hash.slice(6));
+                    const doc = allDocuments.find(d => d.path === path);
+                    if (doc) {
+                        setTimeout(() => openAndClassify(path, doc.name), 400);
+                    }
+                    history.replaceState(null, '', '/browse');
+                }
+            });
+            setupFilters();
+        });
+
+        async function loadDocuments() {
+            try {
+                const response = await fetch('/api/documents');
+                const data = await response.json();
+                
+                allDocuments = data.documents;
+
+                // Reconcile each doc's status + classification from localStorage
+                allDocuments.forEach(doc => {
+                    const saved = classifiedDocuments[doc.path];
+                    const savedStatus = docStatuses[doc.path];
+                    if (saved) {
+                        doc.classification = saved.classification || saved;
+                        doc.risk_assessment = saved.risk_assessment || null;
+                        doc.status = savedStatus || 'classified';
+                    } else {
+                        doc.classification = null;
+                        doc.status = 'unclassified';
+                    }
+                });
+
+                filteredDocuments = [...allDocuments];
+
+                updateSummaryCards(data);
+                // Override server counts with localStorage-reconciled counts
+                const reconClassified = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
+                document.getElementById('classifiedDocs').textContent = reconClassified;
+                document.getElementById('unclassifiedDocs').textContent = allDocuments.length - reconClassified;
+
+                populateSiteFilter(data.by_site);
+                renderDocuments(filteredDocuments);
+                updateReportButton();
+                
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                document.getElementById('documentsContainer').innerHTML = 
+                    '<div class="alert alert-danger">Error loading documents: ' + error.message + '</div>';
+            }
+        }
+
+        function updateSummaryCards(data) {
+            document.getElementById('totalDocs').textContent = data.total;
+            document.getElementById('unclassifiedDocs').textContent = data.status_summary.unclassified;
+            document.getElementById('classifiedDocs').textContent = data.status_summary.classified;
+            document.getElementById('totalSites').textContent = Object.keys(data.by_site).length;
+        }
+
+        function populateSiteFilter(siteData) {
+            const siteFilter = document.getElementById('siteFilter');
+            Object.keys(siteData).forEach(site => {
+                const option = document.createElement('option');
+                option.value = site;
+                option.textContent = `${site} (${siteData[site]})`;
+                siteFilter.appendChild(option);
+            });
+        }
+
+        function renderDocuments(documents) {
+            const container = document.getElementById('documentsContainer');
+            document.getElementById('documentCount').textContent = `${documents.length} document${documents.length !== 1 ? 's' : ''}`;
+            
+            if (documents.length === 0) {
+                container.innerHTML = '<div class="alert alert-info text-center">No documents match your filters</div>';
+                return;
+            }
+
+            if (viewMode === 'category') {
+                renderCategoryView(documents);
+            } else if (viewMode === 'list') {
+                renderListView(documents);
+            } else {
+                renderGridView(documents);
+            }
+        }
+        
+        function renderGridView(documents) {
+            const container = document.getElementById('documentsContainer');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            // Remove loading indicator if it exists
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+            
+            let html = '<div class="row">';
+            
+            documents.forEach((doc, index) => {
+                const statusBadge = getStatusBadge(doc);
+                const riskBadge = getRiskBadge(doc);
+                const isSelected = selectedDocuments.has(doc.path);
+                
+                const escapedPath = doc.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                const escapedName = doc.name.replace(/'/g, "\\'");
+                const classifyLabel = doc.status !== 'unclassified' ? 'Re-classify' : 'Classify';
+                html += `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="document-card ${isSelected ? 'selected' : ''}" data-path="${doc.path}">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <input type="checkbox" class="form-check-input doc-checkbox"
+                                       data-path="${doc.path}" ${isSelected ? 'checked' : ''}
+                                       onchange="toggleDocumentSelection('${escapedPath}')">
+                                <div class="d-flex gap-1">${statusBadge}${riskBadge}</div>
+                            </div>
+                            <div class="card-body" style="cursor:default">
+                                <h6 class="card-title mb-1" title="${doc.name}" style="font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${doc.name}</h6>
+                                <p class="card-text text-muted mb-1" style="font-size:0.8rem">${doc.size_mb} MB &bull; ${doc.site}</p>
+                                ${doc.classification ? `<p class="text-primary mb-0" style="font-size:0.8rem">${doc.classification.functional_group}</p>` : '<p class="text-muted mb-0" style="font-size:0.8rem">Not classified yet</p>'}
+                            </div>
+                            <div class="card-footer bg-white border-top pt-2 pb-2 d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="selectDocument('${escapedPath}','${escapedName}')" title="View document content">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary flex-fill" onclick="openAndClassify('${escapedPath}','${escapedName}')" title="Run AI classification">
+                                    <i class="fas fa-brain me-1"></i>${classifyLabel}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function renderListView(documents) {
+            const container = document.getElementById('documentsContainer');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            // Remove loading indicator if it exists
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+            
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="40px">
+                                    <input type="checkbox" class="form-check-input" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                                </th>
+                                <th>Document Name</th>
+                                <th>Site</th>
+                                <th>Size</th>
+                                <th>Status</th>
+                                <th>Risk</th>
+                                <th>Category</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            documents.forEach(doc => {
+                const isSelected = selectedDocuments.has(doc.path);
+                const statusBadge = getStatusBadge(doc);
+                const riskBadge = getRiskBadge(doc);
+                
+                const escapedPath2 = doc.path.replace(/'/g, "\\'");
+                const escapedName2 = doc.name.replace(/'/g, "\\'");
+                html += `
+                    <tr class="${isSelected ? 'table-primary' : ''}">
+                        <td>
+                            <input type="checkbox" class="form-check-input doc-checkbox"
+                                   data-path="${doc.path}" ${isSelected ? 'checked' : ''}
+                                   onchange="toggleDocumentSelection('${escapedPath2}')">
+                        </td>
+                        <td>
+                            <a href="#" onclick="return selectDocument('${escapedPath2}','${escapedName2}'),false" class="text-decoration-none fw-medium">${doc.name}</a>
+                            ${doc.status !== 'unclassified' ? '<i class="fas fa-circle-check text-success ms-1" style="font-size:0.75rem" title="Classified"></i>' : ''}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">${doc.site}</span></td>
+                        <td>${doc.size_mb} MB</td>
+                        <td>${statusBadge}</td>
+                        <td>${riskBadge || '<span class="text-muted">-</span>'}</td>
+                        <td style="font-size:0.85rem">${doc.classification ? doc.classification.functional_group : '<span class="text-muted">-</span>'}</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="selectDocument('${escapedPath2}','${escapedName2}')" title="View"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-primary" onclick="openAndClassify('${escapedPath2}','${escapedName2}')" title="Classify"><i class="fas fa-brain"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+        
+        function renderCategoryView(documents) {
+            const container = document.getElementById('documentsContainer');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            // Remove loading indicator if it exists
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+            
+            // Group documents by classification
+            const groups = {
+                'Unclassified': documents.filter(doc => !doc.classification),
+                'HR': documents.filter(doc => doc.classification?.functional_group === 'HR'),
+                'Finance and Accounting': documents.filter(doc => doc.classification?.functional_group === 'Finance and Accounting'),
+                'Legal + Compliance': documents.filter(doc => doc.classification?.functional_group === 'Legal + Compliance'),
+                'Customer / Client Documentation': documents.filter(doc => doc.classification?.functional_group === 'Customer / Client Documentation'),
+                'Sales & Business Development': documents.filter(doc => doc.classification?.functional_group === 'Sales & Business Development'),
+                'IT & Technology': documents.filter(doc => doc.classification?.functional_group === 'IT & Technology'),
+                'Operations & Logistics': documents.filter(doc => doc.classification?.functional_group === 'Operations & Logistics'),
+                'Product & Research Development': documents.filter(doc => doc.classification?.functional_group === 'Product & Research Development'),
+                'Marketing & Communications': documents.filter(doc => doc.classification?.functional_group === 'Marketing & Communications')
+            };
+            
+            let html = '';
+            
+            Object.entries(groups).forEach(([groupName, groupDocs]) => {
+                if (groupDocs.length === 0) return;
+                
+                // Sort by risk score (highest first)
+                groupDocs.sort((a, b) => {
+                    const riskA = parseFloat(a.classification?.risk_score || 0);
+                    const riskB = parseFloat(b.classification?.risk_score || 0);
+                    return riskB - riskA;
+                });
+                
+                const highRiskCount = groupDocs.filter(doc => doc.classification?.is_high_risk).length;
+                
+                html += `
+                    <div class="category-section mb-4">
+                        <div class="category-header">
+                            <h5>
+                                <i class="fas fa-folder-open me-2 text-primary"></i>
+                                ${groupName} (${groupDocs.length})
+                                ${highRiskCount > 0 ? `<span class="badge bg-danger ms-2">${highRiskCount} High Risk</span>` : ''}
+                            </h5>
+                        </div>
+                        <div class="row">
+                `;
+                
+                groupDocs.forEach(doc => {
+                    const statusBadge = getStatusBadge(doc);
+                    const riskBadge = getRiskBadge(doc);
+                    const isSelected = selectedDocuments.has(doc.path);
+                    
+                    const escapedPathC = doc.path.replace(/'/g, "\\'");
+                    const escapedNameC = doc.name.replace(/'/g, "\\'");
+                    const classifyLabelC = doc.status !== 'unclassified' ? 'Re-classify' : 'Classify';
+                    html += `
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="document-card ${isSelected ? 'selected' : ''} ${doc.classification?.is_high_risk ? 'high-risk-border' : ''}" data-path="${doc.path}">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <input type="checkbox" class="form-check-input doc-checkbox"
+                                           data-path="${doc.path}" ${isSelected ? 'checked' : ''}
+                                           onchange="toggleDocumentSelection('${escapedPathC}')">
+                                    <div class="d-flex gap-1">${statusBadge}${riskBadge}</div>
+                                </div>
+                                <div class="card-body" style="cursor:default">
+                                    <h6 class="card-title mb-1" style="font-size:0.9rem">${doc.name}</h6>
+                                    <p class="card-text text-muted mb-1" style="font-size:0.8rem">${doc.size_mb} MB &bull; ${doc.site}</p>
+                                    ${doc.classification?.risk_score ? `<p class="text-danger small mb-0 fw-bold">Risk: ${doc.classification.risk_score}/10</p>` : ''}
+                                </div>
+                                <div class="card-footer bg-white border-top pt-2 pb-2 d-flex gap-1">
+                                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="selectDocument('${escapedPathC}','${escapedNameC}')">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </button>
+                                    <button class="btn btn-sm btn-primary flex-fill" onclick="openAndClassify('${escapedPathC}','${escapedNameC}')">
+                                        <i class="fas fa-brain me-1"></i>${classifyLabelC}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function getStatusClass(doc) {
+            if (doc.classification && doc.classification.is_high_risk) {
+                return 'status-high-risk';
+            }
+            return doc.status === 'unclassified' ? 'status-unclassified' : 'status-classified';
+        }
+
+        function getStatusBadge(doc) {
+            let statusClass, statusText;
+            
+            switch (doc.status) {
+                case 'accepted':
+                    statusClass = 'bg-success';
+                    statusText = 'VERIFIED';
+                    break;
+                case 'corrected':
+                    statusClass = 'bg-warning';
+                    statusText = 'CORRECTED';
+                    break;
+                case 'rejected':
+                    statusClass = 'bg-danger';
+                    statusText = 'REJECTED';
+                    break;
+                case 'classified':
+                    statusClass = 'bg-info';
+                    statusText = 'CLASSIFIED';
+                    break;
+                case 'unclassified':
+                default:
+                    statusClass = 'bg-secondary';
+                    statusText = 'UNCLASSIFIED';
+                    break;
+            }
+            
+            return `<span class="badge ${statusClass}">${statusText}</span>`;
+        }
+
+        function getRiskBadge(doc) {
+            if (doc.classification && doc.classification.is_high_risk) {
+                return `<span class="risk-badge">⚠ Risk: ${doc.classification.risk_score}</span>`;
+            }
+            if (doc.classification && doc.classification.has_pii) {
+                return `<span class="risk-badge">🔒 Has PII</span>`;
+            }
+            return '';
+        }
+
+        function resetModalState() {
+            document.getElementById('classificationResults').style.display = 'none';
+            document.getElementById('modalLoading').style.display = 'none';
+            document.getElementById('verificationSection').style.display = 'none';
+            document.getElementById('classifyButtonContainer').style.display = 'block';
+            document.getElementById('modificationForm').style.display = 'none';
+            // Reset tab label
+            document.getElementById('content-tab').innerHTML = 'Document Content';
+            // Reset verification buttons
+            document.getElementById('acceptBtn').style.display = 'inline-block';
+            document.getElementById('modifyBtn').style.display = 'inline-block';
+            // Reset footer button
+            document.getElementById('classifyTabBtn').innerHTML = '<i class="fas fa-brain me-1"></i>Classify';
+        }
+
+        async function selectDocument(path, name) {
+            currentDocPath = path;
+            currentDocName = name;
+            document.getElementById('modalDocName').textContent = name;
+            resetModalState();
+
+            // If already classified, show cached result and mark tab
+            if (classifiedDocuments[path]) {
+                displayClassificationResults(classifiedDocuments[path]);
+                document.getElementById('content-tab').innerHTML =
+                    'Document Content <span class="badge bg-success ms-1" style="font-size:0.6rem;vertical-align:middle">HIGHLIGHTS</span>';
+            }
+
+            // Default to content tab for view-only open
+            document.getElementById('content-tab').click();
+            loadDocumentContent(path);
+            const modal = new bootstrap.Modal(document.getElementById('classifyModal'));
+            modal.show();
+        }
+
+        async function openAndClassify(path, name) {
+            currentDocPath = path;
+            currentDocName = name;
+            document.getElementById('modalDocName').textContent = name;
+            resetModalState();
+
+            // Load content in background, switch to classification tab immediately
+            loadDocumentContent(path);
+            document.getElementById('classification-tab').click();
+
+            const modal = new bootstrap.Modal(document.getElementById('classifyModal'));
+            modal.show();
+
+            // If already classified show cached, otherwise run
+            if (classifiedDocuments[path]) {
+                displayClassificationResults(classifiedDocuments[path]);
+            } else {
+                classifyDocument(path, name);
+            }
+        }
+
+        function runClassificationFromModal() {
+            // Footer button — always re-run (label updates to Re-classify after first run)
+            document.getElementById('classification-tab').click();
+            classifyDocument(currentDocPath, currentDocName);
+        }
+        
+        async function loadDocumentContent(path) {
+            try {
+                const response = await fetch(`/api/documents/${encodeURIComponent(path)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('docBody').textContent = `Error loading content: ${data.error}`;
+                    document.getElementById('docHeader').style.display = 'none';
+                } else {
+                    // Show document metadata
+                    document.getElementById('docTitle').textContent = data.file;
+                    document.getElementById('docMeta').textContent = `Size: ${(data.size / 1024).toFixed(1)} KB`;
+                    document.getElementById('docHeader').style.display = 'block';
+                    
+                    let content = data.content || 'No text content available';
+                    
+                    // Format content nicely, passing classification data for PII highlighting
+                    const classData = classifiedDocuments[path] || null;
+                    content = formatDocumentContent(content, classData);
+                    
+                    document.getElementById('docBody').innerHTML = content;
+                }
+            } catch (error) {
+                document.getElementById('docBody').textContent = `Error: ${error.message}`;
+                document.getElementById('docHeader').style.display = 'none';
+            }
+        }
+        
+        function formatDocumentContent(text, classData) {
+            if (!text || text === 'No text content available') {
+                return '<p class="text-muted">No text content available</p>';
+            }
+            
+            // Truncate if too long
+            if (text.length > 3000) {
+                text = text.substring(0, 3000) + '\n\n... (truncated for display)';
+            }
+
+            // ---- Build PII highlight patterns from classification data ----
+            const PII_TYPE_MAP = {
+                // SSN: dashes, spaces, or contextual label
+                'SSN':                  { cls: 'pii-ssn',        label: 'SSN',
+                    patterns: [/\b\d{3}-\d{2}-\d{4}\b/g, /\b\d{3}\s\d{2}\s\d{4}\b/g, /\bSSN[:\s#]+\d[\d\s-]{6,11}\d\b/gi] },
+                'Social Security':      { cls: 'pii-ssn',        label: 'SSN',
+                    patterns: [/\b\d{3}-\d{2}-\d{4}\b/g, /\b\d{3}\s\d{2}\s\d{4}\b/g, /\bSSN[:\s#]+\d[\d\s-]{6,11}\d\b/gi] },
+                'Tax ID':               { cls: 'pii-ssn',        label: 'Tax ID',
+                    patterns: [/\b\d{2}-\d{7}\b/g, /\bEIN\b[:\s]+[\d-]+/gi, /\bTax\s*ID[:\s#]+[\w\d-]+/gi] },
+                // Credit cards: major card prefixes
+                'Credit Card':          { cls: 'pii-financial',  label: 'Credit Card',
+                    patterns: [/\b(?:4|5[1-5]|6)\d{3}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, /\b\d{4}[\s-]\d{4}[\s-]\d{4}[\s-]\d{4}\b/g] },
+                'Bank Account':         { cls: 'pii-financial',  label: 'Bank Acct',
+                    patterns: [/\b(?:Account|Acct)\s*(?:#|No\.?|Num(?:ber)?)?\s*[:=]?\s*[\d\w-]{6,}/gi, /\bRouting\s*(?:No\.?)?\s*[:=]?\s*\d{9}\b/gi] },
+                // Salary: dollar amounts >= $1,000 or labeled salary
+                'Salary':               { cls: 'pii-financial',  label: 'Salary',
+                    patterns: [/\$[\d,]{4,}(?:\.\d{2})?\b/g, /\b\d{2,3},\d{3}(?:\.\d{2})?\s*(?:\/yr|\/year|annual|salary)/gi] },
+                'Salary Information':   { cls: 'pii-financial',  label: 'Salary',
+                    patterns: [/\$[\d,]{4,}(?:\.\d{2})?\b/g, /\bsalary\s*[:=]\s*[\$\d,\.]+/gi,
+                               /\b\d{2,3},\d{3}(?:\.\d{2})?\s*(?:\/yr|\/year|annual|salary)/gi] },
+                'Financial':            { cls: 'pii-financial',  label: 'Financial',
+                    patterns: [/\$[\d,]{4,}(?:\.\d{2})?\b/g] },
+                'Password':             { cls: 'pii-credential', label: 'Password',
+                    patterns: [/\bpassword\s*[:=]\s*\S+/gi, /\bpasswd\s*[:=]\s*\S+/gi, /\bPass:\s*\S+/gi] },
+                'Passwords/Credentials':{ cls: 'pii-credential', label: 'Credentials',
+                    patterns: [/\bpassword\s*[:=]\s*\S+/gi, /\bsecret\s*[:=]\s*\S+/gi,
+                               /\btoken\s*[:=]\s*\S+/gi, /\bapi[_-]?key\s*[:=]\s*\S+/gi, /\bPass:\s*\S+/gi] },
+                'Credentials':          { cls: 'pii-credential', label: 'Credentials',
+                    patterns: [/\bpassword\s*[:=]\s*\S+/gi, /\bsecret\s*[:=]\s*\S+/gi] },
+                'API Keys':             { cls: 'pii-credential', label: 'API Key',
+                    patterns: [/\bapi[_-]?key\s*[:=]\s*\S+/gi, /\baccess[_-]?token\s*[:=]\s*\S+/gi,
+                               /\bBEARER\s+[A-Za-z0-9\-_.]{10,}/gi] },
+                'API Keys/Tokens':      { cls: 'pii-credential', label: 'API Key',
+                    patterns: [/\bapi[_-]?key\s*[:=]\s*\S+/gi, /\btoken\s*[:=]\s*[A-Za-z0-9\-_.]{10,}/gi,
+                               /\bsecret\s*[:=]\s*\S+/gi, /\bBEARER\s+[A-Za-z0-9\-_.]{10,}/gi] },
+                'Email':                { cls: 'pii-general',    label: 'Email',
+                    patterns: [/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}\b/gi] },
+                'Phone':                { cls: 'pii-general',    label: 'Phone',
+                    patterns: [/\b\(?\d{3}\)?[\.\s-]?\d{3}[\.\s-]?\d{4}\b/g,
+                               /\b\+1[\s-]?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}\b/g] },
+                // Employee ID: EMP###, Employee ID:, E-##### patterns
+                'Employee ID':          { cls: 'pii-general',    label: 'Employee ID',
+                    patterns: [/\bEMP[-\s#]?\d{3,}/gi,
+                               /\bEmployee\s*(?:ID|#|No\.?|Number)\s*[:=]?\s*[\w\d-]+/gi,
+                               /\bE-?\d{5,}\b/gi] },
+                'Date of Birth':        { cls: 'pii-general',    label: 'DOB',
+                    patterns: [/\b(?:DOB|Date of Birth|Birth\s*Date)\s*[:=]?\s*\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/gi] },
+                'Address':              { cls: 'pii-general',    label: 'Address',
+                    patterns: [/\b\d{3,5}\s+[A-Z][a-z]+(?:\s+[A-Za-z]+)*\s+(?:St\.?|Ave\.?|Blvd\.?|Rd\.?|Dr\.?|Ln\.?|Way|Court|Ct\.?|Place|Pl\.?)\b/gi] },
+            };
+
+            // ALWAYS apply every PII_TYPE_MAP pattern — highlight any matching content in the
+            // document regardless of what the AI explicitly flagged.  This ensures SSNs, emails,
+            // salaries, etc. are always visually marked when they appear in the text.
+            const seenLabels = new Set();
+            const activeHighlights = Object.values(PII_TYPE_MAP).reduce((acc, info) => {
+                const dedup = `${info.cls}:${info.label}`;
+                if (!seenLabels.has(dedup)) {
+                    seenLabels.add(dedup);
+                    acc.push({ cls: info.cls, label: info.label,
+                               patterns: info.patterns.map(r => new RegExp(r.source, r.flags)) });
+                }
+                return acc;
+            }, []);
+
+            // Additionally: if the AI named specific values ("SSN: 123-45-6789"), highlight those
+            // exact strings with a higher-contrast outline so they stand out even more.
+            if (classData && classData.classification) {
+                (classData.classification.pii_detected || []).forEach(item => {
+                    const specificValue = item.includes(':') ? item.split(':').slice(1).join(':').trim() : null;
+                    if (specificValue && specificValue.length > 3) {
+                        const escaped = specificValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const typePart = item.split(':')[0].trim();
+                        const matchKey = Object.keys(PII_TYPE_MAP).find(k =>
+                            typePart.toLowerCase().includes(k.toLowerCase()) ||
+                            k.toLowerCase().includes(typePart.toLowerCase())
+                        );
+                        const cls = matchKey ? PII_TYPE_MAP[matchKey].cls : 'pii-general';
+                        activeHighlights.push({ cls, label: typePart,
+                                                patterns: [new RegExp(escaped, 'gi')] });
+                    }
+                });
+            }
+
+            // Helper: escape plain text for HTML (before inserting marks)
+            function escHtml(s) {
+                return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            }
+
+            // Helper: apply PII highlight marks to a plain-text line
+            function applyPii(line) {
+                let out = escHtml(line);
+                if (activeHighlights.length === 0) return out;
+                activeHighlights.forEach(h => {
+                    h.patterns.forEach(pat => {
+                        pat.lastIndex = 0;
+                        out = out.replace(pat, m => `<mark class="${h.cls}" data-label="${h.label}">${m}</mark>`);
+                    });
+                });
+                return out;
+            }
+            
+            // Split into lines and process
+            let lines = text.split('\n');
+            let formattedContent = '';
+            let inParagraph = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                if (!line) {
+                    if (inParagraph) {
+                        formattedContent += '</p>';
+                        inParagraph = false;
+                    }
+                    continue;
+                }
+                
+                // Check for headers (lines with ====== or -------)
+                if (line.match(/^=+$/) && i > 0) {
+                    let prevLine = lines[i-1].trim();
+                    formattedContent = formattedContent.replace(new RegExp(`<p>${prevLine}$`), `<h1>${prevLine}</h1>`);
+                    continue;
+                }
+                
+                if (line.match(/^-+$/) && i > 0) {
+                    let prevLine = lines[i-1].trim();
+                    formattedContent = formattedContent.replace(new RegExp(`<p>${prevLine}$`), `<h2>${prevLine}</h2>`);
+                    continue;
+                }
+                
+                // Check for section headers (all caps, short lines)
+                if (line.match(/^[A-Z\s&]+:?\s*$/) && line.length < 50) {
+                    if (inParagraph) {
+                        formattedContent += '</p>';
+                        inParagraph = false;
+                    }
+                    formattedContent += `<h3>${escHtml(line)}</h3>`;
+                    continue;
+                }
+                
+                // Check for dates
+                if (line.match(/Generated:\s*\d{4}-\d{2}-\d{2}/)) {
+                    if (inParagraph) {
+                        formattedContent += '</p>';
+                        inParagraph = false;
+                    }
+                    formattedContent += `<p class="date-stamp">${applyPii(line)}</p>`;
+                    continue;
+                }
+                
+                // Check for financial data lines (contains $, percentages)
+                if (line.match(/\$[\d,]+|[\d.]+%|\bAccount\s*#/)) {
+                    if (inParagraph) {
+                        formattedContent += '</p>';
+                        inParagraph = false;
+                    }
+                    formattedContent += `<div class="financial-data">${applyPii(line)}</div>`;
+                    continue;
+                }
+                
+                // Apply PII highlights (or fall back to static keyword highlights)
+                let processedLine = applyPii(line);
+                if (activeHighlights.length === 0) {
+                    processedLine = processedLine.replace(/\b(CONFIDENTIAL|SENSITIVE|PII|SSN|Tax ID|Account #[\d]+)\b/gi, '<span class="highlight">$1</span>');
+                }
+                
+                // Regular paragraph text
+                if (!inParagraph) {
+                    formattedContent += '<p>';
+                    inParagraph = true;
+                }
+                formattedContent += processedLine + ' ';
+            }
+            
+            if (inParagraph) {
+                formattedContent += '</p>';
+            }
+
+            const bodyHtml = formattedContent || '<p class="text-muted">No readable content found</p>';
+
+            // Build the colour-coded legend if any highlights are active
+            if (activeHighlights.length > 0) {
+                const swatchBg     = { 'pii-ssn': '#fed7d7', 'pii-financial': '#feebc8', 'pii-credential': '#fde8e8', 'pii-general': '#fefcbf' };
+                const swatchBorder = { 'pii-ssn': '#e53e3e', 'pii-financial': '#dd6b20', 'pii-credential': '#c53030', 'pii-general': '#d69e2e' };
+                const drawnClasses = new Set();
+                let swatches = '';
+                activeHighlights.forEach(h => {
+                    if (!drawnClasses.has(h.cls)) {
+                        drawnClasses.add(h.cls);
+                        swatches += `<span class="legend-swatch"><span class="swatch-box" style="background:${swatchBg[h.cls]};border-bottom:2px solid ${swatchBorder[h.cls]}"></span>${h.label}</span>`;
+                    }
+                });
+                const legend = `<div class="pii-legend"><span class="legend-title"><i class="fas fa-highlighter me-1 text-warning"></i>AI-Detected Sensitive Data:</span>${swatches}<span class="text-muted" style="font-size:0.72rem;margin-left:auto">Hover highlighted text for type</span></div>`;
+                return legend + bodyHtml;
+            }
+
+            return bodyHtml;
+        }
+        
+        function updateReportButton() {
+            const btn = document.getElementById('viewReportBtn');
+            if (Object.keys(classifiedDocuments).length > 0) {
+                btn.style.display = 'inline-flex';
+                btn.textContent = '';
+                btn.innerHTML = `<i class="fas fa-chart-bar me-1"></i>View Report (${Object.keys(classifiedDocuments).length})`;
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        function showSessionReport() {
+            const entries = Object.values(classifiedDocuments);
+            if (entries.length === 0) { showToast('No documents have been classified yet.', 'warning'); return; }
+
+            document.getElementById('reportTimestamp').textContent =
+                `${new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}  \u00B7  ${entries.length} document${entries.length !== 1 ? 's' : ''} analysed`;
+
+            const { summaryHtml, docsHtml } = buildSessionReport(entries);
+            document.getElementById('rpt-summary').innerHTML = summaryHtml;
+            document.getElementById('rpt-docs').innerHTML = docsHtml;
+            document.getElementById('rpt-ai').innerHTML = `
+                <div style="padding:2.5rem 2rem;text-align:center">
+                    <div style="width:60px;height:60px;background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(79,70,229,.25));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
+                        <i class="fas fa-brain" style="font-size:1.5rem;color:#818CF8"></i>
+                    </div>
+                    <div style="color:#F1F5F9;font-weight:700;font-size:1rem;margin-bottom:.45rem">AI Classification Overview</div>
+                    <p style="color:#64748B;font-size:.85rem;max-width:360px;margin:.4rem auto 1.5rem;line-height:1.65">Generate a Gemini-powered analysis of your classified documents — compliance posture, risk trajectory, regulatory exposure, and governance recommendations.</p>
+                    <button onclick="getReportAiInsights()" id="reportAiBtn" style="background:linear-gradient(135deg,#7C3AED,#4F46E5);border:none;color:#fff;padding:.55rem 1.6rem;border-radius:8px;font-weight:600;font-size:.88rem;cursor:pointer">
+                        <i class="fas fa-brain me-2"></i>Generate AI Overview
+                    </button>
+                    <div id="reportAiPanel" style="margin-top:1.75rem;text-align:left"></div>
+                </div>`;
+
+            // reset to summary tab
+            const tabEl = document.getElementById('rpt-summary-tab');
+            bootstrap.Tab.getOrCreateInstance(tabEl).show();
+
+            new bootstrap.Modal(document.getElementById('reportModal')).show();
+        }
+
+        async function getReportAiInsights() {
+            const entries = Object.values(classifiedDocuments);
+            if (!entries.length) {
+                showToast('No classified documents available for AI analysis', 'warning');
+                return;
+            }
+            
+            const btn   = document.getElementById('reportAiBtn');
+            const panel = document.getElementById('reportAiPanel');
+            
+            if (!btn || !panel) {
+                console.error('reportAiBtn or reportAiPanel not found in DOM');
+                return;
+            }
+            
+            // Disable button and show loading state FIRST
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating…';
+            panel.innerHTML = `
+                <div style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(79,70,229,.12));border:1px solid rgba(124,58,237,.3);border-radius:12px;padding:1.25rem;color:#C4B5FD;text-align:center">
+                    <i class="fas fa-brain fa-lg me-2"></i>AI is analysing your documents…
+                    <div style="margin-top:0.75rem;font-size:0.8rem;opacity:0.8">⏱️ Typically 5–15 seconds</div>
+                    <div style="margin-top:0.75rem">
+                        <button onclick="cancelAiInsights()" style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#FCA5A5;padding:0.4rem 0.8rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-weight:600">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Set controller NOW so Cancel button works immediately
+            window.aiInsightsController = new AbortController();
+
+            try {
+                const startTime = performance.now();
+                const thisController = window.aiInsightsController;
+                const fetchTimeout = setTimeout(() => {
+                    if (!thisController.signal.aborted) thisController.abort();
+                }, 45000);
+
+                // Build the report payload from classifiedDocuments
+                function riskScore(e) { return parseFloat(e.risk_assessment?.risk_score ?? e.classification?.risk_score ?? 0); }
+                const total    = entries.length;
+                const scores   = entries.map(riskScore);
+                const avgScore = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0;
+                const highRisk = entries.filter(e=>riskScore(e)>=8).length;
+                const withPii  = entries.filter(e=>(e.classification?.pii_detected??[]).length>0).length;
+                const sensDist = {High:0,Moderate:0,Low:0};
+                entries.forEach(e=>{ const s=e.classification?.sensitivity_level||'Low'; sensDist[s]=(sensDist[s]||0)+1; });
+                const groupFreq = {};
+                entries.forEach(e=>{ const g=e.classification?.functional_group||'Unknown'; groupFreq[g]=(groupFreq[g]||0)+1; });
+                const piiFreq = {};
+                entries.forEach(e=>(e.classification?.pii_detected??[]).forEach(p=>{ try { const k=String(p).split(':')[0].trim(); piiFreq[k]=(piiFreq[k]||0)+1; } catch(_){} }));
+                const sorted = [...entries].sort((a,b)=>riskScore(b)-riskScore(a));
+                const topRisks = sorted.slice(0,5).map(e=>({ name:e.file||'', risk_score:riskScore(e), sensitivity_level:e.classification?.sensitivity_level||'', pii_detected:(e.classification?.pii_detected??[]).slice(0,3).join(', ') }));
+                
+                console.log('Sending AI insights request:', total, 'docs, avg score', avgScore.toFixed(1));
+                
+                const resp = await fetch('/api/scan/ai_insights', {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    signal: thisController.signal,
+                    body: JSON.stringify({
+                        site_id: 'Document Library',
+                        report: {
+                            average_risk_score: avgScore,
+                            total_documents_scanned: total,
+                            high_risk_count: highRisk,
+                            pii_detected_count: withPii,
+                            by_sensitivity: sensDist,
+                            by_group: groupFreq,
+                            top_risks: topRisks,
+                            sensitive_data_alert: { types_found: Object.keys(piiFreq) }
+                        }
+                    })
+                });
+                
+                clearTimeout(fetchTimeout);
+                const ins = await resp.json();
+                window.lastAiInsights = ins;
+                console.log('AI insights response:', resp.status, 'status=' + ins.status, ins.fallback ? '(rule-based fallback)' : '(Gemini AI)');
+                
+                if (!resp.ok || ins.error) {
+                    throw new Error(ins.error || 'Server error ' + resp.status);
+                }
+
+                const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+                const regRows = ['gdpr','ccpa','hipaa','sox'].map(r=>{
+                    const val = (ins.regulatory_exposure||{})[r] || 'Not assessed';
+                    const noExp = val.toLowerCase().includes('no significant');
+                    return '<tr><td style="padding:.45rem .5rem;font-weight:700;color:#94A3B8;font-size:.71rem;width:55px">' + r.toUpperCase() + '</td><td style="padding:.45rem .5rem"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (noExp?'#34D399':'#F87171') + ';margin-right:.45rem;vertical-align:middle"></span><span style="font-size:.82rem;color:#CBD5E1">' + esc(val) + '</span></td></tr>';
+                }).join('');
+                
+                const actionsHtml = (ins.top_actions||[]).map((a,i)=>{
+                    const colors=['#F87171','#FBBF24','#60A5FA'];
+                    return '<div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.65rem"><div style="background:' + (colors[i]||'#60A5FA') + ';color:#0F172A;font-size:.67rem;font-weight:800;padding:.2rem .45rem;border-radius:4px;flex-shrink:0;min-width:18px;text-align:center">' + (i+1) + '</div><div style="font-size:.84rem;line-height:1.55;color:#CBD5E1">' + esc(a) + '</div></div>';
+                }).join('');
+                
+                const govItems = (ins.data_governance||[]).map(g=>'<li style="margin-bottom:.5rem;font-size:.84rem;color:#CBD5E1;line-height:1.55">' + esc(g) + '</li>').join('');
+
+                const fallbackBanner = ins.fallback
+                    ? '<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:.75rem 1rem;margin-bottom:.85rem;display:flex;align-items:flex-start;gap:.6rem"><i class="fas fa-exclamation-triangle" style="color:#FBBF24;font-size:.9rem;margin-top:2px;flex-shrink:0"></i><div style="font-size:.82rem;color:#FDE68A;line-height:1.55"><strong>Gemini AI quota temporarily reached.</strong> This overview was generated from your document statistics using built-in rules. The analysis will automatically use Gemini AI when the quota resets.</div></div>'
+                    : '';
+
+                panel.innerHTML =
+                    '<div style="background:#1E293B;border:1px solid rgba(99,102,241,.35);border-radius:14px;padding:1.5rem 1.75rem;color:#E2E8F0">' +
+                    '<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">' +
+                    '<div style="background:linear-gradient(135deg,#7C3AED,#4F46E5);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-brain" style="color:#fff;font-size:.95rem"></i></div>' +
+                    '<div><div style="font-weight:700;font-size:1.05rem;color:#F1F5F9">AI Overview &mdash; Classification Analysis</div>' +
+                    '<div style="font-size:.73rem;color:#64748B;margin-top:1px">' + (ins.fallback ? 'Rule-based Analysis' : 'Powered by Gemini AI') + ' &middot; ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div>' +
+                    '<button onclick="exportAiOverviewPdf()" style="margin-left:auto;background:#7C3AED;border:none;color:#fff;padding:.4rem 1rem;border-radius:7px;font-size:.78rem;cursor:pointer;font-weight:700;flex-shrink:0;box-shadow:0 1px 6px rgba(124,58,237,.45)" title="Export AI Overview as PDF"><i class="fas fa-file-pdf me-1"></i>Export PDF</button>' +
+                    '</div>' +
+                    fallbackBanner +
+                    '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem"><i class="fas fa-chart-line me-1"></i>Executive Summary</div><div style="font-size:.86rem;line-height:1.7;color:#CBD5E1">' + esc(ins.executive_summary) + '</div></div>' +
+                    '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem"><i class="fas fa-shield-alt me-1"></i>Compliance Posture</div><div style="font-size:.86rem;line-height:1.7;color:#CBD5E1">' + esc(ins.compliance_posture) + '</div></div>' +
+                    '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#F87171;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem"><i class="fas fa-tasks me-1"></i>Top Priority Actions</div>' + actionsHtml + '</div>' +
+                    '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem"><i class="fas fa-globe me-1"></i>Regulatory Exposure</div><table style="width:100%;border-collapse:collapse">' + regRows + '</table></div>' +
+                    '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem"><i class="fas fa-sitemap me-1"></i>Data Governance Recommendations</div><ul style="padding-left:1.2rem;margin:0">' + govItems + '</ul></div>' +
+                    '<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:1rem 1.1rem"><div style="font-size:.68rem;font-weight:700;color:#FCA5A5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem"><i class="fas fa-exclamation-triangle me-1"></i>Risk Trajectory</div><div style="font-size:.86rem;line-height:1.7;color:#FECACA">' + esc(ins.risk_narrative) + '</div></div>' +
+                    '<div style="margin-top:1.1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.08);text-align:right">' +
+                    '<button onclick="exportAiOverviewPdf()" style="background:#7C3AED;border:none;color:#fff;padding:.5rem 1.4rem;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:700;box-shadow:0 2px 8px rgba(124,58,237,.5)"><i class="fas fa-file-pdf me-2"></i>Export AI Overview as PDF</button>' +
+                    '</div>' +
+                    '</div>';
+
+                btn.style.display = 'none';
+
+            } catch(err) {
+                console.error('AI insights error:', err);
+                const msg = err.name === 'AbortError'
+                    ? '<i class="fas fa-ban me-2"></i>Analysis cancelled. You can try again when ready.'
+                    : '<i class="fas fa-exclamation-triangle me-2"></i><strong>Error:</strong> ' + String(err.message||'Unknown error').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+                const colour = err.name === 'AbortError' ? 'rgba(156,163,175,.1)' : 'rgba(239,68,68,.1)';
+                const border = err.name === 'AbortError' ? 'rgba(156,163,175,.3)' : 'rgba(239,68,68,.3)';
+                const text   = err.name === 'AbortError' ? '#9CA3AF' : '#FCA5A5';
+                panel.innerHTML = '<div style="background:' + colour + ';border:1px solid ' + border + ';border-radius:12px;padding:1rem;color:' + text + ';font-size:.85rem">' + msg + '</div>';
+            } finally {
+                window.aiInsightsController = null;
+                const b = document.getElementById('reportAiBtn');
+                if (b && b.style.display !== 'none') {
+                    b.disabled = false;
+                    b.innerHTML = '<i class="fas fa-brain me-2"></i>Generate AI Overview';
+                }
+            }
+        }
+
+        function buildSessionReport(entries) {
+            // ---- helpers ----
+            function riskScore(e) { return parseFloat(e.risk_assessment?.risk_score ?? e.classification?.risk_score ?? 0); }
+            const riskBadge = s => s >= 8
+                ? `<span style="display:inline-block;padding:2px 8px;border-radius:20px;background:#FEE2E2;color:#DC2626;font-size:.72rem;font-weight:700">${s}/10</span>`
+                : s >= 5
+                ? `<span style="display:inline-block;padding:2px 8px;border-radius:20px;background:#FEF3C7;color:#D97706;font-size:.72rem;font-weight:700">${s}/10</span>`
+                : `<span style="display:inline-block;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#16A34A;font-size:.72rem;font-weight:700">${s}/10</span>`;
+            const sensBadge = l => l === 'High'
+                ? `<span style="display:inline-block;padding:2px 8px;border-radius:20px;background:#FEE2E2;color:#DC2626;font-size:.72rem;font-weight:600">High</span>`
+                : l === 'Moderate'
+                ? `<span style="display:inline-block;padding:2px 8px;border-radius:20px;background:#FEF3C7;color:#D97706;font-size:.72rem;font-weight:600">Moderate</span>`
+                : `<span style="display:inline-block;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#16A34A;font-size:.72rem;font-weight:600">Low</span>`;
+            const pct = (n, d) => d ? Math.round(n / d * 100) : 0;
+
+            // ---- metrics ----
+            const total    = entries.length;
+            const scores   = entries.map(riskScore);
+            const avgScore = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+            const highRisk = entries.filter(e => riskScore(e) >= 8);
+            const medRisk  = entries.filter(e => { const s=riskScore(e); return s>=5&&s<8; });
+            const withPii  = entries.filter(e => (e.classification?.pii_detected??[]).length > 0);
+            const sensDist = {High:0,Moderate:0,Low:0};
+            entries.forEach(e => { const s=e.classification?.sensitivity_level||'Low'; sensDist[s]=(sensDist[s]||0)+1; });
+            const piiFreq = {};
+            entries.forEach(e => (e.classification?.pii_detected??[]).forEach(p => {
+                const k=p.split(':')[0].trim(); piiFreq[k]=(piiFreq[k]||0)+1;
+            }));
+            const piiSorted = Object.entries(piiFreq).sort((a,b)=>b[1]-a[1]);
+            const groupFreq = {};
+            entries.forEach(e => { const g=e.classification?.functional_group||'Unknown'; groupFreq[g]=(groupFreq[g]||0)+1; });
+            const groupSorted = Object.entries(groupFreq).sort((a,b)=>b[1]-a[1]);
+            const sorted = [...entries].sort((a,b) => riskScore(b)-riskScore(a));
+
+            // ---- posture verdict ----
+            const postureColor = highRisk.length > 0 ? '#DC2626' : medRisk.length > total*0.3 ? '#D97706' : '#16A34A';
+            const postureLabel = highRisk.length > 0 ? 'HIGH RISK' : medRisk.length > total*0.3 ? 'MODERATE RISK' : 'LOW RISK';
+            const postureIcon  = highRisk.length > 0 ? 'fa-exclamation-triangle' : medRisk.length > total*0.3 ? 'fa-exclamation-circle' : 'fa-check-circle';
+            const postureDesc  = highRisk.length > 0
+                ? `${highRisk.length} document${highRisk.length!==1?'s':''} require immediate attention`
+                : medRisk.length > 0
+                ? `${medRisk.length} document${medRisk.length!==1?'s':''} at moderate risk`
+                : 'No critical issues detected';
+
+            // ===================== SUMMARY TAB =====================
+            let s = '';
+
+            // Posture banner
+            s += `<div style="background:${postureColor}12;border-bottom:3px solid ${postureColor};padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem">
+                <i class="fas ${postureIcon}" style="font-size:1.6rem;color:${postureColor}"></i>
+                <div>
+                    <div style="font-weight:800;font-size:1rem;color:${postureColor};letter-spacing:.05em">${postureLabel}</div>
+                    <div style="font-size:.82rem;color:#475569;margin-top:2px">${postureDesc} &mdash; ${total} document${total!==1?'s':''} classified</div>
+                </div>
+                <div style="margin-left:auto;text-align:right">
+                    <div style="font-size:1.8rem;font-weight:800;color:${avgScore>=8?'#DC2626':avgScore>=5?'#D97706':'#16A34A'}">${avgScore.toFixed(1)}</div>
+                    <div style="font-size:.7rem;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em">Avg Risk</div>
+                </div>
+            </div>`;
+
+            // KPI strip
+            const kpis = [
+                {val:total,          label:'Analysed',    sub:'documents',     color:'#3B82F6'},
+                {val:highRisk.length,label:'Critical',    sub:'risk \u22658',  color:'#EF4444'},
+                {val:medRisk.length, label:'Moderate',    sub:'risk 5\u20137', color:'#F59E0B'},
+                {val:withPii.length, label:'Contain PII', sub:'sensitive',     color:'#8B5CF6'},
+            ];
+            s += `<div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #E2E8F0">`;
+            kpis.forEach((k,i) => {
+                s += `<div style="padding:1rem 1.25rem;${i<3?'border-right:1px solid #E2E8F0':''};text-align:center">
+                    <div style="font-size:2rem;font-weight:800;color:${k.color};line-height:1">${k.val}</div>
+                    <div style="font-size:.78rem;font-weight:600;color:#1E293B;margin-top:4px">${k.label}</div>
+                    <div style="font-size:.7rem;color:#94A3B8">${k.sub}</div>
+                </div>`;
+            });
+            s += `</div>`;
+
+            // Two-column breakdown
+            s += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #E2E8F0">`;
+
+            // Left: sensitivity + PII
+            s += `<div style="padding:1.25rem;border-right:1px solid #E2E8F0">`;
+            s += `<div style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Sensitivity</div>`;
+            [{level:'High',fill:'var(--danger)'},{level:'Moderate',fill:'var(--warning)'},{level:'Low',fill:'var(--success)'}].forEach(({level,fill}) => {
+                const n=sensDist[level]||0, p=pct(n,total);
+                s += `<div style="margin-bottom:.55rem">
+                    <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:3px">
+                        <span style="font-weight:600;color:#1E293B">${level}</span>
+                        <span style="color:#64748B">${n} <span style="color:#94A3B8">(${p}%)</span></span>
+                    </div>
+                    <div style="background:#F1F5F9;border-radius:4px;height:7px">
+                        <div style="background:${fill};height:7px;border-radius:4px;width:${p}%"></div>
+                    </div>
+                </div>`;
+            });
+            if (piiSorted.length > 0) {
+                s += `<div style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em;margin:1rem 0 .6rem">Top PII Types</div>`;
+                piiSorted.slice(0,5).forEach(([type,count]) => {
+                    s += `<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;font-size:.8rem">
+                        <span style="flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:#EF4444"></span>
+                        <span style="flex:1;color:#1E293B">${type}</span>
+                        <span style="color:#DC2626;font-weight:700;font-size:.75rem">&times;${count}</span>
+                    </div>`;
+                });
+                if (piiSorted.length > 5) s += `<div style="font-size:.72rem;color:#94A3B8">&plus;${piiSorted.length-5} more types</div>`;
+            } else {
+                s += `<div style="margin-top:.75rem;padding:.65rem .75rem;background:#F0FDF4;border-radius:8px;font-size:.8rem;color:#16A34A"><i class="fas fa-check-circle me-2"></i>No PII detected</div>`;
+            }
+            s += `</div>`;
+
+            // Right: category distribution
+            s += `<div style="padding:1.25rem">`;
+            s += `<div style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Categories</div>`;
+            const maxG = groupSorted[0]?.[1] || 1;
+            const palette = ['var(--primary)','#8B5CF6','#06B6D4','var(--success)','var(--warning)','var(--danger)','#EC4899','#6366F1'];
+            groupSorted.slice(0,8).forEach(([group,count],i) => {
+                const p=pct(count,total);
+                s += `<div style="margin-bottom:.55rem">
+                    <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px">
+                        <span style="color:#1E293B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px" title="${group}">${group}</span>
+                        <span style="color:#64748B;flex-shrink:0;margin-left:.5rem">${count}</span>
+                    </div>
+                    <div style="background:#F1F5F9;border-radius:4px;height:7px">
+                        <div style="background:${palette[i%palette.length]};height:7px;border-radius:4px;width:${pct(count,maxG)}%"></div>
+                    </div>
+                </div>`;
+            });
+            s += `</div></div>`;
+
+            // Attention list: only critical docs
+            if (highRisk.length > 0) {
+                s += `<div style="padding:1.25rem;background:#FFF7F7;border-top:1px solid #E2E8F0">`;
+                s += `<div style="font-size:.7rem;font-weight:700;color:#DC2626;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem"><i class="fas fa-exclamation-triangle me-1"></i>Immediate Attention Required</div>`;
+                s += `<div style="display:flex;flex-direction:column;gap:.45rem">`;
+                sorted.filter(e=>riskScore(e)>=8).forEach(e => {
+                    const score=riskScore(e);
+                    const piis=(e.classification?.pii_detected??[]).slice(0,3).map(p=>`<span style="background:#FEE2E2;color:#DC2626;font-size:.65rem;padding:1px 6px;border-radius:10px;font-weight:600">${p.split(':')[0].trim()}</span>`).join(' ');
+                    const docPath=Object.keys(classifiedDocuments).find(k=>classifiedDocuments[k]===e)||'';
+                    const ep=docPath.replace(/'/g,"\\'"), en=(e.file||'').replace(/'/g,"\\'");
+                    s += `<div style="display:flex;align-items:center;gap:.75rem;background:white;border:1px solid #FECACA;border-radius:8px;padding:.55rem .85rem">
+                        <span style="font-size:.82rem;font-weight:600;color:#1E293B;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.file||'-'}</span>
+                        <div style="display:flex;gap:.3rem;align-items:center;flex-shrink:0">${piis}</div>
+                        ${riskBadge(score)}
+                        <button onclick="bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();setTimeout(()=>openAndClassify('${ep}','${en}'),300)" style="background:none;border:1px solid #BFDBFE;border-radius:6px;font-size:.72rem;padding:3px 10px;cursor:pointer;color:#3B82F6;white-space:nowrap">Review</button>
+                    </div>`;
+                });
+                s += `</div></div>`;
+            }
+
+            // ===================== ALL DOCS TAB =====================
+            let d = `<div style="padding:1rem 1.25rem">`;
+            d += `<div style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">${total} document${total!==1?'s':''} &mdash; ranked by risk</div>`;
+            d += `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.8rem">`;
+            d += `<thead><tr style="background:#F8FAFC;border-bottom:2px solid #E2E8F0">`;
+            ['#','Document','Category','Sensitivity','Risk','PII',''].forEach(h => {
+                d += `<th style="padding:.5rem .75rem;text-align:left;font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">${h}</th>`;
+            });
+            d += `</tr></thead><tbody>`;
+            sorted.forEach((e,i) => {
+                const score=riskScore(e);
+                const piis=(e.classification?.pii_detected??[]);
+                const rowBg  = score>=8 ? '#FFF5F5' : score>=5 ? '#FFFBEB' : 'white';
+                const borderL= score>=8 ? '3px solid #EF4444' : score>=5 ? '3px solid #F59E0B' : '3px solid transparent';
+                const docPath=Object.keys(classifiedDocuments).find(k=>classifiedDocuments[k]===e)||'';
+                const ep=docPath.replace(/'/g,"\\'"), en=(e.file||'').replace(/'/g,"\\'");
+                const piiCell = piis.length > 0
+                    ? piis.slice(0,2).map(p=>`<span style="background:#FEE2E2;color:#DC2626;font-size:.65rem;padding:1px 5px;border-radius:10px;font-weight:600">${p.split(':')[0].trim()}</span>`).join(' ')+(piis.length>2?` <span style="color:#94A3B8;font-size:.7rem">+${piis.length-2}</span>`:'')
+                    : '<span style="color:#16A34A;font-size:.8rem">\u2713</span>';
+                d += `<tr style="background:${rowBg};border-bottom:1px solid #F1F5F9;border-left:${borderL}">
+                    <td style="padding:.5rem .75rem;color:#94A3B8">${i+1}</td>
+                    <td style="padding:.5rem .75rem;max-width:180px"><span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:#1E293B" title="${e.file||''}">${e.file||'-'}</span></td>
+                    <td style="padding:.5rem .75rem;max-width:150px"><span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#475569" title="${e.classification?.functional_group||'-'}">${e.classification?.functional_group||'-'}</span></td>
+                    <td style="padding:.5rem .75rem">${sensBadge(e.classification?.sensitivity_level)}</td>
+                    <td style="padding:.5rem .75rem">${riskBadge(score)}</td>
+                    <td style="padding:.5rem .75rem">${piiCell}</td>
+                    <td style="padding:.5rem .75rem"><button onclick="bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();setTimeout(()=>openAndClassify('${ep}','${en}'),300)" style="background:none;border:1px solid #E2E8F0;border-radius:6px;font-size:.72rem;padding:3px 10px;cursor:pointer;color:#3B82F6">Open</button></td>
+                </tr>`;
+            });
+            d += `</tbody></table></div></div>`;
+
+            return { summaryHtml: s, docsHtml: d };
+        }
+
+        function setupFilters() {
+            document.getElementById('searchInput').addEventListener('input', filterDocuments);
+            document.getElementById('siteFilter').addEventListener('change', filterDocuments);
+            document.getElementById('statusFilter').addEventListener('change', filterDocuments);
+        }
+
+        function filterDocuments() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const site   = document.getElementById('siteFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            filteredDocuments = allDocuments.filter(doc => {
+                const matchSearch = !search || doc.name.toLowerCase().includes(search) || (doc.site||'').toLowerCase().includes(search);
+                const matchSite   = !site   || doc.site === site;
+                const matchStatus = !status ||
+                    (status === 'unclassified' && doc.status === 'unclassified') ||
+                    (status === 'classified'   && doc.status !== 'unclassified') ||
+                    (status === 'high-risk'    && doc.classification?.is_high_risk);
+                return matchSearch && matchSite && matchStatus;
+            });
+            renderDocuments(filteredDocuments);
+        }
+
+        function toggleDocumentSelection(docPath) {
+            if (selectedDocuments.has(docPath)) {
+                selectedDocuments.delete(docPath);
+            } else {
+                selectedDocuments.add(docPath);
+            }
+            updateSelectionUI();
+        }
+
+        function toggleSelectAll() {
+            const btnText = document.getElementById('selectAllBtnText');
+            if (selectedDocuments.size === filteredDocuments.length && filteredDocuments.length > 0) {
+                selectedDocuments.clear();
+                btnText.textContent = 'Select All';
+            } else {
+                selectedDocuments.clear();
+                filteredDocuments.forEach(doc => selectedDocuments.add(doc.path));
+                btnText.textContent = 'Deselect All';
+            }
+            updateSelectionUI();
+            renderDocuments(filteredDocuments);
+        }
+
+        function updateSelectionUI() {
+            const count = selectedDocuments.size;
+            document.getElementById('selectedCount').textContent = count;
+            document.getElementById('batchClassifyBtn').disabled = count === 0;
+            const classifiedSel = [...selectedDocuments].filter(p => classifiedDocuments[p]).length;
+            const unclBtn   = document.getElementById('unclassifySelBtn');
+            const unclCount = document.getElementById('unclassifySelCount');
+            if (unclBtn)   unclBtn.style.display   = classifiedSel > 0 ? '' : 'none';
+            if (unclCount) unclCount.textContent    = classifiedSel;
+            document.querySelectorAll('.document-card').forEach(card => {
+                const path = card.dataset.path;
+                card.classList.toggle('selected', selectedDocuments.has(path));
+            });
+            document.querySelectorAll('.doc-checkbox').forEach(cb => {
+                const path = cb.dataset.path;
+                if (path) cb.checked = selectedDocuments.has(path);
+            });
+            const allChecked = filteredDocuments.length > 0 && filteredDocuments.every(d => selectedDocuments.has(d.path));
+            const selAllCb = document.getElementById('selectAllCheckbox');
+            if (selAllCb) selAllCb.checked = allChecked;
+            const btnText = document.getElementById('selectAllBtnText');
+            if (btnText) btnText.textContent = allChecked ? 'Deselect All' : 'Select All';
+        }
+
+        function cancelSingleClassification() {
+            if (classifyAbortController) {
+                classifyAbortController.abort();
+                classifyAbortController = null;
+            }
+            document.getElementById('modalLoading').style.display = 'none';
+            document.getElementById('classifyButtonContainer').style.display = 'block';
+        }
+
+        async function classifyDocument(path, name) {
+            currentDocPath = path;
+            currentDocName = name;
+            document.getElementById('classifyButtonContainer').style.display = 'none';
+            document.getElementById('modalLoading').style.display = 'block';
+            document.getElementById('classificationResults').style.display = 'none';
+            document.getElementById('verificationSection').style.display = 'none';
+            classifyAbortController = new AbortController();
+            try {
+                const response = await fetch('/api/classify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_path: path }),
+                    signal: classifyAbortController.signal
+                });
+                const result = await response.json();
+                document.getElementById('modalLoading').style.display = 'none';
+                if (result.error) {
+                    document.getElementById('classificationResults').innerHTML =
+                        `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>${result.error}</div>`;
+                    document.getElementById('classificationResults').style.display = 'block';
+                    document.getElementById('classifyButtonContainer').style.display = 'block';
+                    return;
+                }
+                classifiedDocuments[path] = result;
+                docStatuses[path] = docStatuses[path] || 'classified';
+                result.status = docStatuses[path];
+                persistToLocalStorage();
+                const docIdx = allDocuments.findIndex(d => d.path === path);
+                if (docIdx !== -1) {
+                    allDocuments[docIdx].classification = result.classification;
+                    allDocuments[docIdx].risk_assessment = result.risk_assessment;
+                    allDocuments[docIdx].status = docStatuses[path];
+                }
+                displayClassificationResults(result);
+                const classifiedCount = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
+                document.getElementById('classifiedDocs').textContent = classifiedCount;
+                document.getElementById('unclassifiedDocs').textContent = allDocuments.length - classifiedCount;
+                updateReportButton();
+                renderDocuments(filteredDocuments);
+            } catch (error) {
+                document.getElementById('modalLoading').style.display = 'none';
+                if (error.name === 'AbortError') {
+                    document.getElementById('classifyButtonContainer').style.display = 'block';
+                    return;
+                }
+                document.getElementById('classificationResults').innerHTML =
+                    `<div class="alert alert-danger">Classification failed: ${error.message}</div>`;
+                document.getElementById('classificationResults').style.display = 'block';
+                document.getElementById('classifyButtonContainer').style.display = 'block';
+            } finally {
+                classifyAbortController = null;
+            }
+        }
+
+        function runClassification() {
+            classifyDocument(currentDocPath, currentDocName);
+        }
+
+        function displayClassificationResults(result) {
+            const cl = result.classification || {};
+            const ra = result.risk_assessment || {};
+            const piis = cl.pii_detected || [];
+            const findings = cl.confidential_findings || [];
+            const riskScore = parseFloat(ra.risk_score || cl.risk_score || 0);
+            const sensLevel = cl.sensitivity_level || 'Unknown';
+            const sensMap = {
+                'High':     { badgeBg:'#DC2626' },
+                'Moderate': { badgeBg:'#D97706' },
+                'Low':      { badgeBg:'#16A34A' }
+            };
+            const sc = sensMap[sensLevel] || { badgeBg:'#475569' };
+            const riskColor = riskScore >= 8 ? '#DC2626' : riskScore >= 5 ? '#D97706' : '#16A34A';
+            const riskLabel = riskScore >= 8 ? 'High Risk' : riskScore >= 5 ? 'Medium Risk' : 'Low Risk';
+            const confidence = cl.confidence_score != null
+                ? (parseFloat(cl.confidence_score) * 100).toFixed(0) + '%'
+                : (ra.confidence != null ? (parseFloat(ra.confidence) * 100).toFixed(0) + '%' : '—');
+
+            // Header bar
+            let html = `<div style="background:#0F172A;border-radius:12px 12px 0 0;padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:.63rem;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:.07em">Functional Group</div>
+                    <div style="color:#F1F5F9;font-weight:700;font-size:.92rem;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cl.functional_group || '—'}</div>
+                </div>
+                <div style="display:flex;gap:.45rem;align-items:center;flex-shrink:0">
+                    <span style="background:${sc.badgeBg};color:#fff;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700">${sensLevel}</span>
+                    <span style="background:${riskColor};color:#fff;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700">${riskLabel} · ${riskScore.toFixed(1)}</span>
+                </div>
+            </div>`;
+
+            // Metric row
+            html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #E2E8F0;border-top:none;border-bottom:none">
+                <div style="padding:.65rem .75rem;border-right:1px solid #E2E8F0;text-align:center">
+                    <div style="font-size:.64rem;color:#64748B;text-transform:uppercase;font-weight:700;letter-spacing:.06em">Risk Score</div>
+                    <div style="font-size:1.45rem;font-weight:800;color:${riskColor};line-height:1.1;margin-top:3px">${riskScore.toFixed(1)}<span style="font-size:.62rem;color:#94A3B8;font-weight:500">/10</span></div>
+                </div>
+                <div style="padding:.65rem .75rem;border-right:1px solid #E2E8F0;text-align:center">
+                    <div style="font-size:.64rem;color:#64748B;text-transform:uppercase;font-weight:700;letter-spacing:.06em">PII Found</div>
+                    <div style="font-size:1.45rem;font-weight:800;color:${piis.length > 0 ? '#DC2626' : '#16A34A'};line-height:1.1;margin-top:3px">${piis.length}</div>
+                </div>
+                <div style="padding:.65rem .75rem;text-align:center">
+                    <div style="font-size:.64rem;color:#64748B;text-transform:uppercase;font-weight:700;letter-spacing:.06em">Confidence</div>
+                    <div style="font-size:1.45rem;font-weight:800;color:#3B82F6;line-height:1.1;margin-top:3px">${confidence}</div>
+                </div>
+            </div>`;
+
+            // Body sections
+            html += `<div style="border:1px solid #E2E8F0;border-top:none;border-radius:0 0 12px 12px;overflow:hidden">`;
+
+            if (cl.document_summary) {
+                html += `<div style="padding:.75rem 1rem;border-bottom:1px solid #E2E8F0">
+                    <div style="font-size:.64rem;color:#0284C7;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px"><i class="fas fa-align-left me-1"></i>Summary</div>
+                    <div style="font-size:.82rem;color:#374151;line-height:1.6">${cl.document_summary}</div>
+                </div>`;
+            }
+
+            if (piis.length > 0) {
+                html += `<div style="padding:.75rem 1rem;border-bottom:1px solid #E2E8F0;background:#FFF5F5">
+                    <div style="font-size:.64rem;color:#DC2626;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px"><i class="fas fa-shield-alt me-1"></i>PII Detected (${piis.length})</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:.4rem">${piis.map(p=>`<span style="background:#FEE2E2;color:#B91C1C;padding:3px 9px;border-radius:6px;font-size:.74rem;font-weight:600;border:1px solid #FECACA">${p.split(':')[0].trim()}</span>`).join('')}</div>
+                </div>`;
+            }
+
+            if (findings.length > 0) {
+                html += `<div style="padding:.75rem 1rem;background:#FFFDF0">
+                    <div style="font-size:.64rem;color:#D97706;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px"><i class="fas fa-flag me-1"></i>Key Findings</div>
+                    <div style="display:flex;flex-direction:column;gap:.35rem">${findings.slice(0,5).map(f=>`<div style="display:flex;align-items:flex-start;gap:.45rem;font-size:.82rem;color:#374151"><span style="color:#F59E0B;flex-shrink:0;margin-top:1px">&#9654;</span>${f}</div>`).join('')}</div>
+                </div>`;
+            } else if (!cl.document_summary && piis.length === 0) {
+                html += `<div style="padding:1rem;text-align:center;color:#94A3B8;font-size:.82rem">No additional details available.</div>`;
+            }
+
+            html += `</div>`;
+
+            document.getElementById('classificationResults').innerHTML = html;
+            document.getElementById('classificationResults').style.display = 'block';
+            document.getElementById('classifyButtonContainer').style.display = 'none';
+            document.getElementById('verificationSection').style.display = 'block';
+            document.getElementById('verificationStatus').textContent = 'Pending review';
+            document.getElementById('content-tab').innerHTML =
+                piis.length > 0
+                ? `Document Content <span class="badge bg-danger" style="font-size:.65rem">${piis.length} PII</span>`
+                : 'Document Content';
+            // Update footer button to reflect re-classify intent
+            document.getElementById('classifyTabBtn').innerHTML = '<i class="fas fa-sync-alt me-1"></i>Re-classify';
+            loadDocumentContent(currentDocPath);
+        }
+
+        async function classifySelectedDocuments() {
+            const paths = [...selectedDocuments];
+            if (!paths.length) return;
+            let done = 0;
+            showBatchPopup(paths.length);
+            for (const path of paths) {
+                if (batchCancelled) break;
+                const doc = allDocuments.find(d => d.path === path);
+                const name = doc ? doc.name : path.split('/').pop();
+                updateBatchPopup(done, paths.length, name);
+                try {
+                    const resp = await fetch('/api/classify', {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ file_path: path })
+                    });
+                    const result = await resp.json();
+                    if (!result.error) {
+                        classifiedDocuments[path] = result;
+                        docStatuses[path] = docStatuses[path] || 'classified';
+                        result.status = docStatuses[path];
+                        const docIdx = allDocuments.findIndex(d => d.path === path);
+                        if (docIdx !== -1) {
+                            allDocuments[docIdx].classification = result.classification;
+                            allDocuments[docIdx].risk_assessment = result.risk_assessment;
+                            allDocuments[docIdx].status = docStatuses[path];
+                        }
+                    }
+                } catch(e) { if (batchCancelled) break; /* skip other failures */ }
+                done++;
+            }
+            persistToLocalStorage();
+            const classifiedCount = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
+            document.getElementById('classifiedDocs').textContent = classifiedCount;
+            document.getElementById('unclassifiedDocs').textContent = allDocuments.length - classifiedCount;
+            updateReportButton();
+            renderDocuments(filteredDocuments);
+            finishBatchPopup(done, paths.length);
+        }
+
+        async function classifyAllUnclassified() {
+            const paths = allDocuments.filter(d => d.status === 'unclassified').map(d => d.path);
+            if (!paths.length) { showToast('All documents are already classified!', 'info'); return; }
+            let done = 0;
+            showBatchPopup(paths.length);
+            for (const path of paths) {
+                if (batchCancelled) break;
+                const doc = allDocuments.find(d => d.path === path);
+                const name = doc ? doc.name : path.split('/').pop();
+                updateBatchPopup(done, paths.length, name);
+                try {
+                    const resp = await fetch('/api/classify', {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ file_path: path })
+                    });
+                    const result = await resp.json();
+                    if (!result.error) {
+                        classifiedDocuments[path] = result;
+                        docStatuses[path] = docStatuses[path] || 'classified';
+                        result.status = docStatuses[path];
+                        const docIdx = allDocuments.findIndex(d => d.path === path);
+                        if (docIdx !== -1) {
+                            allDocuments[docIdx].classification = result.classification;
+                            allDocuments[docIdx].risk_assessment = result.risk_assessment;
+                            allDocuments[docIdx].status = docStatuses[path];
+                        }
+                    }
+                } catch(e) { if (batchCancelled) break; /* skip other failures */ }
+                done++;
+            }
+            persistToLocalStorage();
+            const classifiedCount = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
+            document.getElementById('classifiedDocs').textContent = classifiedCount;
+            document.getElementById('unclassifiedDocs').textContent = allDocuments.length - classifiedCount;
+            updateReportButton();
+            renderDocuments(filteredDocuments);
+            finishBatchPopup(done, paths.length);
+        }
+
+        function showBatchPopup(total) {
+            batchCancelled = false;
+            document.getElementById('batchPopup').style.display = 'block';
+            document.getElementById('batchPopupTitle').textContent = 'Classifying Documents';
+            document.getElementById('batchPopupSubtitle').textContent = 'AI is analyzing your documents\u2026';
+            document.getElementById('batchPopupSpinner').style.display = 'inline-block';
+            
+            // Reset progress bar styling
+            const progressBar = document.getElementById('batchPopupBar');
+            progressBar.style.width = '0%';
+            progressBar.classList.remove('done'); // Remove completed styling
+            
+            document.getElementById('batchPopupPct').textContent = '0%';
+            document.getElementById('batchPopupCount').textContent = '0 / ' + total;
+            document.getElementById('batchPopupText').textContent = 'Starting\u2026';
+            document.getElementById('batchPopupActions').style.display = 'none';
+            document.getElementById('batchPopupCancel').style.display = 'block';
+            const cb = document.getElementById('batchCancelBtn');
+            if (cb) { cb.disabled = false; cb.innerHTML = '<i class="fas fa-stop-circle"></i> Stop Classification'; }
+        }
+
+        function updateBatchPopup(done, total, currentName) {
+            const pct = Math.round(done / total * 100);
+            document.getElementById('batchPopupBar').style.width = pct + '%';
+            document.getElementById('batchPopupPct').textContent = pct + '%';
+            document.getElementById('batchPopupCount').textContent = done + ' / ' + total;
+            document.getElementById('batchPopupText').textContent = currentName || '';
+        }
+
+        function finishBatchPopup(done, total) {
+            document.getElementById('batchPopupSpinner').style.display = 'none';
+            
+            // Add completed styling to progress bar
+            const progressBar = document.getElementById('batchPopupBar');
+            progressBar.style.width = '100%';
+            progressBar.classList.add('done'); // Stop animation and make it green
+            
+            document.getElementById('batchPopupPct').textContent = '100%';
+            document.getElementById('batchPopupCount').textContent = done + ' / ' + total + (batchCancelled ? ' (stopped)' : ' complete');
+            document.getElementById('batchPopupText').textContent = batchCancelled ? 'Stopped by user.' : 'Done!';
+            document.getElementById('batchPopupTitle').textContent = batchCancelled ? 'Classification Stopped' : 'Classification Complete';
+            document.getElementById('batchPopupSubtitle').textContent = batchCancelled ? done + ' document' + (done!==1?'s':'') + ' classified before stopping.' : done + ' document' + (done!==1?'s':'') + ' successfully classified.';
+            document.getElementById('batchPopupActions').style.display = 'flex';
+            document.getElementById('batchPopupCancel').style.display = 'none';
+        }
+
+        function cancelBatchClassification() {
+            batchCancelled = true;
+            const cb = document.getElementById('batchCancelBtn');
+            if (cb) { cb.disabled = true; cb.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Stopping\u2026'; }
+            document.getElementById('batchPopupSubtitle').textContent = 'Finishing current document, then stopping\u2026';
+        }
+
+        // Human Verification
+        async function acceptClassification() {
+            await submitVerification('accept', {}, 'Classification accepted by human reviewer');
+            updateVerificationStatus('accepted', 'success', 'Classification accepted and saved!');
+        }
+
+        function modifyClassification() {
+            const form = document.getElementById('modificationForm');
+            if (!form) return;
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            if (form.style.display === 'block' && classifiedDocuments[currentDocPath]) {
+                const cl = classifiedDocuments[currentDocPath].classification || {};
+                const grpSel  = document.getElementById('correctedGroup');
+                const sensSel = document.getElementById('correctedSensitivity');
+                if (grpSel  && cl.functional_group)  grpSel.value  = cl.functional_group;
+                if (sensSel && cl.sensitivity_level)  sensSel.value = cl.sensitivity_level;
+            }
+        }
+
+        async function submitCorrection() {
+            const group       = document.getElementById('correctedGroup').value;
+            const sensitivity = document.getElementById('correctedSensitivity').value;
+            const reason      = document.getElementById('correctionReason').value || 'Category corrected by reviewer';
+            if (!group) { showToast('Please select a functional group.', 'warning'); return; }
+            const corrections = { functional_group: group, sensitivity_level: sensitivity };
+            await submitVerification('correct', corrections, reason);
+            if (classifiedDocuments[currentDocPath]?.classification) {
+                classifiedDocuments[currentDocPath].classification.functional_group = group;
+                classifiedDocuments[currentDocPath].classification.sensitivity_level = sensitivity;
+            }
+            const docIdx = allDocuments.findIndex(d => d.path === currentDocPath);
+            if (docIdx !== -1 && allDocuments[docIdx].classification) {
+                allDocuments[docIdx].classification.functional_group = group;
+                allDocuments[docIdx].classification.sensitivity_level = sensitivity;
+            }
+            persistToLocalStorage();
+            document.getElementById('modificationForm').style.display = 'none';
+            updateVerificationStatus('corrected', 'warning', `Updated to: ${group} / ${sensitivity}`);
+            renderDocuments(filteredDocuments);
+        }
+
+        async function submitVerification(type, corrections, reason) {
+            try {
+                docStatuses[currentDocPath] = type === 'accept' ? 'accepted' : 'corrected';
+                if (classifiedDocuments[currentDocPath]) {
+                    classifiedDocuments[currentDocPath].status = docStatuses[currentDocPath];
+                }
+                const docIdx = allDocuments.findIndex(d => d.path === currentDocPath);
+                if (docIdx !== -1) { allDocuments[docIdx].status = docStatuses[currentDocPath]; }
+                persistToLocalStorage();
+            } catch(e) { console.error('Verification error:', e); }
+        }
+
+        function updateVerificationStatus(type, cls, msg) {
+            const el = document.getElementById('verificationStatus');
+            if (!el) return;
+            const iconMap = { accepted:'check-circle', corrected:'pencil-alt', rejected:'times-circle' };
+            const colorMap = { accepted:'#10B981', corrected:'#F59E0B', rejected:'#EF4444' };
+            const icon  = iconMap[type]  || 'check-circle';
+            const color = colorMap[type] || '#10B981';
+            el.style.cssText = `font-size:.82rem;font-weight:600;color:${color}`;
+            el.innerHTML = `<i class="fas fa-${icon} me-1"></i>${msg}`;
+            const acceptBtn = document.getElementById('acceptBtn');
+            const modifyBtn = document.getElementById('modifyBtn');
+            if (acceptBtn) acceptBtn.style.display = 'none';
+            if (modifyBtn) modifyBtn.style.display  = 'none';
+        }
+
+        function unclassifyCurrentDoc() {
+            if (!currentDocPath) return;
+            showConfirm(
+                'Remove Classification',
+                `Remove classification for <b>${currentDocName}</b>? The document will revert to unclassified and can be re-classified at any time.`,
+                function() {
+                    delete classifiedDocuments[currentDocPath];
+            delete docStatuses[currentDocPath];
+            persistToLocalStorage();
+            document.getElementById('verificationSection').style.display = 'none';
+            document.getElementById('classificationResults').style.display = 'none';
+            document.getElementById('classifyButtonContainer').style.display = 'block';
+            document.getElementById('content-tab').innerHTML = 'Document Content';
+            const docIdx = allDocuments.findIndex(d => d.path === currentDocPath);
+            if (docIdx !== -1) { allDocuments[docIdx].status = 'unclassified'; allDocuments[docIdx].classification = null; }
+            const classified = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
+            document.getElementById('classifiedDocs').textContent = classified;
+            document.getElementById('unclassifiedDocs').textContent = allDocuments.length - classified;
+            setTimeout(() => renderDocuments(filteredDocuments), 100);
+            updateReportButton();
+                }
+            );
+        }
+
+        function unclassifySelected() {
+            const paths = [...selectedDocuments].filter(p => classifiedDocuments[p]);
+            if (!paths.length) { showToast('None of the selected documents are classified.', 'warning'); return; }
+            showConfirm(
+                'Remove Classification',
+                `Remove classification for <b>${paths.length} document${paths.length!==1?'s':''}</b>? They will revert to unclassified and can be re-classified at any time.`,
+                function() {
+            paths.forEach(path => {
+                delete classifiedDocuments[path];
+                delete docStatuses[path];
+                const idx = allDocuments.findIndex(d => d.path === path);
+                if (idx !== -1) { allDocuments[idx].status = 'unclassified'; allDocuments[idx].classification = null; }
+            });
+            persistToLocalStorage();
+            selectedDocuments.clear();
+            const classified = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
+            document.getElementById('classifiedDocs').textContent = classified;
+            document.getElementById('unclassifiedDocs').textContent = allDocuments.length - classified;
+            document.getElementById('selectedCount').textContent = '0';
+            document.getElementById('batchClassifyBtn').disabled = true;
+            const unclBtn = document.getElementById('unclassifySelBtn');
+            if (unclBtn) unclBtn.style.display = 'none';
+            renderDocuments(filteredDocuments);
+            updateReportButton();
+                }
+            );
+        }
+
+        function exportAiOverviewPdf() {
+            const ins = window.lastAiInsights;
+            if (!ins) { showToast('No AI overview available \u2014 generate one first.', 'warning'); return; }
+            if (!window.jspdf) { showToast('PDF library not loaded \u2014 please refresh.', 'error'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            const margin = 16, contentW = pageW - margin * 2;
+            const C = {
+                purple:[96,55,181], purpleLight:[237,233,254], indigo:[67,56,202],
+                navy:[15,40,80], navyMid:[30,64,120], blue:[37,99,235],
+                red:[185,28,28], redLight:[254,226,226], orange:[194,65,12], orangeLight:[255,237,213],
+                green:[21,128,61], greenLight:[220,252,231],
+                gray50:[249,250,251], gray100:[243,244,246], gray200:[229,231,235],
+                gray400:[156,163,175], gray500:[107,114,128], gray700:[55,65,81], gray900:[17,24,39],
+                white:[255,255,255]
+            };
+            const now = new Date();
+            const esc = s => String(s || '');
+            const addPageHeader = (pageNum, totalHint) => {
+                doc.setFillColor(...C.navy); doc.rect(0,0,pageW,10,'F');
+                doc.setFillColor(...C.purple); doc.rect(0,0,4,10,'F');
+                doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                doc.text('AI Classification Overview', margin+2, 7);
+                doc.setFont('helvetica','normal'); doc.setTextColor(180,190,210);
+                doc.text(now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), pageW-margin, 7, {align:'right'});
+            };
+
+            // ── COVER PAGE ────────────────────────────────────────────────────
+            // Top navy block
+            doc.setFillColor(...C.navy); doc.rect(0,0,pageW,72,'F');
+            doc.setFillColor(...C.purple); doc.rect(0,0,4,72,'F');
+            // Right accent circle
+            doc.setFillColor(...C.navyMid); doc.circle(pageW+2, 20, 28,'F');
+            doc.setFillColor(...C.navy); doc.circle(pageW+2, 20, 18,'F');
+            // Eyebrow
+            doc.setFillColor(...C.purple); doc.roundedRect(margin+2, 14, 42, 5.5, 1,1,'F');
+            doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+            doc.text('AI DOCUMENT CLASSIFIER', margin+23, 17.9, {align:'center'});
+            // Title
+            doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(...C.white);
+            doc.text('AI Classification Overview', margin+2, 36);
+            doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(180,190,220);
+            doc.text('Confidential \u2014 Do Not Distribute', margin+2, 47);
+            doc.setFontSize(8); doc.setTextColor(140,155,185);
+            doc.text(now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}), margin+2, 57);
+            // Badges
+            const aiLabel = ins.fallback ? 'Rule-Based Analysis' : 'Powered by Gemini AI';
+            const aiColor = ins.fallback ? [180,130,0] : C.purple;
+            const aiLightColor = ins.fallback ? [255,243,176] : C.purpleLight;
+            doc.setFillColor(...aiLightColor); doc.roundedRect(margin+2, 63, 44, 6.5, 1.5,1.5,'F');
+            doc.setTextColor(...aiColor); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+            doc.text(aiLabel, margin+24, 67.3, {align:'center'});
+            doc.setFillColor(...C.redLight); doc.roundedRect(margin+48, 63, 28, 6.5, 1.5,1.5,'F');
+            doc.setTextColor(...C.red); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+            doc.text('CONFIDENTIAL', margin+62, 67.3, {align:'center'});
+            // White body area
+            doc.setFillColor(...C.white); doc.rect(0,72,pageW,pageH-72,'F');
+            doc.setFillColor(...C.gray200); doc.rect(0,72,pageW,0.4,'F');
+            // "About this report" block
+            doc.setFillColor(...C.gray50); doc.roundedRect(margin, 80, contentW, 26, 2,2,'F');
+            doc.setDrawColor(...C.purple); doc.setLineWidth(0.6);
+            doc.roundedRect(margin, 80, 3, 26, 1,1,'FD');
+            doc.setTextColor(...C.gray700); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+            doc.text('About This Report', margin+7, 89);
+            doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...C.gray500);
+            const aboutText = 'This AI Classification Overview provides a high-level analysis of document risk posture, compliance exposure, and governance recommendations based on the classified document library.';
+            doc.splitTextToSize(aboutText, contentW-10).forEach((l,i) => doc.text(l, margin+7, 95+i*4.8));
+            // Section dividers decoration
+            doc.setFillColor(...C.gray100); doc.roundedRect(margin, 115, contentW, 12, 2,2,'F');
+            doc.setTextColor(...C.gray400); doc.setFont('helvetica','italic'); doc.setFontSize(7.5);
+            doc.text('Continue reading on the following pages for full analysis and recommendations.', pageW/2, 122.5, {align:'center'});
+            // Page number placeholder footer
+            doc.setFillColor(...C.gray100); doc.rect(0,pageH-10,pageW,10,'F');
+            doc.setFillColor(...C.purple); doc.rect(0,pageH-10,4,10,'F');
+            doc.setTextColor(...C.gray400); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+            doc.text('AI Document Classifier \u2014 Confidential & Proprietary', margin, pageH-4);
+            doc.text('Page 1', pageW-margin, pageH-4, {align:'right'});
+
+            // ── CONTENT PAGES ─────────────────────────────────────────────────
+            doc.addPage();
+            doc.setFillColor(...C.white); doc.rect(0,0,pageW,pageH,'F');
+            addPageHeader(2);
+            let y = 16;
+
+            const secBar = (title, color) => {
+                doc.setFillColor(...color); doc.rect(margin, y, contentW, 7,'F');
+                doc.setFillColor(...C.purple); doc.rect(margin, y, 3, 7,'F');
+                doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                doc.text(title, margin+6, y+4.9);
+                y += 9.5;
+            };
+            const textBlock = (text, textColor) => {
+                const col = textColor || C.gray700;
+                const lines = doc.splitTextToSize(esc(text), contentW-8);
+                doc.setFillColor(...C.gray50); doc.roundedRect(margin, y, contentW, lines.length*4.8+6, 1.5,1.5,'F');
+                doc.setDrawColor(...C.gray200); doc.setLineWidth(0.3);
+                doc.roundedRect(margin, y, contentW, lines.length*4.8+6, 1.5,1.5,'S');
+                doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...col);
+                lines.forEach((l,i) => doc.text(l, margin+4, y+5+i*4.8));
+                y += lines.length*4.8+9;
+            };
+            const checkPage = needed => {
+                if (y + needed > pageH-14) {
+                    doc.addPage();
+                    doc.setFillColor(...C.white); doc.rect(0,0,pageW,pageH,'F');
+                    addPageHeader();
+                    y = 16;
+                }
+            };
+
+            secBar('EXECUTIVE SUMMARY', C.navy);
+            checkPage(28); textBlock(ins.executive_summary);
+            checkPage(12); secBar('COMPLIANCE POSTURE', C.navy);
+            checkPage(28); textBlock(ins.compliance_posture);
+            checkPage(12); secBar('TOP PRIORITY ACTIONS', C.red);
+            (ins.top_actions||[]).forEach((a,i) => {
+                checkPage(14);
+                const [bgC,lightC] = [[C.red,C.redLight],[C.orange,C.orangeLight],[C.blue,[219,234,254]]][i]||[C.blue,[219,234,254]];
+                doc.setFillColor(...lightC); doc.roundedRect(margin, y, contentW, 11, 1.5,1.5,'F');
+                doc.setFillColor(...bgC); doc.roundedRect(margin, y, 8, 11, 1.5,1.5,'F');
+                doc.setFillColor(...lightC); doc.rect(margin+6, y, 2, 11,'F');
+                doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                doc.text(String(i+1), margin+4, y+7.2, {align:'center'});
+                const lines = doc.splitTextToSize(esc(a), contentW-13);
+                doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...C.gray700);
+                lines.forEach((l,li) => doc.text(l, margin+11, y+5+li*4.5));
+                y += Math.max(13, lines.length*4.5+4)+2;
+            });
+            y += 3;
+            checkPage(12); secBar('REGULATORY EXPOSURE', C.navy);
+            const regGrid = [['gdpr','GDPR'],['ccpa','CCPA'],['hipaa','HIPAA'],['sox','SOX']];
+            const regCols = contentW/2 - 2;
+            regGrid.forEach(([key,label],i) => {
+                const col = i%2, row = Math.floor(i/2);
+                if(col===0 && i>0) y += 18;
+                checkPage(18);
+                const rx = margin + col*(regCols+4), ry = y;
+                const val = (ins.regulatory_exposure||{})[key]||'Not assessed';
+                const ok = val.toLowerCase().includes('no significant');
+                const [dotC, bgC2, textC] = ok ? [C.green,C.greenLight,C.green] : [C.red,C.redLight,C.red];
+                doc.setFillColor(...bgC2); doc.roundedRect(rx, ry, regCols, 14, 1.5,1.5,'F');
+                doc.setFillColor(...dotC); doc.circle(rx+5, ry+4.5, 2,'F');
+                doc.setTextColor(...textC); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                doc.text(label, rx+9, ry+5.5);
+                const vlines = doc.splitTextToSize(esc(val), regCols-6);
+                doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.gray500);
+                vlines.slice(0,2).forEach((l,li) => doc.text(l, rx+3, ry+10.5+li*3.8));
+                if(col===1||i===3) y += 18;
+            });
+            if(regGrid.length%2!==0) y+=18;
+            y += 4;
+            checkPage(12); secBar('DATA GOVERNANCE RECOMMENDATIONS', C.indigo);
+            (ins.data_governance||[]).forEach(g => {
+                checkPage(10);
+                const lines = doc.splitTextToSize(esc(g), contentW-10);
+                doc.setFillColor(...C.purpleLight); doc.circle(margin+3, y+3, 1.8,'F');
+                doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...C.gray700);
+                lines.forEach((l,li) => doc.text(l, margin+8, y+4.5+li*4.5));
+                y += Math.max(8, lines.length*4.5)+2;
+            });
+            y += 4;
+            checkPage(24); secBar('RISK TRAJECTORY', C.red);
+            checkPage(28);
+            const rtLines = doc.splitTextToSize(esc(ins.risk_narrative), contentW-8);
+            doc.setFillColor(...C.redLight); doc.roundedRect(margin, y, contentW, rtLines.length*4.8+6, 1.5,1.5,'F');
+            doc.setDrawColor(...C.red); doc.setLineWidth(0.4); doc.roundedRect(margin, y, 3, rtLines.length*4.8+6, 1,1,'FD');
+            doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...C.red);
+            rtLines.forEach((l,i) => doc.text(l, margin+6, y+5+i*4.8));
+            y += rtLines.length*4.8+9;
+
+            // Footers
+            const total = doc.internal.getNumberOfPages();
+            for(let p=1; p<=total; p++) {
+                doc.setPage(p);
+                if(p===1) continue;
+                doc.setFillColor(...C.gray100); doc.rect(0,pageH-10,pageW,10,'F');
+                doc.setFillColor(...C.purple); doc.rect(0,pageH-10,4,10,'F');
+                doc.setTextColor(...C.gray400); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+                doc.text('AI Document Classifier \u2014 Confidential & Proprietary', margin, pageH-4);
+                doc.text('Page '+p+' of '+total, pageW-margin, pageH-4, {align:'right'});
+            }
+            doc.save('ai_overview_'+now.toISOString().slice(0,10)+'.pdf');
+
+        }
+
+        function downloadReport() {
+            const entries = Object.values(classifiedDocuments);
+            if (!entries.length) return;
+            if (!window.jspdf) { showToast('PDF library not loaded \u2014 please refresh.', 'error'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            const margin = 16, contentW = pageW - margin * 2;
+            const C = {
+                navyDark:[15,23,42],navy:[30,58,95],blue:[59,130,246],
+                red:[220,38,38],orange:[234,88,12],green:[22,163,74],
+                slate100:[241,245,249],slate200:[226,232,240],slate400:[148,163,184],
+                slate600:[100,116,139],slate800:[30,41,59],white:[255,255,255]
+            };
+            function riskNum(e){ return parseFloat(e.risk_assessment?.risk_score??e.classification?.risk_score??0); }
+            const highRisk=entries.filter(e=>riskNum(e)>=8);
+            const withPii=entries.filter(e=>(e.classification?.pii_detected??[]).length>0);
+            const allScores=entries.map(e=>riskNum(e));
+            const avgScore=allScores.length?(allScores.reduce((a,b)=>a+b,0)/allScores.length):0;
+            const sensDist={High:0,Moderate:0,Low:0};
+            entries.forEach(e=>{const s=e.classification?.sensitivity_level||'Low';sensDist[s]=(sensDist[s]||0)+1;});
+            const piiFreq={};
+            entries.forEach(e=>(e.classification?.pii_detected??[]).forEach(p=>{const k=p.split(':')[0].trim();piiFreq[k]=(piiFreq[k]||0)+1;}));
+            const piiSorted=Object.entries(piiFreq).sort((a,b)=>b[1]-a[1]);
+            const groupFreq={};
+            entries.forEach(e=>{const g=e.classification?.functional_group||'Unknown';groupFreq[g]=(groupFreq[g]||0)+1;});
+            const groupSorted=Object.entries(groupFreq).sort((a,b)=>b[1]-a[1]);
+            const sorted=[...entries].sort((a,b)=>riskNum(b)-riskNum(a));
+            const now=new Date();
+            // ── COVER PAGE (white background, navy header) ───────────────────
+            // Navy header block
+            doc.setFillColor(...C.navy); doc.rect(0,0,pageW,68,'F');
+            doc.setFillColor(...C.blue); doc.rect(0,0,4,68,'F');
+            // Accent circle top-right
+            doc.setFillColor(30,64,120); doc.circle(pageW+4,20,32,'F');
+            doc.setFillColor(...C.navy); doc.circle(pageW+4,20,22,'F');
+            // Report type label
+            doc.setFillColor(37,99,235); doc.roundedRect(margin+2,13,50,6,1.5,1.5,'F');
+            doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+            doc.text('AI DOCUMENT CLASSIFICATION REPORT', margin+27,17,{align:'center'});
+            // Title
+            doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor(255,255,255);
+            doc.text('Classification Report',margin+2,38);
+            doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(180,195,225);
+            doc.text('Confidential \u2014 Do Not Distribute',margin+2,48);
+            doc.setFontSize(8); doc.setTextColor(140,160,200);
+            doc.text(now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}),margin+2,58);
+            // CONFIDENTIAL badge
+            doc.setFillColor(185,28,28); doc.roundedRect(pageW-margin-32,13,32,7.5,1.5,1.5,'F');
+            doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+            doc.text('CONFIDENTIAL',pageW-margin-16,17.7,{align:'center'});
+            // White body
+            doc.setFillColor(255,255,255); doc.rect(0,68,pageW,pageH-68,'F');
+            doc.setFillColor(226,232,240); doc.rect(0,68,pageW,0.4,'F');
+            // KPI boxes
+            const kpiW2=(contentW-12)/4;
+            [[entries.length,'Total Documents',C.blue],[entries.filter(e=>riskNum(e)>=8).length,'Critical Risk',C.red],[withPii.length,'Contain PII',C.orange],[avgScore.toFixed(1),'Avg Risk Score',avgScore>=8?C.red:avgScore>=5?C.orange:C.green]].forEach(([val,lbl,col],i)=>{
+                const kx=margin+i*(kpiW2+4), ky=76;
+                doc.setFillColor(249,250,251); doc.roundedRect(kx,ky,kpiW2,28,2,2,'F');
+                doc.setFillColor(...col); doc.roundedRect(kx,ky,kpiW2,3,1.5,1.5,'F');
+                doc.setFillColor(...col); doc.rect(kx,ky+1.5,kpiW2,1.5,'F');
+                doc.setTextColor(...col); doc.setFont('helvetica','bold'); doc.setFontSize(18);
+                doc.text(String(val),kx+kpiW2/2,ky+17,{align:'center'});
+                doc.setTextColor(100,116,139); doc.setFont('helvetica','normal'); doc.setFontSize(7);
+                doc.text(lbl,kx+kpiW2/2,ky+24,{align:'center'});
+            });
+            // Sensitivity summary below KPIs
+            const ssy=116;
+            doc.setFillColor(243,244,246); doc.roundedRect(margin,ssy,contentW,32,2,2,'F');
+            doc.setTextColor(55,65,81); doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+            doc.text('Sensitivity Breakdown',margin+4,ssy+8);
+            [{level:'High',color:C.red},{level:'Moderate',color:C.orange},{level:'Low',color:C.green}].forEach((item,i)=>{
+                const n=sensDist[item.level]||0, pct2=entries.length?n/entries.length:0;
+                const bx=margin+4+i*((contentW-8)/3), cw2=(contentW-8)/3-4;
+                doc.setFillColor(...item.color); doc.circle(bx+2.5,ssy+17.5,2,'F');
+                doc.setTextColor(...item.color); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+                doc.text(item.level+': '+n,bx+7,ssy+18.5);
+                doc.setFillColor(229,231,235); doc.roundedRect(bx,ssy+22,cw2,3,0.5,0.5,'F');
+                if(pct2>0){doc.setFillColor(...item.color); doc.roundedRect(bx,ssy+22,cw2*pct2,3,0.5,0.5,'F');}
+                doc.setTextColor(107,114,128); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+                doc.text(Math.round(pct2*100)+'%',bx+cw2/2,ssy+29.5,{align:'center'});
+            });
+            // Page 2 — Analytics ──────────────────────────────────────────────
+            doc.addPage();
+            doc.setFillColor(255,255,255); doc.rect(0,0,pageW,pageH,'F');
+            // Page header
+            doc.setFillColor(...C.navy); doc.rect(0,0,pageW,10,'F');
+            doc.setFillColor(...C.blue); doc.rect(0,0,4,10,'F');
+            doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+            doc.text('Classification Report \u2014 Risk & Data Analysis',margin+2,7);
+            doc.setFont('helvetica','normal'); doc.setTextColor(180,195,220);
+            doc.text(now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),pageW-margin,7,{align:'right'});
+            let y=16;
+            const sectionHdr=(text,col)=>{
+                doc.setFillColor(...col); doc.rect(margin,y,contentW,7,'F');
+                doc.setFillColor(...C.blue); doc.rect(margin,y,3,7,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                doc.text(text,margin+6,y+5); y+=9.5;
+            };
+            // PII section
+            if(piiSorted.length>0){
+                sectionHdr('PII & SENSITIVE DATA DETECTED',C.navy);
+                const maxCount=piiSorted[0][1],colW4=contentW/4-3;
+                piiSorted.slice(0,8).forEach(([type,count],i)=>{
+                    const row=Math.floor(i/4),col2=i%4,px=margin+col2*(colW4+4),py=y+row*14,pct3=count/maxCount;
+                    doc.setFillColor(249,250,251); doc.roundedRect(px,py,colW4,11,1,1,'F');
+                    doc.setTextColor(30,41,59); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                    doc.text(type.length>18?type.slice(0,16)+'\u2026':type,px+2,py+5);
+                    doc.setTextColor(185,28,28); doc.setFontSize(6.5);
+                    doc.text('\u00D7'+count,px+colW4-2,py+5,{align:'right'});
+                    doc.setFillColor(226,232,240); doc.roundedRect(px+1,py+6.5,colW4-2,2.5,0.5,0.5,'F');
+                    if(pct3>0){doc.setFillColor(...C.red); doc.roundedRect(px+1,py+6.5,(colW4-2)*pct3,2.5,0.5,0.5,'F');}
+                });
+                y+=Math.ceil(Math.min(piiSorted.length,8)/4)*14+5;
+            }
+            // Category distribution
+            if(groupSorted.length>0){
+                sectionHdr('DOCUMENT CATEGORY DISTRIBUTION',C.navy);
+                const maxG=groupSorted[0][1];
+                groupSorted.slice(0,10).forEach(([group,count])=>{
+                    const pct4=count/maxG;
+                    doc.setTextColor(30,41,59); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                    doc.text(group.length>38?group.slice(0,36)+'\u2026':group,margin,y);
+                    doc.setTextColor(100,116,139); doc.text(String(count),margin+contentW,y,{align:'right'});
+                    doc.setFillColor(229,231,235); doc.roundedRect(margin,y+1,contentW-14,3.5,0.5,0.5,'F');
+                    doc.setFillColor(...C.blue); doc.roundedRect(margin,y+1,(contentW-14)*pct4,3.5,0.5,0.5,'F');
+                    y+=8;
+                });
+                y+=4;
+            }
+            // Page 3 — Document table ─────────────────────────────────────────
+            doc.addPage();
+            doc.setFillColor(255,255,255); doc.rect(0,0,pageW,pageH,'F');
+            doc.setFillColor(...C.navy); doc.rect(0,0,pageW,10,'F');
+            doc.setFillColor(...C.blue); doc.rect(0,0,4,10,'F');
+            doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+            doc.text('All Classified Documents \u2014 Ranked by Risk Score',margin+2,7);
+            const tableRows=sorted.map((e,i)=>{
+                const score=riskNum(e);
+                const piis=(e.classification?.pii_detected??[]).slice(0,3).map(p=>p.split(':')[0].trim()).join(', ');
+                const findings=e.classification?.confidential_findings??[];
+                return[i+1,e.file||'-',e.classification?.functional_group||'-',
+                       e.classification?.sensitivity_level||'-',score.toFixed(1)+'/10',
+                       piis||'\u2014',findings[0]?(findings[0].length>60?findings[0].slice(0,58)+'\u2026':findings[0]):'\u2014'];
+            });
+            doc.autoTable({
+                startY:14,head:[['#','Document','Category','Sensitivity','Risk','PII Found','Key Finding']],
+                body:tableRows,margin:{left:margin,right:margin},
+                headStyles:{fillColor:C.navy,textColor:[255,255,255],fontSize:7,fontStyle:'bold',halign:'center',cellPadding:2.5},
+                bodyStyles:{fontSize:6.5,textColor:[30,41,59],cellPadding:2.2},
+                alternateRowStyles:{fillColor:[248,250,252]},
+                columnStyles:{0:{halign:'center',cellWidth:7},1:{cellWidth:44},2:{cellWidth:36},
+                              3:{halign:'center',cellWidth:20},4:{halign:'center',cellWidth:15},5:{cellWidth:28},6:{cellWidth:'auto'}},
+                didParseCell:(data)=>{
+                    if(data.section!=='body')return;
+                    if(data.column.index===4){const v=parseFloat(data.cell.text[0]);data.cell.styles.textColor=v>=8?C.red:v>=5?C.orange:C.green;data.cell.styles.fontStyle='bold';}
+                    if(data.column.index===3){const lvl=data.cell.text[0];data.cell.styles.textColor=lvl==='High'?C.red:lvl==='Moderate'?C.orange:C.green;data.cell.styles.fontStyle='bold';}
+                }
+            });
+            // ── AI INSIGHTS PAGE (if available, white theme) ─────────────────
+            const aiIns = window.lastAiInsights;
+            if (aiIns) {
+                doc.addPage();
+                doc.setFillColor(255,255,255); doc.rect(0,0,pageW,pageH,'F');
+                doc.setFillColor(67,56,202); doc.rect(0,0,pageW,10,'F');
+                doc.setFillColor(96,55,181); doc.rect(0,0,4,10,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                doc.text('AI Overview \u2014 Classification Analysis',margin+2,7);
+                doc.setFont('helvetica','normal'); doc.setTextColor(200,195,240);
+                doc.text((aiIns.fallback?'Rule-based':'Gemini AI')+' \u00B7 '+now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),pageW-margin,7,{align:'right'});
+                let ay=16;
+                const aiHdr=(text,col)=>{
+                    doc.setFillColor(...col); doc.rect(margin,ay,contentW,7,'F');
+                    doc.setFillColor(96,55,181); doc.rect(margin,ay,3,7,'F');
+                    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                    doc.text(text,margin+6,ay+5); ay+=9.5;
+                };
+                const aiFill=(text,bgColor,textColor)=>{
+                    const lines=doc.splitTextToSize(String(text||''),contentW-8);
+                    doc.setFillColor(...(bgColor||[249,250,251])); doc.roundedRect(margin,ay,contentW,lines.length*4.8+6,1.5,1.5,'F');
+                    doc.setDrawColor(229,231,235); doc.setLineWidth(0.3); doc.roundedRect(margin,ay,contentW,lines.length*4.8+6,1.5,1.5,'S');
+                    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...(textColor||[55,65,81]));
+                    lines.forEach((l,i)=>doc.text(l,margin+4,ay+5+i*4.8));
+                    ay+=lines.length*4.8+9;
+                };
+                const aiNewPage=()=>{
+                    doc.addPage();
+                    doc.setFillColor(255,255,255); doc.rect(0,0,pageW,pageH,'F');
+                    doc.setFillColor(67,56,202); doc.rect(0,0,pageW,10,'F');
+                    doc.setFillColor(96,55,181); doc.rect(0,0,4,10,'F');
+                    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                    doc.text('AI Overview (continued)',margin+2,7);
+                    ay=16;
+                };
+                const aiCheck=needed=>{ if(ay+needed>pageH-13) aiNewPage(); };
+                aiHdr('EXECUTIVE SUMMARY',C.navy); aiCheck(28); aiFill(aiIns.executive_summary);
+                aiCheck(10); aiHdr('COMPLIANCE POSTURE',C.navy); aiCheck(28); aiFill(aiIns.compliance_posture);
+                aiCheck(10); aiHdr('TOP PRIORITY ACTIONS',[185,28,28]);
+                (aiIns.top_actions||[]).forEach((a,i)=>{
+                    aiCheck(14);
+                    const [bgC2,liC]=[[C.red,[254,226,226]],[C.orange,[255,237,213]],[C.blue,[219,234,254]]][i]||[C.blue,[219,234,254]];
+                    doc.setFillColor(...liC); doc.roundedRect(margin,ay,contentW,11,1.5,1.5,'F');
+                    doc.setFillColor(...bgC2); doc.roundedRect(margin,ay,8,11,1.5,1.5,'F');
+                    doc.setFillColor(...liC); doc.rect(margin+6,ay,2,11,'F');
+                    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                    doc.text(String(i+1),margin+4,ay+7.2,{align:'center'});
+                    const lines=doc.splitTextToSize(String(a||''),contentW-13);
+                    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(55,65,81);
+                    lines.forEach((l,li)=>doc.text(l,margin+11,ay+5+li*4.5));
+                    ay+=Math.max(13,lines.length*4.5+4)+2;
+                });
+                ay+=3;
+                aiCheck(10); aiHdr('REGULATORY EXPOSURE',C.navy);
+                ['gdpr','ccpa','hipaa','sox'].forEach(r=>{
+                    aiCheck(16);
+                    const val=(aiIns.regulatory_exposure||{})[r]||'Not assessed';
+                    const ok=val.toLowerCase().includes('no significant');
+                    const [dotC3,bgC3]= ok?[[21,128,61],[220,252,231]]:[[185,28,28],[254,226,226]];
+                    doc.setFillColor(...bgC3); doc.roundedRect(margin,ay,contentW/2-3,12,1,1,'F');
+                    doc.setFillColor(...dotC3); doc.circle(margin+4,ay+4,2,'F');
+                    doc.setTextColor(...dotC3); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                    doc.text(r.toUpperCase(),margin+9,ay+5.5);
+                    const vlines=doc.splitTextToSize(String(val),contentW/2-12);
+                    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(107,114,128);
+                    vlines.slice(0,2).forEach((l,li)=>doc.text(l,margin+3,ay+9+li*3.5));
+                    ay+=15;
+                });
+                ay+=2;
+                aiCheck(10); aiHdr('DATA GOVERNANCE RECOMMENDATIONS',[67,56,202]);
+                (aiIns.data_governance||[]).forEach(g=>{
+                    aiCheck(10);
+                    doc.setFillColor(67,56,202); doc.circle(margin+3,ay+3,1.8,'F');
+                    const lines=doc.splitTextToSize(String(g||''),contentW-9);
+                    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(55,65,81);
+                    lines.forEach((l,li)=>doc.text(l,margin+8,ay+4.5+li*4.5));
+                    ay+=Math.max(8,lines.length*4.5)+2;
+                });
+                ay+=4;
+                aiCheck(24); aiHdr('RISK TRAJECTORY',[185,28,28]);
+                aiCheck(28); aiFill(aiIns.risk_narrative,[254,226,226],[185,28,28]);
+            }
+            // Footers on all pages
+            const totalPages=doc.internal.getNumberOfPages();
+            for(let p=1;p<=totalPages;p++){
+                doc.setPage(p);
+                doc.setFillColor(243,244,246); doc.rect(0,pageH-9,pageW,9,'F');
+                doc.setFillColor(...C.blue); doc.rect(0,pageH-9,4,9,'F');
+                doc.setTextColor(156,163,175); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+                doc.text('AI Document Classifier \u2014 Confidential & Proprietary',margin,pageH-3.5);
+                doc.text('Page '+p+' of '+totalPages,pageW-margin,pageH-3.5,{align:'right'});
+            }
+            doc.save('classification_report_'+now.toISOString().slice(0,10)+'.pdf');
+
+        }
+
+        function showConfirm(title, message, onConfirm) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').innerHTML = message;
+            var overlay = document.getElementById('confirmOverlay');
+            overlay.style.display = 'flex';
+            document.getElementById('confirmOkBtn').onclick = function() {
+                overlay.style.display = 'none';
+                onConfirm();
+            };
+            document.getElementById('confirmCancelBtn').onclick = function() {
+                overlay.style.display = 'none';
+            };
+        }
+
+        function showToast(msg, type) {
+            var t = document.getElementById('siteToast');
+            var icons = { success:'check-circle', error:'exclamation-circle', warning:'exclamation-triangle', info:'info-circle' };
+            var colors = { success:'var(--success)', error:'var(--danger)', warning:'var(--warning)', info:'var(--primary)' };
+            var k = type || 'info';
+            t.innerHTML = '<div style="display:flex;align-items:center;gap:.65rem;background:#1E293B;color:#F1F5F9;padding:.75rem 1.1rem;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:.84rem;font-weight:500;border-left:3px solid ' + (colors[k]||colors.info) + ';max-width:360px;pointer-events:auto"><i class="fas fa-' + (icons[k]||icons.info) + '" style="color:' + (colors[k]||colors.info) + ';font-size:.95rem;flex-shrink:0"></i><span>' + msg + '</span></div>';
+            t.style.display = 'block';
+            clearTimeout(t._tid);
+            t._tid = setTimeout(function(){ t.style.display='none'; }, 4200);
+        }
+
+        // Cancel AI insights generation
+        function cancelAiInsights() {
+            console.log('Cancelling AI insights generation');
+            if (window.aiInsightsController) {
+                window.aiInsightsController.abort();
+                window.aiInsightsController = null;
+                console.log('AI insights controller aborted');
+                
+                const btn = document.getElementById('reportAiBtn');
+                const panel = document.getElementById('reportAiPanel');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-brain me-2"></i>Generate AI Overview';
+                }
+                if (panel) {
+                    panel.innerHTML = '<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);border-radius:12px;padding:1rem 1.25rem;color:#FCD34D;font-size:.85rem"><i class="fas fa-hand-paper me-2"></i><b>Analysis cancelled.</b> You can try again when ready.</div>';
+                }
+            } else {
+                console.log('No AI insights controller found to abort');
+            }
+        }
+        
+        // Enhanced single document classification with cancellation
+        function cancelSingleClassification() {
+            if (classifyAbortController) {
+                classifyAbortController.abort();
+                classifyAbortController = null;
+                
+                // Update UI to show cancellation
+                document.getElementById('classificationResultCard').innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-hand-paper me-2"></i>
+                        <strong>Classification cancelled.</strong> You can try again when ready.
+                    </div>
+                `;
+                
+                // Re-enable classify button
+                const modal = document.getElementById('classificationModal');
+                const classifyBtn = modal.querySelector('.btn-primary');
+                if (classifyBtn) {
+                    classifyBtn.disabled = false;
+                    classifyBtn.innerHTML = '<i class="fas fa-robot me-2"></i>Classify Document';
+                }
+                
+                // Hide cancel button 
+                const cancelBtn = document.getElementById('cancelClassifyBtn');
+                if (cancelBtn) cancelBtn.style.display = 'none';
+            }
+        }
+    </script>
+<div id="siteToast" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;display:none;pointer-events:none"></div>
+
+<!-- Styled confirm dialog -->
+<div id="confirmOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100000;align-items:center;justify-content:center;backdrop-filter:blur(2px)">
+    <div style="background:#1E293B;border-radius:14px;padding:1.5rem 1.75rem;max-width:400px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,.5);border:1px solid #334155">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.85rem">
+            <div style="width:36px;height:36px;background:rgba(239,68,68,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="fas fa-trash-alt" style="color:#F87171;font-size:.9rem"></i>
+            </div>
+            <div id="confirmTitle" style="color:#F1F5F9;font-weight:700;font-size:1rem"></div>
+        </div>
+        <div id="confirmMessage" style="color:#94A3B8;font-size:.85rem;line-height:1.6;margin-bottom:1.25rem"></div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end">
+            <button id="confirmCancelBtn" style="background:transparent;border:1px solid #475569;color:#94A3B8;padding:.4rem 1rem;border-radius:7px;font-size:.83rem;font-weight:600;cursor:pointer" onmouseover="this.style.borderColor='#64748B';this.style.color='#E2E8F0'" onmouseout="this.style.borderColor='#475569';this.style.color='#94A3B8'">Cancel</button>
+            <button id="confirmOkBtn" style="background:#EF4444;border:none;color:#fff;padding:.4rem 1.1rem;border-radius:7px;font-size:.83rem;font-weight:600;cursor:pointer" onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'"><i class="fas fa-trash-alt me-1"></i>Remove</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

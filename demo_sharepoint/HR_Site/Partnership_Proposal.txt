@@ -1,0 +1,15 @@
+Pricing Strategy Document
+=========================
+
+Generated: 2026-02-20 13:27:54
+
+Deal Analysis - Closed Deal: XYZ Company (Deal value: $350K, Margin: 68%, Close date: 2/20/2025). Discount offered: 12% off standard pricing to achieve Q1 target. Customer contact: CFO Michael Rodriguez (michael.rodriguez@xyzco.com, Cell: 555-777-8888). Payment terms: Net 30 with 2% early payment discount.
+
+Proposal to TechCorp Industries: Custom implementation package for $1.2M over 18 months. Deliverables include 500 hours consulting, custom development (200 hours), and training. Competitive position: Strong against primary competitor (Competitor X quoted $1.4M). Proposal approval: VP Sales & CFO sign-off required. Expected decision date: 3/31/2025.
+
+SALES PIPELINE CONFIDENTIAL: Total pipeline value: $8.5M across 23 active opportunities. Forecast confidence: 65% ($5.5M likely to close by Q2). Top deals: TechCorp Industries ($1.2M, 85% confidence), Global Services Inc ($800K, 72% confidence), Innovation Labs ($650K, 55% confidence). Sales rep commission structure: 15% for deals $500K+, 12% for $200-500K, 8% for <$200K.
+
+Pricing Strategy Review: Market analysis indicates competitive pressure. Current pricing: $35/user/month (average). Recommendation: Implement tiered pricing ($28/month for 500+ users, $32/month for 200-499 users). Expected revenue impact: +$2.3M annually. Margin impact: +18%. Board approval required for implementation.
+
+Strategic Partner Channel Agreement - TechPartner Solutions: Reseller agreement effective 3/1/2025. Partner receives 35% margin on all sales. Minimum annual purchase commitment: $250K. Territory: North America (excluding direct sales accounts). Co-marketing fund: $50K annually. Performance bonus potential: +5% margin if >$1M annual sales.
+

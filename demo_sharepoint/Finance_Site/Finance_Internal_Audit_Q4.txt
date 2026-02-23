@@ -1,0 +1,51 @@
+================================================================================
+                   Internal Audit - Expense Controls Q4 2025                    
+================================================================================
+
+Prepared by: Katherine Holmes
+Date: 2026-02-12
+Sample Size: 85 reports
+Amount Tested: $127,450
+
+--------------------------------------------------------------------------------
+
+INTERNAL AUDIT: EXPENSE CONTROL REVIEW Q4 2025
+
+Audit Scope: 85 expense reports, $127,450 tested
+Non-Compliance Rate: 14% (12 of 85 reports)
+Primary Finding: Documentation deficiency
+Overall Conclusion: Controls ADEQUATE with improvement recommendations
+
+CONTROL TEST RESULTS
+Documentation present: 81 of 85 pass (95.3%)
+Amounts within policy limits: 82 of 85 pass (96.5%)
+Manager approval obtained: 84 of 85 pass (98.8%)
+Business purpose documented: 77 of 85 pass (90.6%)
+GL account coding correct: 83 of 85 pass (97.6%)
+
+FINDINGS - EXCEPTIONS
+Missing receipts (8 reports): Employee EMP-03482, $2,847 meal expenses
+Exceeded limits (3 reports): Employee EMP-01923, $180 over $75/day limit
+Missing business purpose (8 reports): 7 travel, 1 entertainment
+Incorrect GL coding (2 reports): Software charged to Supplies
+Late submission (1 report): 32 days vs 14-day policy
+
+ROOT CAUSE ANALYSIS
+Primary: Insufficient employee training on policy
+Secondary: System limitations in expense tool
+Tertiary: Inconsistent manager enforcement
+
+REMEDIATION ACTIONS
+Training conducted: February 13-14, 2026 (all staff)
+System enhancements: Planned for Q2 2026 implementation
+Manager certification: Required for all approvals
+Audit trail enhancement: Mandatory business purpose validation
+
+MANAGEMENT COMMITMENT
+100% compliance target for Q1 2026 retesting
+Finance manager: Craig Bennett (EMP-05621)
+Implementation cost: $45K for system modifications
+
+================================================================================
+CONFIDENTIAL - NORTHBRIDGE ADVISORY GROUP
+================================================================================

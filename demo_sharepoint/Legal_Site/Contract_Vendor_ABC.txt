@@ -1,0 +1,13 @@
+Contract Review - Vendor X
+==========================
+
+Generated: 2026-02-20 13:27:53
+
+SOC 2 Compliance Status: Type II audit in progress with Deloitte (expected completion 6/30/2025). Current gaps identified in access control procedures for database systems. HIPAA Assessment: Required for healthcare client contracts - audit scheduled April 2025. GDPR compliance: All customer data processing documented and privacy policy updated.
+
+CONFIDENTIAL LEGAL DOCUMENT - ATTORNEY WORK PRODUCT: This NDA governs confidential relationships with third parties. Key terms include 5-year non-disclosure period, $1M penalty clause for breach, and mandatory arbitration in Delaware. Signatory: CEO, CFO, and Board approval required before execution.
+
+Vendor Contract Review - Acme Corporation: Service Agreement effective 3/1/2025 through 2/28/2027. Payment terms: $50,000 monthly. SLA penalties: $5,000/hour downtime. Termination clause: 90-day notice. Legal review identified risk in IP indemnification clause - recommend negotiation of Article 12.
+
+Insurance Portfolio Review: General Liability $5M coverage (Carrier: XYZ Insurance), Professional Liability $2M (Carrier: ABC Insurance), D&O Insurance $10M. Annual premium: $485,000. Renewal negotiation in progress - recommend maintaining current coverage levels.
+

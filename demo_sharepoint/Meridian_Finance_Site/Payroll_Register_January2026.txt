@@ -1,0 +1,42 @@
+MERIDIAN CONSULTING GROUP
+PAYROLL REGISTER — JANUARY 2026
+Pay Period: January 1–31, 2026 | Pay Date: February 5, 2026
+
+CONFIDENTIAL — PAYROLL AND HR EYES ONLY
+Prepared by: ADP TotalSource | Reviewed by: Lynn Foster, CFO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EMPLOYEE                  SSN         GROSS PAY    FED W/H    STATE W/H  NET PAY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Chen, Michael             ***-**-4891  $76,667     $22,000     $4,600   $44,507
+Park, Jennifer            ***-**-3374  $65,000     $18,200     $3,900   $38,050
+Vasquez, Nicole           ***-**-7821  $65,000     $18,200     $3,900   $38,050
+Okafor, Ryan              ***-**-2294  $63,333     $17,733     $3,800   $37,040
+Mitchell, Sarah           ***-**-5503  $45,000     $11,250     $2,700   $26,550
+Williams, Sarah           ***-**-8831  $20,667      $4,550     $1,240   $12,898
+Becker, Thomas            ***-**-6619  $13,000      $2,860       $780    $8,073
+Huang, Lisa               ***-**-9042  $16,250      $3,576       $975   $10,057
+Rivera, Carlos            ***-**-4417  $15,417      $3,392       $925    $9,538
+Morris, Jennifer          ***-**-1188  $13,750      $3,025       $825    $8,525
+Zhang, Kevin              ***-**-7735   $6,833      $1,367       $410    $4,640
+Park, Andrew              ***-**-2290  $13,000      $2,860       $780    $8,073
+Kohl, Sandra (contractor) ***-**-3341   $9,600          $0         $0    $9,600
+
+[... 299 additional employees — see full ADP payroll data extract]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIRM TOTALS — JANUARY 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total Gross Payroll:          $5,200,000
+Total Federal Withholding:    $1,456,000
+Total State Withholding:        $364,000
+Total FICA (Employer):          $397,800
+Total Net Payroll:            $2,982,200
+ACH Debit Date: February 5, 2026
+ACH Total: $2,982,200 from Payroll Account BofA 4892773155
+
+Health Benefits (BCBS):       $218,400 — deducted from employee pay
+401(k) Contributions:         $156,000 — to be transferred to Fidelity Investments
+  Plan Administrator: Fidelity — Acct 78923-11039
+
+NOTE: Full SSN records stored in ADP system. Employee banking details (direct deposit) on file in HR/Payroll system. This summary uses masked SSNs per data security policy.

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Scanner — AI Document Classification</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233B82F6'%3E%3Cpath d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --primary-light: #60A5FA;
+            --blue: #3B82F6;
+            --navy: #0F172A;
+            --navy-light: #1E293B;
+            --slate: #334155;
+            --success: #10B981;
+            --emerald: #10B981;
+            --green: #10B981;
+            --warning: #F59E0B;
+            --orange: #F59E0B;
+            --danger: #EF4444;
+            --red: #EF4444;
+            --purple: #7C3AED;
+            --bg-light: #F8FAFC;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --border-light: #E2E8F0;
+            --brand-gradient: linear-gradient(135deg, #1E3A5F 0%, #0F172A 100%);
+            --bg: #F1F5F9;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; }
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 1.5rem; height: 52px; background: var(--navy);
+            position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,.3);
+        }
+        .topbar-brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; display: flex; align-items: center; gap: .5rem; }
+        .brand-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; }
+        .topbar-nav { display: flex; gap: .25rem; }
+        .topbar-nav a { color: #94A3B8; text-decoration: none; font-size: .82rem; font-weight: 500; padding: .35rem .7rem; border-radius: 6px; transition: all .15s; }
+        .topbar-nav a:hover { color: #fff; background: rgba(255,255,255,.07); }
+        .topbar-nav a.active { color: #fff; background: rgba(59,130,246,.25); }
+        .page-header { background: var(--brand-gradient); color: #fff; padding: 1.25rem 1.5rem; }
+        .page-header h1 { font-size: 1.35rem; font-weight: 700; margin: 0 0 .2rem; letter-spacing: -.03em; }
+        .page-header p { font-size: .83rem; color: #94A3B8; margin: 0; }
+        .sharepoint-badge {
+            display: inline-flex; align-items: center; gap: .4rem;
+            background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+            border-radius: 6px; padding: .3rem .7rem; font-size: .75rem; color: #CBD5E1; margin-top: .6rem;
+        }
+        .main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .scan-all-bar {
+            background: #fff; border-radius: 12px; padding: 1.1rem 1.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 1px 6px rgba(0,0,0,.08); margin-bottom: 1.25rem; border: 1px solid #E2E8F0;
+        }
+        .scan-all-bar .label { font-weight: 600; font-size: .92rem; color: var(--navy); }
+        .scan-all-bar .hint { font-size: .78rem; color: #64748B; margin-top: 1px; }
+        .sites-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .site-card {
+            background: #fff; border-radius: 12px; padding: 1.25rem;
+            border: 1px solid #E2E8F0; box-shadow: 0 1px 6px rgba(0,0,0,.06);
+            transition: box-shadow .2s, border-color .2s; position: relative; overflow: hidden;
+        }
+        .site-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #CBD5E1; }
+        .site-card-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .site-header { display: flex; align-items: flex-start; gap: .85rem; margin-bottom: .85rem; }
+        .site-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; flex-shrink: 0; }
+        .site-info .name { font-weight: 700; font-size: .95rem; color: var(--navy); }
+        .site-info .desc { font-size: .78rem; color: #64748B; margin-top: 2px; line-height: 1.4; }
+        .site-info .sp-url { font-size: .71rem; color: #94A3B8; margin-top: 4px; font-family: monospace; }
+        .site-stats { display: flex; gap: .75rem; margin-bottom: .9rem; }
+        .stat-chip { display: flex; align-items: center; gap: .35rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: .3rem .6rem; font-size: .75rem; color: #475569; font-weight: 500; }
+        .stat-chip i { font-size: .65rem; }
+        .scan-site-btn { width: 100%; padding: .55rem; border-radius: 8px; font-weight: 600; font-size: .82rem; border: none; cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: .5rem; }
+        .scan-site-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .scan-site-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+        #scanningPanel { display: none; background: var(--navy-light); border-radius: 12px; padding: 1.5rem; color: #fff; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,.08); }
+        .scan-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+        .scan-title { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: .6rem; }
+        .pulse-dot { width: 10px; height: 10px; background: #34D399; border-radius: 50%; animation: pulse 1.2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+        .scan-progress-bar { height: 6px; background: rgba(255,255,255,.1); border-radius: 3px; overflow: hidden; margin-bottom: .6rem; }
+        .scan-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); border-radius: 3px; transition: width .3s ease; width: 0%; }
+        .scan-stats-row { display: flex; gap: 1.5rem; margin-bottom: 1rem; font-size: .79rem; color: #94A3B8; }
+        .scan-stats-row span b { color: #fff; }
+        .scan-feed { background: rgba(0,0,0,.25); border-radius: 8px; padding: .75rem; height: 160px; overflow-y: auto; font-family: monospace; font-size: .73rem; }
+        .feed-line { display: flex; align-items: center; gap: .5rem; padding: .2rem 0; color: #CBD5E1; opacity: 0; animation: fadeIn .3s forwards; }
+        .feed-line.high { color: #FCA5A5; }
+        .feed-line.medium { color: #FCD34D; }
+        .feed-line.low { color: #6EE7B7; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        #resultsSection { display: none; }
+        .results-site-label { display: inline-flex; align-items: center; gap: .5rem; font-size: .8rem; color: #64748B; font-weight: 500; margin-bottom: 1rem; }
+        .results-site-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .verdict-banner { border-radius: 12px; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; border: 1px solid rgba(255,255,255,.1); }
+        .verdict-icon { font-size: 2rem; }
+        .verdict-title { font-size: 1.1rem; font-weight: 700; }
+        .verdict-sub { font-size: .8rem; opacity: .85; margin-top: 2px; }
+        .verdict-critical { background: linear-gradient(135deg, #7F1D1D, #991B1B); color: #fff; border: 1px solid var(--danger); }
+        .verdict-high { background: linear-gradient(135deg, #78350F, #92400E); color: #fff; border: 1px solid var(--warning); }
+        .verdict-moderate { background: linear-gradient(135deg, #713F12, #854D0E); color: #fff; border: 1px solid var(--warning); }
+        .verdict-good { background: linear-gradient(135deg, #064E3B, #065F46); color: #fff; border: 1px solid var(--success); }
+        .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1.25rem; }
+        @media(max-width:768px){ .kpi-strip { grid-template-columns: repeat(2,1fr); } }
+        .kpi-card { background: #fff; border-radius: 10px; padding: .9rem 1rem; border: 1px solid #E2E8F0; border-left: 3px solid; }
+        .kpi-card .kpi-val { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+        .kpi-card .kpi-lbl { font-size: .71rem; color: #64748B; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-top: 4px; }
+        .panel { background: #fff; border-radius: 12px; padding: 1.25rem; border: 1px solid #E2E8F0; box-shadow: 0 1px 6px rgba(0,0,0,.06); margin-bottom: 1rem; }
+        .panel-title { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #334155; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+        .panel-title i { color: var(--blue); }
+        .doc-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+        .doc-table th { background: #F8FAFC; padding: .5rem .7rem; text-align: left; font-weight: 700; font-size: .71rem; text-transform: uppercase; letter-spacing: .05em; color: #475569; border-bottom: 1px solid #E2E8F0; white-space: nowrap; }
+        .doc-table td { padding: .5rem .7rem; border-bottom: 1px solid #F1F5F9; color: #1E293B; vertical-align: middle; }
+        .doc-table tr:hover td { background: #F8FAFC; }
+        .doc-table tr:last-child td { border-bottom: none; }
+        .pii-chip { display: inline-flex; align-items: center; gap: .25rem; background: #FEE2E2; color: #DC2626; border-radius: 4px; padding: 1px 5px; font-size: .67rem; font-weight: 600; }
+        .score-bar-wrap { display: flex; align-items: center; gap: .5rem; }
+        .score-bar { height: 5px; min-width: 60px; max-width: 80px; background: #E2E8F0; border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+        .score-bar-fill { height: 100%; border-radius: 3px; }
+        .bar-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .65rem; }
+        .bar-row .bar-label { font-size: .78rem; color: #334155; font-weight: 500; flex: 0 0 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bar-row .bar-track { flex: 1; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden; }
+        .bar-row .bar-fill { height: 100%; border-radius: 4px; }
+        .bar-row .bar-val { font-size: .75rem; color: #64748B; flex: 0 0 28px; text-align: right; }
+        .site-breakdown-row { display: flex; align-items: center; gap: 1rem; padding: .65rem 0; border-bottom: 1px solid #F1F5F9; }
+        .site-breakdown-row:last-child { border-bottom: none; }
+        .site-color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .site-name-col { font-size: .82rem; font-weight: 600; color: #1E293B; flex: 1; }
+        .site-risk-mini { font-size: .75rem; padding: .15rem .45rem; border-radius: 8px; font-weight: 700; }
+        .risk-high { background: #FEF3C7; color: #D97706; }
+        .risk-medium { background: #DBEAFE; color: #2563EB; }
+        .risk-low { background: #D1FAE5; color: #059669; }
+        .sens-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; }
+        .sens-label { font-size: .8rem; font-weight: 600; flex: 0 0 80px; }
+        .sens-track { flex: 1; height: 14px; background: #E2E8F0; border-radius: 7px; overflow: hidden; }
+        .sens-fill { height: 100%; border-radius: 7px; }
+        .sens-count { font-size: .78rem; color: #64748B; flex: 0 0 20px; text-align: right; }
+        .export-bar { background: linear-gradient(135deg, #1E3A5F, #1E293B); border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: .65rem; border: 1px solid rgba(99,102,241,.35); box-shadow: 0 4px 16px rgba(0,0,0,.2); flex-wrap: wrap; margin-bottom: 1rem; }
+        .export-bar .label { font-size: .85rem; font-weight: 600; color: #E2E8F0; flex: 1; min-width: 180px; }
+        .btn-blue { background: var(--blue); color: #fff; border: none; padding: .5rem 1.1rem; border-radius: 8px; font-size: .82rem; font-weight: 600; cursor: pointer; transition: filter .15s; }
+        #newScanBtn, #browseDocsBtn { background: #FFFFFF !important; color: #0F172A !important; border: 1px solid rgba(255,255,255,.5) !important; padding: .5rem 1.1rem; border-radius: 8px; font-size: .82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: .4rem; text-decoration: none !important; }
+        #newScanBtn:hover, #browseDocsBtn:hover { background: #E2E8F0 !important; color: #0F172A !important; }
+        .btn-blue:hover { filter: brightness(1.1); }
+        .btn-outline { background: transparent; color: var(--navy); border: 1px solid #CBD5E1; padding: .5rem 1.1rem; border-radius: 8px; font-size: .82rem; font-weight: 500; cursor: pointer; transition: background .15s; text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; }
+        .btn-outline:hover { background: #F1F5F9; color: var(--navy); }
+        .btn-scan-all { background: linear-gradient(135deg, #1D4ED8, var(--blue)); color: #fff; border: none; padding: .6rem 1.4rem; border-radius: 8px; font-size: .85rem; font-weight: 700; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: .5rem; }
+        .btn-scan-all:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,.4); }
+        .btn-scan-all:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+        #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: none; }
+        .toast-inner { background: var(--navy); color: #fff; padding: .7rem 1rem; border-radius: 8px; font-size: .82rem; display: flex; align-items: center; gap: .5rem; box-shadow: 0 4px 16px rgba(0,0,0,.25); max-width: 320px; }
+        .toast-inner.error { background: #7F1D1D; }
+        @media(max-width:640px){ .kpi-strip { grid-template-columns: repeat(2,1fr); } .sites-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <a class="topbar-brand" href="/"><span class="brand-dot"></span>AI Document Classifier</a>
+    <div class="topbar-nav">
+        <a href="/">Home</a>
+        <a href="/browse"><i class="fas fa-folder-open me-1"></i>Browse</a>
+        <a href="/upload">Upload</a>
+        <a href="/scan" class="active">Scanner</a>
+        <a href="/dashboard"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div style="max-width:1200px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+        <div>
+            <h1><i class="fas fa-satellite-dish me-2" style="color:#60A5FA"></i>SharePoint Site Scanner</h1>
+            <p>Discover, classify, and risk-assess all documents across Meridian Consulting Group SharePoint sites</p>
+            <div class="sharepoint-badge">
+                <i class="fas fa-th-large" style="color:#0078D4"></i>
+                <span>Meridian Consulting Group &mdash; Microsoft 365</span>
+                <span style="color:#64748B">&middot;</span>
+                <span id="headerDocCount" style="color:#60A5FA">Loading...</span>
+            </div>
+        </div>
+        <div style="text-align:right;font-size:.78rem;color:#64748B">
+            <div style="color:#94A3B8;font-size:.75rem">TENANT</div>
+            <div style="color:#fff;font-weight:600">meridian.sharepoint.com</div>
+        </div>
+    </div>
+</div>
+
+<div class="main">
+
+    <div class="scan-all-bar">
+        <div>
+            <div class="label"><i class="fas fa-layer-group me-2" style="color:var(--blue)"></i>Comprehensive Site Scan</div>
+            <div class="hint">Scan all 3 SharePoint sites simultaneously and generate a unified risk report</div>
+        </div>
+        <button class="btn-scan-all" id="scanAllBtn" onclick="startScan('all')">
+            <i class="fas fa-play"></i>&nbsp;Scan All Sites
+        </button>
+    </div>
+
+    <div class="sites-grid" id="sitesGrid">
+        <div class="site-card" style="display:flex;align-items:center;justify-content:center;height:140px;color:#94A3B8">
+            <div class="text-center"><i class="fas fa-circle-notch fa-spin fa-2x mb-2"></i><div style="font-size:.8rem">Loading sites...</div></div>
+        </div>
+    </div>
+
+    <div id="scanningPanel">
+        <div class="scan-header-row">
+            <div class="scan-title"><div class="pulse-dot"></div><span id="scanTitle">Scanning documents...</span></div>
+            <div style="display:flex;align-items:center;gap:.75rem">
+                <div style="font-size:.75rem;color:#94A3B8" id="scanEta"></div>
+                <button onclick="cancelScan()" id="cancelScanBtn" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#FCA5A5;font-size:.72rem;font-weight:600;padding:.3rem .7rem;border-radius:6px;cursor:pointer"><i class="fas fa-stop me-1"></i>Stop</button>
+            </div>
+        </div>
+        <div class="scan-progress-bar"><div class="scan-progress-fill" id="scanProgressFill"></div></div>
+        <div class="scan-stats-row">
+            <span><b id="scanDoneCount">0</b> / <b id="scanTotalCount">0</b> documents</span>
+            <span>High risk: <b id="scanHighCount" style="color:#FCA5A5">0</b></span>
+            <span>PII flags: <b id="scanPiiCount" style="color:#FCD34D">0</b></span>
+        </div>
+        <div class="scan-feed" id="scanFeed"></div>
+    </div>
+
+    <div id="resultsSection">
+        <div class="results-site-label">
+            <div class="dot" id="resultsDot"></div>
+            <span id="resultsSiteLabel"></span>
+            <span style="color:#94A3B8;font-size:.72rem" id="resultsScanTime"></span>
+        </div>
+
+        <div class="verdict-banner" id="verdictBanner">
+            <div class="verdict-icon" id="verdictIcon"></div>
+            <div style="flex:1">
+                <div class="verdict-title" id="verdictTitle"></div>
+                <div class="verdict-sub" id="verdictSub"></div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:2rem;font-weight:800;line-height:1" id="verdictScore"></div>
+                <div style="font-size:.7rem;opacity:.7">avg risk score</div>
+            </div>
+        </div>
+
+        <div class="kpi-strip">
+            <div class="kpi-card" style="border-color:var(--blue)">
+                <div class="kpi-val" style="color:var(--blue)" id="kpiTotal">0</div>
+                <div class="kpi-lbl">Documents Scanned</div>
+            </div>
+            <div class="kpi-card" style="border-color:var(--red)">
+                <div class="kpi-val" style="color:var(--red)" id="kpiHighRisk">0</div>
+                <div class="kpi-lbl">High Risk Docs</div>
+            </div>
+            <div class="kpi-card" style="border-color:var(--orange)">
+                <div class="kpi-val" style="color:var(--orange)" id="kpiPii">0</div>
+                <div class="kpi-lbl">Contain PII</div>
+            </div>
+            <div class="kpi-card" style="border-color:var(--emerald)">
+                <div class="kpi-val" style="color:var(--emerald)" id="kpiAvg">0</div>
+                <div class="kpi-lbl">Avg Risk Score</div>
+            </div>
+        </div>
+
+        <div class="export-bar">
+            <div class="label"><i class="fas fa-check-circle me-2" style="color:var(--emerald)"></i>Scan complete &mdash; <span id="exportSummaryText"></span></div>
+            <button id="aiInsightsBtn" class="btn-blue" onclick="getAiInsights()" style="background:linear-gradient(135deg,#7C3AED,#4F46E5)"><i class="fas fa-brain me-1"></i> AI Insights</button>
+            <button class="btn-blue" onclick="downloadScanReport()" style="background:linear-gradient(135deg,#DC2626,#B91C1C)"><i class="fas fa-file-pdf me-1"></i> Export PDF</button>
+            <button id="newScanBtn" onclick="startNewScan()"><i class="fas fa-redo me-1"></i> New Scan</button>
+            <a id="browseDocsBtn" href="/browse"><i class="fas fa-folder-open me-1"></i> Browse Docs</a>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-8">
+                <div class="panel">
+                    <div class="panel-title"><i class="fas fa-shield-alt"></i> Documents by Risk Level</div>
+                    <div style="overflow-x:auto">
+                        <table class="doc-table">
+                            <thead><tr><th>#</th><th>Document</th><th>Category</th><th>Sensitivity</th><th>Risk Score</th><th>PII</th></tr></thead>
+                            <tbody id="docTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="panel" style="margin-bottom:.75rem">
+                    <div class="panel-title"><i class="fas fa-chart-pie"></i> Sensitivity Distribution</div>
+                    <div id="sensitivityChart"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title"><i class="fas fa-chart-bar"></i> Document Categories</div>
+                    <div id="categoryChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" id="siteBreakdownPanel" style="display:none;margin-bottom:1rem">
+            <div class="panel-title"><i class="fas fa-sitemap"></i> Results by Site</div>
+            <div id="siteBreakdown"></div>
+        </div>
+
+        <div id="aiInsightsPanel" style="display:none;margin-top:1rem"></div>
+
+    </div>
+</div>
+
+<div id="toast"><div class="toast-inner" id="toastInner"></div></div>
+
+<script>
+    var sitesData = [];
+    var lastReport = null;
+    var lastDocuments = [];
+    var lastScanAiInsights = null;
+    var scanActive = false;
+    var scanController = null;
+    var scanCancelled = false;
+
+    document.addEventListener('DOMContentLoaded', function() { loadSites(); });
+
+    async function loadSites() {
+        try {
+            var resp = await fetch('/api/scan/sites');
+            sitesData = await resp.json();
+            var totalDocs = sitesData.reduce(function(s,x){ return s + (x.doc_count||0); }, 0);
+            document.getElementById('headerDocCount').textContent = sitesData.length + ' sites \u00b7 ' + totalDocs + ' documents';
+            renderSiteCards(sitesData);
+        } catch(e) {
+            document.getElementById('sitesGrid').innerHTML = '<div class="site-card" style="color:#EF4444"><i class="fas fa-exclamation-triangle me-2"></i>Failed to load sites: ' + e.message + '</div>';
+        }
+    }
+
+    function renderSiteCards(sites) {
+        document.getElementById('sitesGrid').innerHTML = sites.map(function(site) {
+            return '<div class="site-card" id="card-' + slugify(site.id) + '">' +
+                '<div class="site-card-accent" style="background:' + site.color + '"></div>' +
+                '<div class="site-header">' +
+                  '<div class="site-icon" style="background:' + site.color + '20;color:' + site.color + '"><i class="fas fa-' + site.icon + '"></i></div>' +
+                  '<div class="site-info">' +
+                    '<div class="name">' + site.name + '</div>' +
+                    '<div class="desc">' + site.description + '</div>' +
+                    '<div class="sp-url"><i class="fas fa-link me-1" style="font-size:.6rem"></i>' + site.url + '</div>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="site-stats">' +
+                  '<div class="stat-chip"><i class="fas fa-file-alt"></i> ' + site.doc_count + ' documents</div>' +
+                  '<div class="stat-chip" id="chip-' + slugify(site.id) + '" style="display:none"><i class="fas fa-check" style="color:#10B981"></i> <span></span></div>' +
+                '</div>' +
+                '<button class="scan-site-btn" id="btn-' + slugify(site.id) + '" ' +
+                  'style="background:' + site.color + '18;color:' + site.color + ';border:1px solid ' + site.color + '40" ' +
+                  'data-site-id="' + site.id.replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '" onclick="startScan(this.dataset.siteId)">' +
+                  '<i class="fas fa-play"></i> Scan This Site' +
+                '</button>' +
+            '</div>';
+        }).join('');
+    }
+
+    function slugify(s) { return s.replace(/[^a-z0-9]/gi, '_'); }
+
+    async function startScan(siteId) {
+        if (scanActive) return;
+        scanActive = true;
+        scanCancelled = false;
+        scanController = new AbortController();
+        document.getElementById('aiInsightsPanel').style.display = 'none';
+        document.getElementById('cancelScanBtn').disabled = false;
+        document.getElementById('cancelScanBtn').innerHTML = '<i class="fas fa-stop me-1"></i>Stop';
+        document.getElementById('scanAllBtn').disabled = true;
+        sitesData.forEach(function(s) {
+            var btn = document.getElementById('btn-' + slugify(s.id));
+            if (btn) btn.disabled = true;
+        });
+        document.getElementById('resultsSection').style.display = 'none';
+        var panel = document.getElementById('scanningPanel');
+        panel.style.display = 'block';
+        var feed = document.getElementById('scanFeed');
+        feed.innerHTML = '';
+        document.getElementById('scanProgressFill').style.width = '0%';
+        document.getElementById('scanDoneCount').textContent = '0';
+        document.getElementById('scanHighCount').textContent = '0';
+        document.getElementById('scanPiiCount').textContent = '0';
+        var isAll = (siteId === 'all');
+        document.getElementById('scanTitle').textContent = isAll ? 'Scanning all SharePoint sites...' : ('Scanning: ' + siteId);
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        var data;
+        try {
+            var endpoint = isAll ? '/api/scan/all' : '/api/scan/site';
+            var body = isAll ? {} : { site_id: siteId };
+            var resp = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: scanController.signal });
+            data = await resp.json();
+            if (data.error) throw new Error(data.error);
+        } catch(e) {
+            scanActive = false;
+            panel.style.display = 'none';
+            resetScanButtons();
+            if (e.name === 'AbortError' || scanCancelled) { showToast('Scan cancelled.'); return; }
+            showToast('Scan failed: ' + e.message, true);
+            return;
+        }
+
+        var report = data.report;
+        var documents = data.documents || [];
+        lastReport = report;
+        lastDocuments = documents;
+        document.getElementById('scanTotalCount').textContent = documents.length;
+
+        var sorted = documents.slice().sort(function(a,b){ return b.risk_score - a.risk_score; });
+        var highCount = 0, piiCount = 0;
+        for (var i = 0; i < sorted.length; i++) {
+            if (scanCancelled) break;
+            var doc = sorted[i];
+            var score = parseFloat(doc.risk_score || 0);
+            var hasPii = (doc.pii_detected || []).length > 0;
+            if (score >= 7.0) highCount++;
+            if (hasPii) piiCount++;
+            var pct = Math.round((i+1)/documents.length*100);
+            document.getElementById('scanProgressFill').style.width = pct + '%';
+            document.getElementById('scanDoneCount').textContent = i+1;
+            document.getElementById('scanHighCount').textContent = highCount;
+            document.getElementById('scanPiiCount').textContent = piiCount;
+            document.getElementById('scanEta').textContent = pct < 100 ? pct + '% complete' : '';
+            var riskClass = score >= 8.5 ? 'high' : score >= 6.0 ? 'medium' : 'low';
+            var riskIcon = score >= 8.5 ? '\u26a0' : score >= 6.0 ? '\u25c6' : '\u2713';
+            var piiTag = hasPii ? ' <span style="color:#FCA5A5">[PII]</span>' : '';
+            var line = document.createElement('div');
+            line.className = 'feed-line ' + riskClass;
+            line.innerHTML = '<span style="width:12px;flex-shrink:0">' + riskIcon + '</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escH(doc.name) + '</span><span style="flex-shrink:0;margin-left:.5rem">' + score.toFixed(1) + '</span>' + piiTag;
+            feed.appendChild(line);
+            feed.scrollTop = feed.scrollHeight;
+            var delay = documents.length > 20 ? 55 : documents.length > 10 ? 90 : 160;
+            await sleep(delay);
+        }
+        document.getElementById('scanProgressFill').style.width = scanCancelled ? document.getElementById('scanProgressFill').style.width : '100%';
+        document.getElementById('scanEta').textContent = scanCancelled ? 'Stopped' : 'Complete';
+        await sleep(400);
+        panel.style.display = 'none';
+        if (scanCancelled) { scanActive = false; resetScanButtons(); showToast('Scan stopped.'); return; }
+        displayResults(report, documents, siteId, data.site_reports || null);
+        scanActive = false;
+        resetScanButtons();
+
+        if (!isAll) {
+            var chip = document.getElementById('chip-' + slugify(siteId));
+            if (chip) { chip.style.display = ''; chip.querySelector('span').textContent = documents.length + ' scanned'; }
+        } else {
+            sitesData.forEach(function(s) {
+                var chip = document.getElementById('chip-' + slugify(s.id));
+                if (chip) { chip.style.display = ''; chip.querySelector('span').textContent = 'scanned'; }
+            });
+        }
+    }
+
+    function cancelScan() {
+        scanCancelled = true;
+        if (scanController) scanController.abort();
+        document.getElementById('cancelScanBtn').disabled = true;
+        document.getElementById('cancelScanBtn').innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Stopping…';
+        document.getElementById('scanEta').textContent = 'Cancelling…';
+    }
+
+    function resetScanButtons() {
+        document.getElementById('scanAllBtn').disabled = false;
+        sitesData.forEach(function(s) {
+            var btn = document.getElementById('btn-' + slugify(s.id));
+            if (btn) btn.disabled = false;
+        });
+    }
+
+    function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+    function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function displayResults(report, documents, siteId, siteReports) {
+        var res = document.getElementById('resultsSection');
+        res.style.display = 'block';
+        res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var isAll = (siteId === 'all');
+        var siteMeta = isAll ? null : sitesData.find(function(s){ return s.id === siteId; });
+        var dotColor = siteMeta ? siteMeta.color : '#3B82F6';
+        document.getElementById('resultsDot').style.background = dotColor;
+        document.getElementById('resultsSiteLabel').textContent = isAll ? 'Showing results for: All Sites' : ('Site: ' + siteId);
+        document.getElementById('resultsScanTime').textContent = '  \u00b7  Scanned ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+        var avg = parseFloat(report.average_risk_score || 0);
+        var verdictClass, verdictIcon, verdictTitle, verdictSub;
+        if (avg >= 8.0) {
+            verdictClass='verdict-critical'; verdictIcon='\uD83D\uDD34';
+            verdictTitle='CRITICAL RISK \u2014 Immediate Action Required';
+            verdictSub='Multiple documents contain highly sensitive data requiring urgent remediation and access control review.';
+        } else if (avg >= 6.5) {
+            verdictClass='verdict-high'; verdictIcon='\uD83D\uDFE0';
+            verdictTitle='HIGH RISK \u2014 Significant Exposure Identified';
+            verdictSub='Several documents contain sensitive personal data and financial information requiring priority review.';
+        } else if (avg >= 5.0) {
+            verdictClass='verdict-moderate'; verdictIcon='\uD83D\uDFE1';
+            verdictTitle='MODERATE RISK \u2014 Action Recommended';
+            verdictSub='Documents contain sensitive data. Review access controls and apply classification policies.';
+        } else {
+            verdictClass='verdict-good'; verdictIcon='\uD83D\uDFE2';
+            verdictTitle='GOOD POSTURE \u2014 Low Risk Profile';
+            verdictSub='Document set shows low overall risk. Continue with standard information governance practices.';
+        }
+        var banner = document.getElementById('verdictBanner');
+        banner.className = 'verdict-banner ' + verdictClass;
+        document.getElementById('verdictIcon').textContent = verdictIcon;
+        document.getElementById('verdictTitle').textContent = verdictTitle;
+        document.getElementById('verdictSub').textContent = verdictSub;
+        document.getElementById('verdictScore').textContent = avg.toFixed(1);
+        document.getElementById('kpiTotal').textContent = report.total_documents_scanned || 0;
+        document.getElementById('kpiHighRisk').textContent = report.high_risk_count || 0;
+        document.getElementById('kpiPii').textContent = report.pii_detected_count || 0;
+        document.getElementById('kpiAvg').textContent = avg.toFixed(1) + '/10';
+
+        var docs = (report.documents || []).slice().sort(function(a,b){ return b.risk_score - a.risk_score; });
+        document.getElementById('docTableBody').innerHTML = docs.map(function(doc, i) {
+            var score = parseFloat(doc.risk_score || 0);
+            var pii = doc.pii_detected || [];
+            var piiHtml = pii.length > 0 ? '<span class="pii-chip"><i class="fas fa-exclamation-triangle"></i>' + pii.length + ' PII</span>' : '<span style="color:#94A3B8;font-size:.72rem">\u2014</span>';
+            var sensColor = doc.sensitivity_level === 'High' ? '#DC2626' : doc.sensitivity_level === 'Moderate' ? '#D97706' : '#059669';
+            var barColor = score >= 8.5 ? '#DC2626' : score >= 7.0 ? '#D97706' : score >= 5.0 ? '#3B82F6' : '#10B981';
+            return '<tr><td style="color:#94A3B8;font-size:.72rem">' + (i+1) + '</td>' +
+                '<td><div style="font-weight:600;font-size:.8rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escH(doc.name) + '">' + escH(doc.name) + '</div><div style="font-size:.69rem;color:#94A3B8">' + escH(doc.site||'') + '</div></td>' +
+                '<td style="font-size:.77rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escH(doc.functional_group||'\u2014') + '</td>' +
+                '<td><span style="font-size:.75rem;font-weight:700;color:' + sensColor + '">' + escH(doc.sensitivity_level||'\u2014') + '</span></td>' +
+                '<td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:' + (score*10) + '%;background:' + barColor + '"></div></div><span style="font-size:.78rem;font-weight:700;color:' + barColor + '">' + score.toFixed(1) + '</span></div></td>' +
+                '<td>' + piiHtml + '</td></tr>';
+        }).join('');
+
+        var byS = report.by_sensitivity || {};
+        var sTotal = (byS.High||0) + (byS.Moderate||0) + (byS.Low||0) || 1;
+        document.getElementById('sensitivityChart').innerHTML = [
+            {label:'High',count:byS.High||0,color:'#EF4444'},
+            {label:'Moderate',count:byS.Moderate||0,color:'#F59E0B'},
+            {label:'Low',count:byS.Low||0,color:'#10B981'},
+        ].map(function(item) {
+            return '<div class="sens-row"><div class="sens-label" style="color:' + item.color + '">' + item.label + '</div><div class="sens-track"><div class="sens-fill" style="width:' + (item.count/sTotal*100) + '%;background:' + item.color + '"></div></div><div class="sens-count">' + item.count + '</div></div>';
+        }).join('');
+
+        var byG = report.by_group || {};
+        var gEntries = Object.entries(byG).sort(function(a,b){ return b[1]-a[1]; }).slice(0,8);
+        var gMax = gEntries.length ? gEntries[0][1] : 1;
+        var colors = ['#3B82F6','#10B981','#8B5CF6','#F59E0B','#EF4444','#06B6D4','#EC4899','#84CC16'];
+        document.getElementById('categoryChart').innerHTML = gEntries.map(function(entry, i) {
+            return '<div class="bar-row"><div class="bar-label" title="' + escH(entry[0]) + '">' + escH(entry[0]) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + (entry[1]/gMax*100) + '%;background:' + colors[i%colors.length] + '"></div></div><div class="bar-val">' + entry[1] + '</div></div>';
+        }).join('');
+
+        var sbPanel = document.getElementById('siteBreakdownPanel');
+        if (isAll && siteReports) {
+            sbPanel.style.display = 'block';
+            document.getElementById('siteBreakdown').innerHTML = Object.entries(siteReports).map(function(entry) {
+                var sid = entry[0], sr = entry[1];
+                var sm = sitesData.find(function(s){ return s.id === sid; });
+                var color = sm ? sm.color : '#64748B';
+                var ar = parseFloat(sr.average_risk_score||0);
+                var rClass = ar >= 7.0 ? 'risk-high' : ar >= 5.0 ? 'risk-medium' : 'risk-low';
+                return '<div class="site-breakdown-row">' +
+                    '<div class="site-color-dot" style="background:' + color + '"></div>' +
+                    '<div class="site-name-col">' + escH(sid) + '</div>' +
+                    '<div style="font-size:.76rem;color:#64748B">' + sr.total_documents_scanned + ' docs</div>' +
+                    '<div style="font-size:.76rem;color:#EF4444">' + sr.high_risk_count + ' high risk</div>' +
+                    '<div style="font-size:.76rem;color:#F59E0B">' + sr.pii_detected_count + ' PII</div>' +
+                    '<div class="site-risk-mini ' + rClass + '">' + ar.toFixed(1) + ' avg</div>' +
+                '</div>';
+            }).join('');
+        } else {
+            sbPanel.style.display = 'none';
+        }
+
+        var summaryText = (report.total_documents_scanned||0) + ' documents classified \u00b7 ' + (report.high_risk_count||0) + ' high risk \u00b7 ' + (report.pii_detected_count||0) + ' contain PII';
+        document.getElementById('exportSummaryText').textContent = summaryText;
+    }
+
+    function startNewScan() {
+        document.getElementById('resultsSection').style.display = 'none';
+        document.getElementById('scanningPanel').style.display = 'none';
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        lastReport = null; lastDocuments = [];
+        sitesData.forEach(function(s) {
+            var chip = document.getElementById('chip-' + slugify(s.id));
+            if (chip) chip.style.display = 'none';
+        });
+    }
+
+    async function getAiInsights() {
+        if (!lastReport) { showToast('Run a scan first.', true); return; }
+        var panel = document.getElementById('aiInsightsPanel');
+        var btn = document.getElementById('aiInsightsBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Generating…';
+        panel.style.display = 'block';
+        panel.innerHTML = '<div style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(79,70,229,.12));border:1px solid rgba(124,58,237,.3);border-radius:12px;padding:1.25rem;color:#C4B5FD;text-align:center"><i class="fas fa-brain fa-lg me-2"></i>AI is analyzing your scan results…</div>';
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        try {
+            var siteLabel = document.getElementById('resultsSiteLabel').textContent.replace('Site: ','').replace('Showing results for: ','');
+            var resp = await fetch('/api/scan/ai_insights', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ site_id: siteLabel, report: lastReport }) });
+            var ins = await resp.json();
+            if (resp.status === 429 || ins.error === 'rate_limit') {
+                var secs = ins.retry_after || 60;
+                panel.innerHTML = '<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);border-radius:12px;padding:1rem 1.25rem;color:#FCD34D;font-size:.85rem"><i class="fas fa-clock me-2"></i><b>Rate limit reached.</b> The Gemini API free tier quota is temporarily exhausted. Please wait <b>' + secs + 's</b> and try again.</div>';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-brain me-1"></i> AI Insights';
+                return;
+            }
+            if (resp.status === 503 || ins.error === 'unavailable' || (ins.error && typeof ins.error === 'object' && ins.error.status === 'UNAVAILABLE') || (ins.error && String(ins.error).includes('UNAVAILABLE')) || (ins.error && String(ins.error).includes('high demand'))) {
+                panel.innerHTML =
+                    '<div style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(124,58,237,.08));border:1px solid rgba(99,102,241,.35);border-radius:14px;padding:1.5rem 1.75rem;display:flex;flex-direction:column;gap:1rem">' +
+                      '<div style="display:flex;align-items:center;gap:.85rem">' +
+                        '<div style="background:linear-gradient(135deg,#6366F1,#7C3AED);width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+                          '<i class="fas fa-satellite-dish" style="color:#fff;font-size:1rem"></i>' +
+                        '</div>' +
+                        '<div>' +
+                          '<div style="font-weight:700;font-size:.95rem;color:#C4B5FD">AI Model Temporarily Unavailable</div>' +
+                          '<div style="font-size:.75rem;color:#6366F1;margin-top:2px">503 &mdash; Service Unavailable</div>' +
+                        '</div>' +
+                      '</div>' +
+                      '<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:.85rem 1rem;font-size:.84rem;color:#A5B4FC;line-height:1.65">' +
+                        '<i class="fas fa-info-circle me-2" style="color:#818CF8"></i>' +
+                        'The Gemini AI model is currently experiencing <b style="color:#C4B5FD">high demand</b>. This is a temporary condition on Google\'s infrastructure &mdash; your scan data is intact.' +
+                      '</div>' +
+                      '<div style="display:flex;align-items:center;gap:.65rem;font-size:.8rem;color:#64748B">' +
+                        '<i class="fas fa-redo" style="color:#6366F1"></i>' +
+                        'Wait a moment, then click <b style="color:#A5B4FC">AI Insights</b> to try again.' +
+                      '</div>' +
+                    '</div>';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-brain me-1"></i> AI Insights';
+                return;
+            }
+            if (ins.error) throw new Error(typeof ins.error === 'object' ? (ins.error.message || JSON.stringify(ins.error)) : ins.error);
+            lastScanAiInsights = ins;
+            var regRows = '';
+            var regs = ins.regulatory_exposure || {};
+            ['gdpr','ccpa','hipaa','sox'].forEach(function(r) {
+                var val = regs[r] || 'Not assessed';
+                var noExp = val.toLowerCase().includes('no significant');
+                var dotColor = noExp ? '#34D399' : '#F87171';
+                regRows += '<tr><td style="padding:.45rem .5rem;font-weight:700;color:#94A3B8;font-size:.71rem;white-space:nowrap;width:55px">' + r.toUpperCase() + '</td>' +
+                    '<td style="padding:.45rem .5rem"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + dotColor + ';margin-right:.45rem;vertical-align:middle"></span>' +
+                    '<span style="font-size:.82rem;color:#CBD5E1">' + escH(val) + '</span></td></tr>';
+            });
+            var actions = (ins.top_actions || []).map(function(a, i) {
+                var colors = ['#F87171','#FBBF24','#60A5FA'];
+                var labels = ['1','2','3'];
+                return '<div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.65rem">' +
+                    '<div style="background:' + colors[i] + ';color:#0F172A;font-size:.67rem;font-weight:800;padding:.2rem .45rem;border-radius:4px;flex-shrink:0;margin-top:.15rem;min-width:18px;text-align:center">' + (labels[i]||i+1) + '</div>' +
+                    '<div style="font-size:.84rem;line-height:1.55;color:#CBD5E1">' + escH(a) + '</div>' +
+                    '</div>';
+            }).join('');
+            var govItems = (ins.data_governance || []).map(function(g) {
+                return '<li style="margin-bottom:.5rem;font-size:.84rem;color:#CBD5E1;line-height:1.55">' + escH(g) + '</li>';
+            }).join('');
+            panel.innerHTML =
+                '<div style="background:#1E293B;border:1px solid rgba(99,102,241,.35);border-radius:14px;padding:1.5rem 1.75rem;color:#E2E8F0">' +
+                '<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">' +
+                  '<div style="background:linear-gradient(135deg,#7C3AED,#4F46E5);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-brain" style="color:#fff;font-size:.95rem"></i></div>' +
+                  '<div><div style="font-weight:700;font-size:1.05rem;color:#F1F5F9">AI Insights &mdash; Scan Analysis</div><div style="font-size:.73rem;color:#64748B;margin-top:1px">Powered by Gemini AI &middot; ' + new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}) + '</div></div>' +
+                '</div>' +
+                '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-chart-line"></i>Executive Summary</div><div style="font-size:.86rem;line-height:1.7;color:#CBD5E1">' + escH(ins.executive_summary || '') + '</div></div>' +
+                '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-shield-alt"></i>Compliance Posture</div><div style="font-size:.86rem;line-height:1.7;color:#CBD5E1">' + escH(ins.compliance_posture || '') + '</div></div>' +
+                '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#F87171;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-tasks"></i>Top Priority Actions</div>' + actions + '</div>' +
+                '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-globe"></i>Regulatory Exposure</div><table style="width:100%;border-collapse:collapse">' + regRows + '</table></div>' +
+                '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.85rem"><div style="font-size:.68rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-sitemap"></i>Data Governance Recommendations</div><ul style="padding-left:1.2rem;margin:0;color:#CBD5E1">' + govItems + '</ul></div>' +
+                '<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:1rem 1.1rem"><div style="font-size:.68rem;font-weight:700;color:#FCA5A5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-exclamation-triangle"></i>Risk Trajectory</div><div style="font-size:.86rem;line-height:1.7;color:#FECACA">' + escH(ins.risk_narrative || '') + '</div></div>' +
+                '</div>';
+        } catch(e) {
+            const msg = e.message || '';
+            const isUnavailable = msg.includes('UNAVAILABLE') || msg.includes('high demand') || msg.includes('503');
+            let displayMsg;
+            try {
+                const body = JSON.parse(msg.substring(msg.indexOf('{')));
+                if (body.retry_after) {
+                    displayMsg = `\u23F3 Rate limit reached \u2014 please wait ${body.retry_after}s and try again.`;
+                } else {
+                    displayMsg = (body.message || msg);
+                }
+            } catch { displayMsg = msg; }
+            if (isUnavailable) {
+                panel.innerHTML =
+                    '<div style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(124,58,237,.08));border:1px solid rgba(99,102,241,.35);border-radius:14px;padding:1.5rem 1.75rem;display:flex;flex-direction:column;gap:1rem">' +
+                      '<div style="display:flex;align-items:center;gap:.85rem">' +
+                        '<div style="background:linear-gradient(135deg,#6366F1,#7C3AED);width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+                          '<i class="fas fa-satellite-dish" style="color:#fff;font-size:1rem"></i>' +
+                        '</div>' +
+                        '<div><div style="font-weight:700;font-size:.95rem;color:#C4B5FD">AI Model Temporarily Unavailable</div><div style="font-size:.75rem;color:#6366F1;margin-top:2px">503 &mdash; Service Unavailable</div></div>' +
+                      '</div>' +
+                      '<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:.85rem 1rem;font-size:.84rem;color:#A5B4FC;line-height:1.65">' +
+                        '<i class="fas fa-info-circle me-2" style="color:#818CF8"></i>The Gemini AI model is currently experiencing <b style="color:#C4B5FD">high demand</b>. This is temporary &mdash; your scan data is intact.' +
+                      '</div>' +
+                      '<div style="display:flex;align-items:center;gap:.65rem;font-size:.8rem;color:#64748B"><i class="fas fa-redo" style="color:#6366F1"></i>Wait a moment, then click <b style="color:#A5B4FC">AI Insights</b> to try again.</div>' +
+                    '</div>';
+            } else {
+                panel.innerHTML = '<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:1rem;color:#FCA5A5;font-size:.85rem"><i class="fas fa-exclamation-triangle me-2"></i>' + escH(displayMsg) + '</div>';
+            }
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-brain me-1"></i> AI Insights';
+    }
+
+    function showToast(msg, isError) {
+        var toast = document.getElementById('toast');
+        var inner = document.getElementById('toastInner');
+        inner.className = 'toast-inner' + (isError ? ' error' : '');
+        inner.innerHTML = '<i class="fas fa-' + (isError ? 'exclamation-triangle' : 'info-circle') + '"></i>' + escH(msg);
+        toast.style.display = 'block';
+        setTimeout(function(){ toast.style.display='none'; }, 4000);
+    }
+
+    function downloadScanReport() {
+        if (!lastReport) { showToast('No scan results to export.', true); return; }
+        var exportDocs = lastDocuments.length ? lastDocuments : (lastReport.documents || []);
+        if (!exportDocs.length) { showToast('No scan results to export.', true); return; }
+        if (!window.jspdf) { showToast('PDF library not loaded - please refresh.', true); return; }
+        var jsPDF = window.jspdf.jsPDF;
+        var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        var pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+        var margin = 16, cW = pageW - margin*2;
+        var C = { navy:[15,23,42],navyL:[30,41,59],blue:[59,130,246],red:[220,38,38],orange:[217,119,6],green:[5,150,105],s100:[241,245,249],s200:[226,232,240],s400:[148,163,184],s600:[100,116,139],s800:[30,41,59],white:[255,255,255] };
+        var report = lastReport, avg = parseFloat(report.average_risk_score||0), now = new Date();
+        doc.setFillColor.apply(doc,C.navy); doc.rect(0,0,pageW,46,'F');
+        doc.setFillColor.apply(doc,C.blue); doc.rect(0,0,4,46,'F');
+        doc.setFillColor.apply(doc,C.blue); doc.circle(margin+8,15,4.5,'F');
+        doc.setFillColor.apply(doc,C.navy); doc.circle(margin+8,15,2.2,'F');
+        doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(15);
+        doc.text('SharePoint Site Scan - Risk Assessment Report',margin+16,13);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor.apply(doc,C.s400);
+        doc.text('Meridian Consulting Group - AI Document Classification System',margin+16,20);
+        doc.setFontSize(7.5);
+        doc.text(now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) + '   -   ' + (report.total_documents_scanned||0) + ' documents scanned',margin+16,28);
+        doc.setFillColor.apply(doc,C.red); doc.roundedRect(pageW-margin-28,9,28,8,1.5,1.5,'F');
+        doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+        doc.text('CONFIDENTIAL',pageW-margin-14,14,{align:'center'});
+        var y=56;
+        var kpis=[{label:'Documents Scanned',val:report.total_documents_scanned,color:C.blue},{label:'High Risk (>=7.0)',val:report.high_risk_count,color:C.red},{label:'Contain PII',val:report.pii_detected_count,color:C.orange},{label:'Avg Risk Score',val:avg.toFixed(1)+'/10',color:avg>=7?C.red:avg>=5?C.orange:C.green}];
+        var bw=(cW-9)/4;
+        kpis.forEach(function(k,i){
+            var bx=margin+i*(bw+3);
+            doc.setFillColor.apply(doc,C.s100); doc.roundedRect(bx,y,bw,24,2,2,'F');
+            doc.setFillColor.apply(doc,k.color); doc.roundedRect(bx,y,bw,3,1.5,1.5,'F');
+            doc.setFillColor.apply(doc,k.color); doc.rect(bx,y+1.5,bw,1.5,'F');
+            doc.setTextColor.apply(doc,k.color); doc.setFont('helvetica','bold'); doc.setFontSize(18);
+            doc.text(String(k.val),bx+bw/2,y+15,{align:'center'});
+            doc.setTextColor.apply(doc,C.s600); doc.setFont('helvetica','normal'); doc.setFontSize(7);
+            doc.text(k.label,bx+bw/2,y+21,{align:'center'});
+        });
+        y+=32;
+        var byS=report.by_sensitivity||{}, sTotal=(byS.High||0)+(byS.Moderate||0)+(byS.Low||0)||1;
+        doc.setFillColor.apply(doc,C.navyL); doc.rect(margin,y,cW,7.5,'F');
+        doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+        doc.text('SENSITIVITY DISTRIBUTION',margin+4,y+5.2); y+=11;
+        [{level:'High',color:C.red},{level:'Moderate',color:C.orange},{level:'Low',color:C.green}].forEach(function(item,i){
+            var n=byS[item.level]||0, pct=n/sTotal, bx=margin+i*((cW/3-4)+6), cw_=cW/3-4;
+            doc.setTextColor.apply(doc,item.color); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+            doc.text(item.level+': '+n,bx,y);
+            doc.setFontSize(7.5); doc.setTextColor.apply(doc,C.s600); doc.setFont('helvetica','normal');
+            doc.text(Math.round(pct*100)+'%',bx,y+5);
+            doc.setFillColor.apply(doc,C.s200); doc.roundedRect(bx,y+7,cw_,4.5,1,1,'F');
+            if(pct>0){doc.setFillColor.apply(doc,item.color); doc.roundedRect(bx,y+7,cw_*pct,4.5,1,1,'F');}
+        });
+        y+=20;
+        var byG=report.by_group||{}, gEntries=Object.entries(byG).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
+        if(gEntries.length){
+            doc.setFillColor.apply(doc,C.navyL); doc.rect(margin,y,cW,7.5,'F');
+            doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+            doc.text('DOCUMENT CATEGORY DISTRIBUTION',margin+4,y+5.2); y+=11;
+            var gMax=gEntries[0][1];
+            gEntries.forEach(function(entry){
+                var g=entry[0], cnt=entry[1], pct=cnt/gMax;
+                doc.setTextColor.apply(doc,C.s800); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                doc.text(g.length>45?g.slice(0,43)+'...':g,margin,y);
+                doc.setTextColor.apply(doc,C.s600); doc.text(String(cnt),margin+cW,y,{align:'right'});
+                doc.setFillColor.apply(doc,C.s200); doc.roundedRect(margin,y+1.5,cW-18,3.5,.5,.5,'F');
+                doc.setFillColor.apply(doc,C.blue); doc.roundedRect(margin,y+1.5,(cW-18)*pct,3.5,.5,.5,'F');
+                y+=8;
+            });
+            y+=4;
+        }
+        doc.addPage();
+        doc.setFillColor.apply(doc,C.navy); doc.rect(0,0,pageW,14,'F');
+        doc.setFillColor.apply(doc,C.blue); doc.rect(0,0,4,14,'F');
+        doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+        doc.text('All Scanned Documents - Ranked by Risk Score',margin+2,9.5);
+        var sorted=exportDocs.slice().sort(function(a,b){return b.risk_score-a.risk_score;});
+        var tableRows=sorted.map(function(d,i){
+            var score=parseFloat(d.risk_score||0);
+            var piis=(d.pii_detected||[]).slice(0,3).join(', ')||'-';
+            return[i+1,d.name||'-',d.functional_group||'-',d.sensitivity_level||'-',score.toFixed(1)+'/10',piis];
+        });
+        doc.autoTable({
+            startY:18, head:[['#','Document','Category','Sensitivity','Risk Score','PII Found']],
+            body:tableRows, margin:{left:margin,right:margin},
+            headStyles:{fillColor:C.navyL,textColor:C.white,fontSize:7,fontStyle:'bold',halign:'center',cellPadding:2.5},
+            bodyStyles:{fontSize:6.5,textColor:C.s800,cellPadding:2},
+            alternateRowStyles:{fillColor:C.s100},
+            columnStyles:{0:{halign:'center',cellWidth:7},1:{cellWidth:60},2:{cellWidth:42},3:{halign:'center',cellWidth:22},4:{halign:'center',cellWidth:18},5:{cellWidth:'auto'}},
+            didParseCell:function(data){
+                if(data.section!=='body')return;
+                if(data.column.index===4){var v=parseFloat(data.cell.text[0]);data.cell.styles.textColor=v>=8?C.red:v>=6?C.orange:C.green;data.cell.styles.fontStyle='bold';}
+                if(data.column.index===3){var lvl=data.cell.text[0];data.cell.styles.textColor=lvl==='High'?C.red:lvl==='Moderate'?C.orange:C.green;data.cell.styles.fontStyle='bold';}
+            }
+        });
+        // ── AI INSIGHTS PAGE (if available) ──
+        var ins = lastScanAiInsights;
+        if (ins) {
+            doc.addPage();
+            doc.setFillColor.apply(doc,C.navyL); doc.rect(0,0,pageW,14,'F');
+            doc.setFillColor.apply(doc,C.blue); doc.rect(0,0,4,14,'F');
+            doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+            doc.text('AI Insights \u2014 Scan Risk Analysis', margin+2, 9.5);
+            var iy = 20;
+            function aiSection(title, bodyText, accentR, accentG, accentB, bgR, bgG, bgB, textR, textG, textB) {
+                if (!bodyText) return;
+                accentR=accentR||124; accentG=accentG||58; accentB=accentB||237;
+                bgR=bgR||248; bgG=bgG||250; bgB=bgB||252;
+                textR=textR||30; textG=textG||41; textB=textB||59;
+                doc.setFillColor(30,41,59); doc.roundedRect(margin,iy,cW,7,0,0,'F');
+                doc.setFillColor(accentR,accentG,accentB); doc.rect(margin,iy,3,7,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                doc.text(title.toUpperCase(), margin+6, iy+4.8);
+                iy += 10;
+                var lines = doc.splitTextToSize(String(bodyText), cW-6);
+                var bh = Math.max(lines.length*4.5+8, 14);
+                doc.setFillColor(bgR,bgG,bgB); doc.roundedRect(margin,iy,cW,bh,1,1,'F');
+                doc.setTextColor(textR,textG,textB); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                doc.text(lines, margin+3, iy+5);
+                iy += bh + 6;
+                if (iy > pageH - 22) { doc.addPage(); iy = 14; }
+            }
+            aiSection('Executive Summary', ins.executive_summary);
+            aiSection('Compliance Posture', ins.compliance_posture);
+            if ((ins.top_actions||[]).length) {
+                doc.setFillColor(30,41,59); doc.roundedRect(margin,iy,cW,7,0,0,'F');
+                doc.setFillColor(220,38,38); doc.rect(margin,iy,3,7,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                doc.text('TOP PRIORITY ACTIONS', margin+6, iy+4.8);
+                iy += 10;
+                var actColors = [[220,38,38],[217,119,6],[59,130,246]];
+                ins.top_actions.forEach(function(action, i) {
+                    var ac = actColors[i]||[59,130,246];
+                    doc.setFillColor.apply(doc,ac); doc.roundedRect(margin,iy,6,6,0.5,0.5,'F');
+                    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                    doc.text(String(i+1), margin+3, iy+4.3, {align:'center'});
+                    var aLines = doc.splitTextToSize(String(action), cW-10);
+                    doc.setTextColor(30,41,59); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                    doc.text(aLines, margin+9, iy+4.3);
+                    iy += aLines.length*4.5 + 4;
+                    if (iy > pageH - 22) { doc.addPage(); iy = 14; }
+                });
+                iy += 5;
+            }
+            var regs = ins.regulatory_exposure || {};
+            if (Object.keys(regs).length) {
+                doc.setFillColor(30,41,59); doc.roundedRect(margin,iy,cW,7,0,0,'F');
+                doc.setFillColor(124,58,237); doc.rect(margin,iy,3,7,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                doc.text('REGULATORY EXPOSURE', margin+6, iy+4.8);
+                iy += 10;
+                ['gdpr','ccpa','hipaa','sox'].forEach(function(r) {
+                    var val = regs[r] || 'Not assessed';
+                    var noExp = val.toLowerCase().indexOf('no significant') >= 0;
+                    doc.setFillColor(noExp?22:220, noExp?163:38, noExp?74:38); doc.circle(margin+3, iy+3, 2, 'F');
+                    doc.setTextColor(30,41,59); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                    doc.text(r.toUpperCase()+':', margin+8, iy+4.5);
+                    var rLines = doc.splitTextToSize(val, cW-28);
+                    doc.setFont('helvetica','normal');
+                    doc.text(rLines, margin+24, iy+4.5);
+                    iy += Math.max(rLines.length*4.5, 7) + 3;
+                    if (iy > pageH - 22) { doc.addPage(); iy = 14; }
+                });
+                iy += 3;
+            }
+            if ((ins.data_governance||[]).length) {
+                doc.setFillColor(30,41,59); doc.roundedRect(margin,iy,cW,7,0,0,'F');
+                doc.setFillColor(124,58,237); doc.rect(margin,iy,3,7,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                doc.text('DATA GOVERNANCE RECOMMENDATIONS', margin+6, iy+4.8);
+                iy += 10;
+                ins.data_governance.forEach(function(g) {
+                    doc.setFillColor(124,58,237); doc.circle(margin+2.5, iy+2.5, 1.5, 'F');
+                    var gLines = doc.splitTextToSize(String(g), cW-8);
+                    doc.setTextColor(30,41,59); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                    doc.text(gLines, margin+6, iy+4);
+                    iy += gLines.length*4.5 + 3;
+                    if (iy > pageH - 22) { doc.addPage(); iy = 14; }
+                });
+                iy += 3;
+            }
+            if (ins.risk_narrative) {
+                aiSection('Risk Trajectory', ins.risk_narrative, 220,38,38, 254,242,242, 127,29,29);
+            }
+        }
+        var total=doc.internal.getNumberOfPages();
+        for(var p=1;p<=total;p++){
+            doc.setPage(p);
+            doc.setFillColor.apply(doc,C.navy); doc.rect(0,pageH-9,pageW,9,'F');
+            doc.setTextColor.apply(doc,C.s400); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+            doc.text('AI Document Classifier \u2014 Confidential & Proprietary',margin,pageH-3.5);
+            doc.text('Page '+p+' of '+total,pageW-margin,pageH-3.5,{align:'right'});
+        }
+        doc.save('site_scan_report_'+now.toISOString().slice(0,10)+'.pdf');
+        showToast('PDF export complete!');
+    }
+</script>
+</body>
+</html>

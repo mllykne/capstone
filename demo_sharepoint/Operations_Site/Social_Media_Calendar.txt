@@ -1,0 +1,17 @@
+Trade Show ROI Analysis
+=======================
+
+Generated: 2026-02-20 13:27:54
+
+Trade Show ROI Analysis - Tech Summit 2025: Booth cost: $45K (design, logistics, staffing). Lead generation: 384 qualified leads (Cost per lead: $117). Follow-up meetings scheduled: 52 (Cost per meeting: $865). Estimated deal value from trade show: $2.1M (ROI: 46:1). Top performing collateral: Product brochure (240 requested), Demo video (188 views).
+
+Website Analytics Summary: Monthly unique visitors: 487K (up 23% YoY). Pages/session: 3.2 (up from 2.8). Bounce rate: 42% (target: <40%). Top landing pages: Product demo (18% of traffic), Pricing (15%), Case studies (12%). Traffic sources: Organic 58%, Direct 22%, Paid 15%, Referral 5%. Conversion funnel efficiency: 2.3% of visitors convert to leads.
+
+Brand Guidelines Update: Logo usage, color palette (Primary: #0078D4, Secondary: #50E6FF), typography standards (Montserrat for headlines, Open Sans for body). Brand voice: Professional, innovative, customer-centric. All marketing materials must comply. Design template files available on shared drive (OneDrive folder: Marketing/Brand_Assets).
+
+Social Media Calendar - February 2025: Instagram strategy: 4 posts weekly, 15K follower target. LinkedIn strategy: Daily thought leadership posts, executive engagement. Twitter/X: 3 posts daily focusing on industry news. TikTok pilot: 2 videos weekly to test Gen Z audience. Analytics tracked in HubSpot (login: marketing.team@company.com, password protected).
+
+Q1 Marketing Campaign: "Accelerate Your Business" theme targeting mid-market companies. Budget allocation: Digital ads 45% ($180K), Content marketing 25% ($100K), Events 20% ($80K), PR 10% ($40K). Primary channels: LinkedIn, Google Ads, Industry publications. Expected reach: 2.5M impressions, conversion target: 2.3% (58,000 leads).
+
+Email Campaign Performance (February 2025): Newsletter send: 125K subscribers. Open rate: 24.3% (benchmark: 18%). Click-through rate: 3.8% (benchmark: 2.5%). Conversion: 0.8% (105 leads). Top performing content: "5 Ways to Reduce Costs" (42% CTR). Lowest performer: "New Feature Release" (1.2% CTR).
+

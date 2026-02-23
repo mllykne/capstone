@@ -1,0 +1,166 @@
+CLOUD INFRASTRUCTURE ARCHITECTURE & CONFIGURATION GUIDE
+IT SYSTEMS — INTERNAL TECHNICAL DOCUMENTATION
+
+Document Type: Technical Reference
+Classification: CONFIDENTIAL — IT STAFF ONLY
+Author: David Kim, CTO | Employee ID: EXE-00003
+Co-Author: Sarah Chen, Sr. Systems Administrator | Employee ID: EMP-10002
+Last Updated: February 12, 2026
+Version: 3.4
+
+=================================================================
+SECTION 1: CLOUD PROVIDER OVERVIEW
+=================================================================
+
+Primary Cloud Provider: Amazon Web Services (AWS)
+Secondary Cloud Provider: Microsoft Azure (disaster recovery + M365)
+CDN Provider: Cloudflare Enterprise (Account ID: cf-acm-982771)
+
+AWS Account Structure:
+  Root Account:       acme-corp-root@acme.com
+  Account ID:         123456789012
+  Root Password:      AWSr00t!2026#Master   ← ROTATE QUARTERLY
+  MFA Device Serial:  GAWLACME0001
+
+  Production Account:   acme-prod-123456789012
+    Access Key ID:      AKIAIOSFODNN7ACMEPROD
+    Secret Access Key:  wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY1
+    Region:             us-east-1 (primary), us-west-2 (DR)
+
+  Development Account:  acme-dev-098765432109
+    Access Key ID:      AKIAIOSFODNN7ACMEDEV9
+    Secret Access Key:  devK7MDENG/bPxRfiCYacmeDEVsecretKeyExampleX
+    Region:             us-east-1
+
+Azure Tenant:
+  Tenant ID:          a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  Subscription ID:    12345678-abcd-ef01-2345-6789abcdef01
+  Service Principal:  acme-app-sp
+  Client ID:          aaaabbbb-1111-2222-3333-ccccddddeeee
+  Client Secret:      AzSp!Secret2026#ProdClient~XYZ
+  Primary Region:     East US
+
+=================================================================
+SECTION 2: LOAD BALANCER CONFIGURATION
+=================================================================
+
+AWS Application Load Balancer (ALB): acme-prod-alb
+  DNS Name:           acme-prod-alb-1234567890.us-east-1.elb.amazonaws.com
+  Target Groups:
+    tg-web-prod:      Port 443, HTTPS, health check /health
+    tg-api-prod:      Port 8443, HTTPS, health check /api/status
+    tg-admin-prod:    Port 9443, HTTPS, health check /admin/ping (IP allowlist only)
+  SSL Certificate:    arn:aws:acm:us-east-1:123456789012:certificate/abc-123
+  WAF ACL:            arn:aws:wafv2:us-east-1:123456789012:regional/acme-waf-prod
+
+Cloudflare Load Balancing:
+  Zone:               acme.com (Zone ID: 023e105f4ecef8ad9ca31a8372d0c353)
+  API Token:          cloudflare-api-token-acme-v3-prod-SECRET2026abc123
+  Load Balancer Pool: acme-origin-pool
+    Origin 1:         203.0.113.10  (weight: 50%)
+    Origin 2:         203.0.113.11  (weight: 50%)
+  Health Checks:      Every 60s, 2 failures = unhealthy
+
+=================================================================
+SECTION 3: PRODUCTION SERVER INVENTORY
+=================================================================
+
+Role                | Hostname          | Private IP     | Type          | AMI ID
+--------------------|-------------------|----------------|---------------|-------------------
+Web Tier (Primary)  | web-prod-01       | 10.0.1.10      | c5.2xlarge    | ami-0abcdef1234567
+Web Tier (Replica)  | web-prod-02       | 10.0.1.11      | c5.2xlarge    | ami-0abcdef1234567
+API Server (Primary)| api-prod-01       | 10.0.2.10      | c5.4xlarge    | ami-0abc1111111111
+API Server (Replica)| api-prod-02       | 10.0.2.11      | c5.4xlarge    | ami-0abc1111111111
+Database (Primary)  | db-prod-01        | 10.0.3.10      | r5.4xlarge    | RDS managed
+Database (Replica)  | db-prod-replica   | 10.0.3.11      | r5.4xlarge    | RDS managed
+Cache               | cache-prod-01     | 10.0.4.10      | r6g.xlarge    | ElastiCache
+Message Queue       | mq-prod-01        | 10.0.5.10      | t3.large      | Amazon MQ managed
+Jump / Bastion Host | bastion-01        | 10.0.0.10      | t3.micro      | ami-0bastion00001
+
+SSH Key Pair Name:    acme-prod-keypair
+Key Location (S3):    s3://acme-secrets-vault/ssh-keys/acme-prod-keypair.pem
+Bastion Username:     ec2-user
+Bastion Port:         22 (restricted to VPN IP: 198.51.100.0/24)
+
+=================================================================
+SECTION 4: DATABASE CONFIGURATION
+=================================================================
+
+Amazon RDS (PostgreSQL 15):
+  Endpoint:           acme-db-prod.cluster-xyz.us-east-1.rds.amazonaws.com
+  Port:               5432
+  Master Username:    acme_db_admin
+  Master Password:    DBAdmin!Prod2026#Secure$RDS
+  App User:           acme_app_user
+  App Password:       AppDB$2026!ReadWrite#Prod
+  Read Replica:       acme-db-prod-ro.cluster-xyz.us-east-1.rds.amazonaws.com
+  Snapshot Schedule:  Daily at 02:00 UTC, 30-day retention
+  Encryption Key ARN: arn:aws:kms:us-east-1:123456789012:key/mrk-1234abc
+
+Redis (ElastiCache):
+  Primary Endpoint:   acme-cache.xyz.cache.amazonaws.com:6379
+  Auth Token:         RedisAuth!Cache2026#Token$ElastiProd
+  Cluster Mode:       Disabled (single-node for now)
+
+=================================================================
+SECTION 5: CI/CD & DEPLOYMENT PIPELINE
+=================================================================
+
+GitHub Actions Secrets (stored in org secrets):
+  AWS_ACCESS_KEY_ID:      AKIAIOSFODNN7PRODCICD
+  AWS_SECRET_ACCESS_KEY:  ProdCICD/K7MDENG/bPxRfiCYEXAMPLEcicdKey2026
+  DOCKER_HUB_TOKEN:       dckr_pat_ACME_DockerHub_PAT_2026_secret_token
+  SONARQUBE_TOKEN:        sqp_acme_sonar_analysis_token_2026_abc123
+
+Container Registry:
+  ECR Registry:       123456789012.dkr.ecr.us-east-1.amazonaws.com
+  Images:
+    web-app:          acme/web-app:latest
+    api-server:       acme/api-server:latest
+    admin-console:    acme/admin-console:latest   (restricted repo)
+
+Deployment Command (manual override):
+  aws ecs update-service --cluster acme-prod --service web-app \
+    --force-new-deployment --region us-east-1
+
+=================================================================
+SECTION 6: NETWORK & VPN
+=================================================================
+
+VPC CIDR:            10.0.0.0/16
+  Public Subnets:    10.0.0.0/24, 10.0.1.0/24
+  Private Subnets:   10.0.2.0/24, 10.0.3.0/24, 10.0.4.0/24
+  DB Subnets:        10.0.3.0/24, 10.0.3.128/24
+
+VPN Gateway:         vgw-0abc123def456789a (AWS Site-to-Site VPN)
+Corporate VPN:       Palo Alto GlobalProtect
+  VPN Portal URL:    vpn.acme.com
+  Admin Username:    vpnadmin
+  Admin Password:    VPNAdmin!2026#GlobalProtect$PA
+  Pre-shared Key:    IKE-PSK-AcmeCorp!2026#Phase1Secret
+
+DNS (Route 53):
+  Hosted Zone ID:    Z1234567890ABCDEFGHIJ
+  Internal resolver: AmazonProvidedDNS (10.0.0.2)
+
+=================================================================
+SECTION 7: MONITORING & ALERTING
+=================================================================
+
+Datadog:
+  API Key:           dd_api_acme_prod_2026_abcdefghij1234567890
+  Application Key:   dd_app_acme_prod_2026_klmnopqrstuvwxyz0123
+  Dashboard URL:     https://app.datadoghq.com/d/acme-prod-overview
+
+PagerDuty:
+  Integration Key:   1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d
+  Service Route:     P-ACME-INFRA-ONCALL
+
+CloudWatch Alarms account-id: 123456789012
+
+=================================================================
+DOCUMENT CONTROL
+=================================================================
+Next Review:     March 12, 2026 (monthly)
+Approver:        David Kim (CTO), EXE-00003
+Distribution:    CTO, IT Director, Sr. Systems Admins ONLY

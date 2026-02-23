@@ -1,0 +1,41 @@
+# Environment
+.venv/
+venv/
+*.pyc
+__pycache__/
+*.egg-info/
+dist/
+build/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Data (raw documents - not tracked)
+data/simulated_sharepoint/**/*.pdf
+data/simulated_sharepoint/**/*.docx
+data/simulated_sharepoint/**/*.xlsx
+data/simulated_sharepoint/**/*.txt
+
+# Cache
+.cache/
+*.cache

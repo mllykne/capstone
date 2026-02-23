@@ -1,0 +1,48 @@
+================================================================================
+                      Background Check Report - Executive                       
+================================================================================
+
+Candidate: Patricia Wu
+Position: Director of Operations
+SSN (masked): XXX-XX-5847
+Date: 2026-02-14
+Status: CLEARED
+
+--------------------------------------------------------------------------------
+
+BACKGROUND CHECK SUMMARY
+
+Candidate: Patricia Wu (DOB: 07/22/1978)
+Position: Director of Operations
+SSN (masked): XXX-XX-5847
+Status: APPROVED FOR HIRE
+
+CHECK RESULTS
+Criminal History: CLEAR - No records found
+Employment Verification: VERIFIED - All 3 prior employers confirmed
+Education Verification: VERIFIED - MBA Stanford GSB (2009) confirmed
+Credit Analysis: EXCELLENT - 780+ credit score, no delinquencies
+Sex Offender Registry: CLEAR - No registration found
+Professional License: VALID - Series 7 Securities active
+
+EMPLOYMENT HISTORY
+2019-2025: McKinsey & Company - Senior VP (8 roles)
+2015-2019: Deloitte Consulting - Manager (confirmed)
+2009-2015: Accenture - Associate (confirmed)
+Employment gaps: 2 months (travel/sabbatical - confirmed)
+
+FINANCIAL ASSESSMENT
+Credit Score: 795 (Excellent range)
+Annual Income (estimated): $285K-$315K
+Mortgage Account: $425K balance (in good standing)
+No liens, judgments, or bankruptcy history
+
+RECOMMENDATION
+APPROVED FOR HIRE - All screening criteria met
+Offer letter can proceed as planned
+Onboarding scheduled: March 3, 2026
+Retention bonus: $75,000 after 18 months
+
+================================================================================
+CONFIDENTIAL - NORTHBRIDGE ADVISORY GROUP
+================================================================================

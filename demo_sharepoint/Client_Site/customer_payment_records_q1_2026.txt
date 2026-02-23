@@ -1,0 +1,157 @@
+CUSTOMER PAYMENT RECORDS — Q1 2026
+CONFIDENTIAL — FINANCE / BILLING DEPARTMENT RESTRICTED
+
+Document Classification: PCI-DSS SENSITIVE — RESTRICTED
+Prepared by: Diana Reyes, Billing Operations Manager
+Employee ID: FIN-20044
+SSN: 667-88-9900
+Date Generated: February 18, 2026
+Report Period: January 1 – March 31, 2026
+
+WARNING: This document contains full credit card numbers and personal customer
+financial data. Handling in violation of PCI-DSS standards is prohibited and
+may result in fines of up to $500,000 per incident.
+
+=================================================================
+ACTIVE ACCOUNTS — CREDIT CARD ON FILE
+=================================================================
+
+Account #: ACT-1001
+  Customer:       James A. Whitfield
+  Email:          j.whitfield@globalventures.com
+  Phone:          (312) 555-0147
+  Address:        2201 N. Clark St, Chicago, IL 60614
+  SSN:            211-33-4455
+  Card Type:      Visa
+  Card Number:    4532 1158 0343 6124
+  Expiry:         08/2027
+  CVV:            317
+  Billing Zip:    60614
+  Monthly Charge: $4,250.00
+  Last Charged:   01/31/2026
+  Status:         Active
+
+Account #: ACT-1002
+  Customer:       Patricia M. Okonkwo
+  Email:          pokonkwo@meridian-health.org
+  Phone:          (617) 555-0233
+  Address:        45 Tremont Street, Boston, MA 02108
+  DOB:            07/14/1971
+  Card Type:      Mastercard
+  Card Number:    5425 2334 3010 9903
+  Expiry:         11/2026
+  CVV:            841
+  Billing Zip:    02108
+  Monthly Charge: $12,750.00
+  Last Charged:   01/31/2026
+  Status:         Active
+
+Account #: ACT-1003
+  Customer:       Raymond T. Castellano
+  Email:          ray.castellano@rctcorp.net
+  Phone:          (213) 555-0088
+  Address:        3500 S. Figueroa St, Los Angeles, CA 90007
+  SSN:            322-44-5566
+  DOB:            03/22/1968
+  Card Type:      Amex
+  Card Number:    3782 822463 10005
+  Expiry:         06/2028
+  CVV:            4021
+  Billing Zip:    90007
+  Monthly Charge: $8,500.00
+  Last Charged:   01/31/2026
+  Status:         Active
+
+Account #: ACT-1004
+  Customer:       Sunita Patel-Mehrotra
+  Email:          s.patel@nexalogic.io
+  Phone:          (408) 555-0319
+  Address:        1 Infinite Loop, Cupertino, CA 95014
+  SSN:            433-55-6677
+  Card Type:      Visa
+  Card Number:    4916 3384 0737 0428
+  Expiry:         04/2027
+  CVV:            529
+  Billing Zip:    95014
+  Monthly Charge: $22,000.00
+  Last Charged:   01/31/2026
+  Status:         Active
+
+Account #: ACT-1005
+  Customer:       Gregory L. Harmon
+  Email:          g.harmon@harmon-law.com
+  Phone:          (404) 555-0461
+  Address:        191 Peachtree St NE, Suite 600, Atlanta, GA 30303
+  DOB:            11/05/1965
+  Card Type:      Discover
+  Card Number:    6011 1111 1111 1117
+  Expiry:         02/2027
+  CVV:            712
+  Billing Zip:    30303
+  Monthly Charge: $3,100.00
+  Last Charged:   01/31/2026
+  Notes:          VIP Client — waive late fees per CEO directive
+
+Account #: ACT-1006
+  Customer:       Meredith J. Volkov
+  Email:          mvolkov@voltaenergia.eu
+  Phone:          +44 207 555 0192
+  Address:        10 Canary Wharf, London, UK E14 5AB
+  Card Type:      Visa (International)
+  Card Number:    4929 1234 5678 9012
+  Expiry:         09/2026
+  CVV:            306
+  Billing Zip:    E14 5AB
+  Monthly Charge: $6,800.00
+  Last Charged:   01/31/2026
+  Currency:       USD (billed in GBP ~£5,360)
+  Status:         Active
+
+=================================================================
+Q1 TRANSACTIONS WITH DECLINED CARDS
+=================================================================
+
+Date        | Customer           | Card (last 4) | Amount   | Reason
+------------|--------------------|--------------:|----------|----------------------
+01/15/2026  | James Whitfield    | 6124          | $4,250   | Insufficient funds
+01/20/2026  | Victor Nguyen      | 4471          | $1,900   | Card reported stolen
+01/28/2026  | Kimberly Jackson   | 8803          | $750     | Expired card
+02/03/2026  | Ngozi Adeyemi      | 3312          | $5,100   | Fraud hold by issuer
+02/10/2026  | Dale Frederickson  | 9944          | $2,200   | Billing ZIP mismatch
+
+Resolution Notes:
+  - Victor Nguyen (nguyen.v@vtn.com): New card provided — 4485 3711 8220 4993, Exp 03/2027, CVV 119
+  - Kimberly Jackson (kjackson@prismdesign.co): Updated to 5100 0600 0000 0002, Exp 10/2028
+
+=================================================================
+REFUND LEDGER — Q1 2026
+=================================================================
+
+Ref #   | Customer           | Original Card     | Refund Amount | Date
+--------|--------------------|--------------------|---------------|------------
+RF-0101 | Patricia Okonkwo   | 5425...9903        | $1,500.00     | 01/22/2026
+RF-0102 | Raymond Castellano | 3782...0005        | $8,500.00     | 02/01/2026  (contract dispute — full refund per settlement)
+RF-0103 | Sunita Patel       | 4916...0428        | $500.00       | 02/14/2026
+
+=================================================================
+BANK WIRE INSTRUCTIONS FOR HIGH-VALUE ANNUAL ACCOUNTS
+=================================================================
+
+Client: Nexalogic Inc. (ACT-1004)
+  Wire to:       Acme Corp Revenue Account
+  Bank:          JPMorgan Chase
+  Routing:       021000021
+  Account:       7654321098765
+  Reference:     NEXALOGIC-ANN-2026
+
+Client: Meridian Health (ACT-1002)
+  Wire to:       Acme Corp — Healthcare Division Revenue
+  Bank:          Bank of America
+  Routing:       026009593
+  Account:       4433221100987
+  Reference:     MERIDIAN-ANN-2026
+
+=================================================================
+PREPARED BY: Diana Reyes | FIN-20044 | dreyes@acme.local
+APPROVED BY: Linda Watson, CFO | EXE-00002
+DISTRIBUTION: CFO, Billing Manager, Controller ONLY

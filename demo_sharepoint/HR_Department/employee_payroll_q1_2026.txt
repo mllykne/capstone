@@ -1,0 +1,171 @@
+PAYROLL CONFIDENTIAL REPORT - Q1 2026
+
+HUMAN RESOURCES DEPARTMENT
+ACME CORPORATION
+
+REPORT CLASSIFICATION: HIGHLY CONFIDENTIAL - HR ONLY
+Generated: February 20, 2026
+Review Period: January 1 - March 31, 2026
+Prepared by: Jennifer Martinez, HR Director
+Employee ID: HR-10001
+SSN: 555-66-7777
+
+=== EXECUTIVE COMPENSATION ===
+
+1. Chief Executive Officer - Robert Thompson
+   Employee ID: EXE-00001
+   SSN: 123-45-6789
+   Base Salary: $325,000 annually
+   Quarterly Bonus: $81,250
+   Stock Options: 50,000 shares @ $45.75
+   Benefits: $15,600/quarter
+   Total Q1 Compensation: $177,100
+   Bank Account (Direct Deposit): Chase Account #4538-9900-1234-5678
+   Emergency Contact: Margaret Thompson (spouse) - (555) 987-6543
+   
+2. Chief Financial Officer - Linda Watson
+   Employee ID: EXE-00002  
+   SSN: 234-56-7890
+   Base Salary: $285,000 annually
+   Quarterly Bonus: $71,250
+   Stock Options: 35,000 shares @ $45.75
+   401k Contribution: Max ($7,500/quarter)
+   Health Insurance: Family Plan - $1,200/month
+   Bank Account: Wells Fargo #9876-5432-1098-7654
+   
+3. Chief Technology Officer - David Kim
+   Employee ID: EXE-00003
+   SSN: 345-67-8901
+   Base Salary: $275,000 annually
+   Quarterly Performance Bonus: $68,750
+   Stock Options: 40,000 shares
+   Relocation Allowance: $25,000 (Q1 only)
+   Bank Routing: 121000248, Account: 1234567890123456
+   
+=== MANAGEMENT LEVEL COMPENSATION ===
+
+4. Jennifer Martinez - HR Director
+   Employee ID: HR-10001
+   SSN: 555-66-7777
+   Base Salary: $125,000 annually ($31,250/quarter)
+   Quarterly Management Bonus: $6,250
+   Health Insurance: Individual - $450/month
+   Life Insurance: $250,000 policy
+   401k Match: 6% up to company limit
+   Bank: Bank of America #5555-4444-3333-2222
+   Performance Rating: Exceeds Expectations
+   
+5. Mike Chen - IT Manager  
+   Employee ID: IT-10002
+   SSN: 666-77-8888
+   Base Salary: $115,000 annually
+   Quarterly Bonus: $5,750
+   Overtime Hours Q1: 45 hours @ time-and-a-half
+   Certification Bonus: $2,500 (AWS Solutions Architect)
+   Bank Account: Credit Union #7890-1234-5678-9012
+   
+6. Sarah Johnson - Marketing Manager
+   Employee ID: MKT-10003
+   SSN: 777-88-9999
+   Base Salary: $108,000 annually
+   Campaign Performance Bonus: $8,100 (Q1 success metrics)
+   Company Car Allowance: $600/month
+   Expense Account Limit: $2,000/month
+   Bank Account: Chase #1111-2222-3333-4444
+   
+=== STAFF LEVEL COMPENSATION ===
+
+7. Lisa Rodriguez - Marketing Specialist
+   Employee ID: MKT-20001
+   SSN: 888-99-0000
+   Base Salary: $65,000 annually
+   Quarterly Bonus Pool Share: $1,625
+   Student Loan Assistance: $300/month
+   Health Savings Account: $1,500 company contribution
+   Bank Direct Deposit: Navy Federal #9999-8888-7777-6666
+   
+8. James Wilson - Software Developer  
+   Employee ID: IT-20001
+   SSN: 999-00-1111
+   Base Salary: $95,000 annually
+   Code Quality Bonus: $2,375
+   Professional Development: $3,000/year budget
+   Remote Work Stipend: $200/month
+   Bank Account: TD Bank #5432-1098-7654-3210
+   
+9. Maria Garcia - Accounting Specialist
+   Employee ID: FIN-20001
+   SSN: 000-11-2222
+   Base Salary: $58,000 annually  
+   Accuracy Bonus: $1,450 (zero errors Q1)
+   Overtime Q1: 23 hours @ 1.5x rate
+   Professional CPA Bonus: $1,000
+   Bank Account: Wells Fargo #8765-4321-0987-6543
+   
+10. Kevin Park - Sales Representative
+    Employee ID: SALES-20001
+    SSN: 111-22-3333
+    Base Salary: $45,000 annually
+    Commission Q1: $18,750 (125% of quota)
+    Travel Allowance: $1,200/month
+    Company Phone Allowance: $85/month
+    Bank Account: Chase #2468-1357-9024-6813
+    
+=== BENEFITS SUMMARY BY EMPLOYEE ===
+
+Health Insurance Enrollments:
+- Family Plans (4 employees): $4,800/month total
+- Individual Plans (6 employees): $2,700/month total
+- Total Health Costs Q1: $22,500
+
+401(k) Contributions Q1:
+- Employee Contributions: $89,450
+- Company Match: $53,670
+- Total Retirement Q1: $143,120
+
+Payroll Tax Summary Q1:
+- Federal Withholding: $156,750
+- State Withholding: $47,325
+- Social Security: $71,240
+- Medicare: $16,663
+- Total Tax Withholdings: $291,978
+
+=== SENSITIVE PAYROLL DATA ===
+
+Payroll Processing Bank Account:
+Bank: First National Business
+Account Number: 1122334455667788
+Routing Number: 021000021
+Account Type: Business Checking
+Monthly Balance Average: $2.8M
+
+Direct Deposit File Encryption Key:
+AES-256 Key: 3F2B8A9C7E1D4F6A8B9C2E5F1A3D6F9B2C5E8F1A4D7F0B3E6F9C2A5D8F1B4E7
+
+Payroll Software Access:
+System: ADP Workforce Now
+Admin Username: payroll.admin@acmecorp.com
+Password: PayrollAdmin!2026#ADP
+Company Code: ACME2026
+API Key: 1234567890abcdef1234567890abcdef
+
+=== CONFIDENTIALITY NOTICE ===
+This document contains highly sensitive employee personal and financial information including:
+- Social Security Numbers
+- Bank account information
+- Salary and compensation details
+- Personal emergency contacts
+- System access credentials
+
+Unauthorized access, use, disclosure, or distribution is strictly prohibited.
+Violation may result in disciplinary action, termination, and legal prosecution.
+
+HR Contact for Questions:
+Jennifer Martinez, HR Director
+Direct: (555) 123-4567 x1001
+Email: j.martinez@acmecorp.com
+
+IT Security Contact:
+Mike Chen, IT Manager
+Direct: (555) 123-4567 x2001
+Secure Email: security@acmecorp.com

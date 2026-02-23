@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Classification System</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233B82F6'%3E%3Cpath d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --primary-light: #60A5FA;
+            --blue: #3B82F6;
+            --navy: #0F172A;
+            --navy-light: #1E293B;
+            --slate: #334155;
+            --success: #10B981;
+            --emerald: #10B981;
+            --green: #10B981;
+            --warning: #F59E0B;
+            --orange: #F59E0B;
+            --danger: #EF4444;
+            --red: #EF4444;
+            --purple: #7C3AED;
+            --bg: #F1F5F9;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --border-light: #E2E8F0;
+            --brand-gradient: linear-gradient(135deg, #1E3A5F 0%, #0F172A 100%);
+        }
+
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; }
+
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 52px; background: var(--navy); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+        .topbar-brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; display: flex; align-items: center; gap: .5rem; }
+        .brand-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; }
+        .topbar-nav { display: flex; gap: .25rem; }
+        .topbar-nav a { color: #94A3B8; text-decoration: none; font-size: .82rem; font-weight: 500; padding: .35rem .7rem; border-radius: 6px; transition: all .15s; }
+        .topbar-nav a:hover { color: #fff; background: rgba(255,255,255,.07); }
+        .topbar-nav a.active { color: #fff; background: rgba(59,130,246,.25); }
+        .page-header { background: var(--brand-gradient); color: #fff; padding: 1.75rem 1.5rem; }
+        .page-header h1 { font-size: 1.45rem; font-weight: 700; margin: 0 0 .3rem; letter-spacing: -.03em; }
+        .page-header p { font-size: .85rem; color: #94A3B8; margin: 0 0 .85rem; }
+        .header-badges { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .header-badge { display: inline-flex; align-items: center; gap: .4rem; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); border-radius: 6px; padding: .3rem .7rem; font-size: .75rem; color: #CBD5E1; }
+        .main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1.5rem; }
+        @media(max-width:768px){ .kpi-strip { grid-template-columns: repeat(2,1fr); } }
+        .kpi-card { background: #fff; border-radius: 10px; padding: .9rem 1rem; border: 1px solid #E2E8F0; border-left: 3px solid; }
+        .kpi-card .kpi-val { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+        .kpi-card .kpi-lbl { font-size: .71rem; color: #64748B; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-top: 4px; }
+        .nav-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .nav-card { background: #fff; border-radius: 12px; padding: 1.4rem; border: 1px solid #E2E8F0; box-shadow: 0 1px 6px rgba(0,0,0,.06); transition: box-shadow .2s, border-color .2s; position: relative; overflow: hidden; text-decoration: none; display: block; }
+        .nav-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #CBD5E1; text-decoration: none; }
+        .nav-card-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .nav-card-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; margin-bottom: 1rem; }
+        .nav-card h4 { font-size: .95rem; font-weight: 700; color: var(--navy); margin: 0 0 .4rem; }
+        .nav-card p { font-size: .8rem; color: #64748B; margin: 0 0 1rem; line-height: 1.5; }
+        .nav-card .card-action { display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem; font-weight: 600; color: var(--primary); }
+        .nav-card .card-action i { font-size: .7rem; }
+        .panel { background: #fff; border-radius: 12px; padding: 1.25rem; border: 1px solid #E2E8F0; box-shadow: 0 1px 6px rgba(0,0,0,.06); margin-bottom: 1rem; }
+        .panel-title { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #334155; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+        .panel-title i { color: var(--blue); }
+        .cap-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
+        @media(max-width:600px){ .cap-list { grid-template-columns: 1fr; } }
+        .cap-list li { display: flex; align-items: flex-start; gap: .5rem; font-size: .84rem; color: #334155; }
+        .cap-list li i { color: var(--emerald); margin-top: 2px; flex-shrink: 0; }
+
+    </style>
+</head>
+<body>
+<nav class="topbar">
+    <a class="topbar-brand" href="/"><span class="brand-dot"></span>AI Document Classifier</a>
+    <div class="topbar-nav">
+        <a href="/" class="active">Home</a>
+        <a href="/browse"><i class="fas fa-folder-open me-1"></i>Browse</a>
+        <a href="/upload">Upload</a>
+        <a href="/scan">Scanner</a>
+        <a href="/dashboard"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div style="max-width:1200px;margin:0 auto">
+        <h1><i class="fas fa-shield-halved me-2" style="color:#60A5FA"></i>AI Document Classification System</h1>
+        <p>Intelligent document analysis, risk assessment, and PII detection &mdash; powered by Google Gemini AI</p>
+        <div class="header-badges">
+            <span class="header-badge"><i class="fas fa-th-large" style="color:#0078D4"></i>Meridian Consulting Group &mdash; Microsoft 365</span>
+            <span class="header-badge"><i class="fas fa-file-lines" style="color:#60A5FA"></i>123 Demo Documents</span>
+            <span class="header-badge"><i class="fas fa-sitemap" style="color:#60A5FA"></i>9 SharePoint Sites</span>
+            <span class="header-badge"><i class="fas fa-robot" style="color:#A78BFA"></i>Gemini AI Powered</span>
+        </div>
+    </div>
+</div>
+
+<div class="main">
+    <div class="kpi-strip">
+        <div class="kpi-card" style="border-color:var(--blue)">
+            <div class="kpi-val" style="color:var(--blue)">123</div>
+            <div class="kpi-lbl">Demo Documents</div>
+        </div>
+        <div class="kpi-card" style="border-color:var(--purple)">
+            <div class="kpi-val" style="color:var(--purple)">9</div>
+            <div class="kpi-lbl">Business Categories</div>
+        </div>
+        <div class="kpi-card" style="border-color:var(--emerald)">
+            <div class="kpi-val" style="color:var(--emerald)">9</div>
+            <div class="kpi-lbl">SharePoint Sites</div>
+        </div>
+        <div class="kpi-card" style="border-color:var(--orange)">
+            <div class="kpi-val" style="color:var(--orange)">0&ndash;10</div>
+            <div class="kpi-lbl">Risk Score Range</div>
+        </div>
+    </div>
+
+    <div class="nav-cards-grid">
+        <a href="/browse" class="nav-card">
+            <div class="nav-card-accent" style="background:linear-gradient(90deg,#3B82F6,#60A5FA)"></div>
+            <div class="nav-card-icon" style="background:linear-gradient(135deg,#1D4ED8,#3B82F6)"><i class="fas fa-folder-open"></i></div>
+            <h4>Browse Documents</h4>
+            <p>Explore all 123 demo documents across 9 SharePoint sites with real-time classification status and risk scores.</p>
+            <span class="card-action"><i class="fas fa-arrow-right"></i> Browse Now</span>
+        </a>
+        <a href="/upload" class="nav-card">
+            <div class="nav-card-accent" style="background:linear-gradient(90deg,#10B981,#34D399)"></div>
+            <div class="nav-card-icon" style="background:linear-gradient(135deg,#065F46,#10B981)"><i class="fas fa-upload"></i></div>
+            <h4>Upload &amp; Classify</h4>
+            <p>Upload .txt, .pdf, or .docx files and receive instant AI classification with sensitivity and risk assessment.</p>
+            <span class="card-action"><i class="fas fa-arrow-right"></i> Upload File</span>
+        </a>
+        <a href="/scan" class="nav-card">
+            <div class="nav-card-accent" style="background:linear-gradient(90deg,#7C3AED,#A78BFA)"></div>
+            <div class="nav-card-icon" style="background:linear-gradient(135deg,#4C1D95,#7C3AED)"><i class="fas fa-satellite-dish"></i></div>
+            <h4>Site Scanner</h4>
+            <p>Batch scan all SharePoint sites simultaneously &mdash; unified risk report with AI-generated compliance insights.</p>
+            <span class="card-action"><i class="fas fa-arrow-right"></i> Run Scan</span>
+        </a>
+        <a href="/dashboard" class="nav-card">
+            <div class="nav-card-accent" style="background:linear-gradient(90deg,#F59E0B,#FCD34D)"></div>
+            <div class="nav-card-icon" style="background:linear-gradient(135deg,#78350F,#F59E0B)"><i class="fas fa-tachometer-alt"></i></div>
+            <h4>Dashboard</h4>
+            <p>View all classified documents in a filterable table with category breakdowns, risk distribution, and exports.</p>
+            <span class="card-action"><i class="fas fa-arrow-right"></i> Open Dashboard</span>
+        </a>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title"><i class="fas fa-list-check"></i>System Capabilities</div>
+        <ul class="cap-list">
+            <li><i class="fas fa-check-circle"></i>9 Business Functional Groups</li>
+            <li><i class="fas fa-check-circle"></i>Confidence Metrics &amp; Scoring</li>
+            <li><i class="fas fa-check-circle"></i>3 Sensitivity Levels (Low / Moderate / High)</li>
+            <li><i class="fas fa-check-circle"></i>Multi-format Support (.txt, .pdf, .docx)</li>
+            <li><i class="fas fa-check-circle"></i>Risk Scoring (0&ndash;10 scale)</li>
+            <li><i class="fas fa-check-circle"></i>RAG-Enhanced Classification Context</li>
+            <li><i class="fas fa-check-circle"></i>PII Detection &amp; Alerting</li>
+            <li><i class="fas fa-check-circle"></i>AI Insights &amp; Compliance Reporting</li>
+        </ul>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

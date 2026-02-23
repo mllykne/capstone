@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Classification Workbench</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0078D4;
+            --secondary: #50E6FF;
+            --success: #107C10;
+            --danger: #D13438;
+            --warning: #FFB900;
+        }
+
+        * {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.4rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container-main {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #106EBE 100%);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .panel-header i {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+
+        .panel-body {
+            padding: 2rem;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .document-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .document-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .document-item:hover {
+            background: #f8f9fa;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 120, 212, 0.1);
+        }
+
+        .document-item.active {
+            background: #e7f3ff;
+            border-color: var(--primary);
+            border-left: 4px solid var(--primary);
+        }
+
+        .document-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .document-size {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .document-status {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .status-unclassified {
+            background: rgba(255, 185, 0, 0.2);
+            color: #FF9800;
+        }
+
+        .status-classified {
+            background: rgba(16, 124, 16, 0.2);
+            color: #107C10;
+        }
+
+        .status-high-risk {
+            background: rgba(209, 52, 56, 0.2);
+            color: #D13438;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Custom Popup/Notification Styles */
+        .custom-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            padding: 2rem;
+            z-index: 10000;
+            max-width: 500px;
+            width: 90%;
+            animation: popupSlideIn 0.3s ease-out;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes popupSlideIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .popup-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .popup-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 0.75rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .popup-icon.success { background: #107C10; color: white; }
+        .popup-icon.error { background: #D13438; color: white; }
+        .popup-icon.warning { background: #FF8C00; color: white; }
+
+        .popup-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .popup-message {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .popup-btn {
+            padding: 0.5rem 1.25rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .popup-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .popup-btn.secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .popup-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .upload-zone:hover {
+            background: #e7f3ff;
+            border-color: #106EBE;
+        }
+
+        .upload-zone.dragover {
+            background: #d0e6f7;
+            border-color: #106EBE;
+            transform: scale(1.02);
+        }
+
+        .upload-zone i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .btn-action {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-action:hover {
+            background: #106EBE;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+        }
+
+        .btn-action:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-card {
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .badge-sensitivity {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .badge-high {
+            background: rgba(209, 52, 56, 0.2);
+            color: var(--danger);
+        }
+
+        .badge-moderate {
+            background: rgba(255, 185, 0, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-low {
+            background: rgba(16, 124, 16, 0.2);
+            color: var(--success);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .distribution-bar {
+            height: 25px;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            color: white;
+            font-weight: 600;
+            padding: 0 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+
+        .no-data i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .panel-body {
+                padding: 1rem;
+            }
+
+            .tabs-container {
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                flex: 1;
+                font-size: 0.9rem;
+                padding: 0.75rem;
+            }
+
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="fas fa-microscope"></i> Classification Workbench
+            </span>
+            <span style="color: #999; font-size: 0.9rem;">
+                <i class="fas fa-check-circle" style="color: var(--success);"></i> System Ready
+            </span>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid container-main">
+        <!-- Main Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <i class="fas fa-cogs"></i>
+                <div>
+                    <h2>Document Classification Control Panel</h2>
+                    <small>Browse, upload, classify, and analyze documents</small>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <!-- Tab Navigation -->
+                <div class="tabs-container">
+                    <button class="tab-btn active" onclick="switchTab('browse')">
+                        <i class="fas fa-folder"></i> Browse Documents
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('upload')">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('classify')">
+                        <i class="fas fa-magic"></i> Classify
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('scan')">
+                        <i class="fas fa-network-wired"></i> Full Scan
+                    </button>
+                </div>
+
+                <!-- Browse Tab -->
+                <div id="browse" class="tab-content active">
+                    <h4>Document Browser</h4>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Select a document to preview and classify</p>
+                    
+                    <div class="document-list" id="documentList">
+                        <div class="no-data">
+                            <i class="fas fa-spinner"></i> Loading documents...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Tab -->
+                <div id="upload" class="tab-content">
+                    <h4>Upload Test Document</h4>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Upload .txt, .docx, or .pdf files (max 5MB)</p>
+                    
+                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileUpload').click()">
+                        <i class="fas fa-file-upload"></i>
+                        <p><strong>Drag & drop files here</strong></p>
+                        <p style="color: #999; font-size: 0.9rem;">or click to select</p>
+                        <input type="file" id="fileUpload" style="display: none;" accept=".txt,.docx,.pdf" onchange="uploadFile()" />
+                    </div>
+
+                    <div id="uploadProgress" style="margin-top: 1.5rem; display: none;">
+                        <div class="spinner"></div>
+                        <p>Uploading and classifying...</p>
+                    </div>
+                </div>
+
+                <!-- Classify Tab -->
+                <div id="classify" class="tab-content">
+                    <h4>Classify Selected Document</h4>
+                    <p style="color: #666; margin-bottom: 1.5rem;" id="selectedDocInfo">
+                        <em>Select a document from the Browse tab first</em>
+                    </p>
+
+                    <button class="btn-action" id="classifyBtn" onclick="classifyDocument()" disabled>
+                        <i class="fas fa-wand-magic-sparkles"></i> Run Classification
+                    </button>
+
+                    <div id="classifyProgress" style="margin-top: 1.5rem; display: none;">
+                        <div class="spinner"></div>
+                        <p>Analyzing document...</p>
+                    </div>
+
+                    <div id="classifyProgress" style="margin-top: 1.5rem; display: none;">
+                        <div class="spinner"></div>
+                        <p>Analyzing with AI...</p>
+                    </div>
+                </div>
+
+                <!-- Scan Tab -->
+                <div id="scan" class="tab-content">
+                    <h4>Full SharePoint Site Scan</h4>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Scan all documents across all sites and generate enterprise risk report</p>
+
+                    <button class="btn-action" onclick="scanAllSites()">
+                        <i class="fas fa-network-wired"></i> Start Scan
+                    </button>
+
+                    <div id="scanProgress" style="margin-top: 1.5rem; display: none;">
+                        <div class="spinner"></div>
+                        <p>Scanning all documents...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="panel" id="resultsPanel" style="display: none;">
+            <div class="panel-header">
+                <i class="fas fa-chart-bar"></i>
+                <div>
+                    <h2>Classification Results</h2>
+                    <small id="resultSubtitle"></small>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <!-- Single Document Results -->
+                <div id="singleResults" style="display: none;">
+                    <div class="result-card">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>File:</strong> <span id="resultFile"></span></p>
+                                <p><strong>Functional Group:</strong> <span id="resultGroup"></span></p>
+                                <p><strong>Group Confidence:</strong> <span id="resultGroupConf"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p>
+                                    <strong>Sensitivity:</strong> 
+                                    <span id="resultSensitivity" class="badge-sensitivity"></span>
+                                </p>
+                                <p><strong>Sensitivity Confidence:</strong> <span id="resultSensConf"></span></p>
+                                <p><strong>Risk Score:</strong> <span id="resultRisk" style="font-weight: 700;"></span></p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div>
+                                    <p style="font-weight: 600; color: #333; margin-bottom: 0.5rem;">Classification Confidence</p>
+                                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                                        <div style="margin-bottom: 0.75rem;">
+                                            <span style="font-size: 0.9rem; color: #666;">Functional Group:</span>
+                                            <div style="display: flex; align-items: center; margin-top: 0.25rem;">
+                                                <div style="flex: 1; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+                                                    <div class="confidence-bar" id="groupConfBar" style="height: 100%; background: linear-gradient(90deg, #107C10, #52C41A); transition: width 0.8s ease;"></div>
+                                                </div>
+                                                <span id="groupConfText" style="margin-left: 0.75rem; font-weight: 600; color: #107C10;"></span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span style="font-size: 0.9rem; color: #666;">Sensitivity Level:</span>
+                                            <div style="display: flex; align-items: center; margin-top: 0.25rem;">
+                                                <div style="flex: 1; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+                                                    <div class="confidence-bar" id="sensConfBar" style="height: 100%; background: linear-gradient(90deg, #1890FF, #40A9FF); transition: width 0.8s ease;"></div>
+                                                </div>
+                                                <span id="sensConfText" style="margin-left: 0.75rem; font-weight: 600; color: #1890FF;"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p style="font-weight: 600; color: #333; margin-bottom: 0.5rem;">Risk Assessment</p>
+                                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                                        <div style="text-align: center; margin-bottom: 0.75rem;">
+                                            <div id="riskScoreCircle" style="width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 0.5rem auto; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; color: white;"></div>
+                                            <span style="font-size: 0.85rem; color: #666;">Risk Score</span>
+                                        </div>
+                                        <div id="riskIndicators"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+                            <p style="font-weight: 600; color: #333; margin-bottom: 0.75rem;">Analysis Reasoning</p>
+                            <div style="background: #f8f9fa; padding: 1.25rem; border-radius: 8px; border-left: 4px solid var(--primary);">
+                                <p style="color: #555; line-height: 1.6; margin: 0;" id="resultReasoning"></p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+                            <p style="font-weight: 600; color: #333; margin-bottom: 0.75rem;">Detected PII / Sensitive Data</p>
+                            <div id="resultPII" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                        </div>
+
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                            <p><strong>RAG Context (Top 3 Matches):</strong></p>
+                            <div id="resultRAG"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scan Report -->
+                <div id="scanResults" style="display: none;">
+                    <div class="metric-grid" id="reportMetrics"></div>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h5>Distribution by Functional Group</h5>
+                        <div id="groupDistribution"></div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h5>Distribution by Sensitivity</h5>
+                        <div id="sensitivityDistribution"></div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h5>Top 10 Highest Risk Documents</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>File</th>
+                                        <th>Group</th>
+                                        <th>Sensitivity</th>
+                                        <th>Risk Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topRisksTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <button class="btn-action" onclick="exportResults()">
+                            <i class="fas fa-download"></i> Export Report (JSON)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedDocument = null;
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.closest('.tab-btn').classList.add('active');
+
+            if (tabName === 'browse') {
+                loadDocuments();
+            }
+        }
+
+        // Select document for classification
+        function selectDocument(path, name) {
+            selectedDocument = { path, name };
+            document.getElementById('selectedDocInfo').innerHTML = `<strong>Selected:</strong> ${name}`;
+            document.getElementById('classifyBtn').disabled = false;
+        }
+
+        // Load documents list
+        function loadDocuments() {
+            fetch('/api/documents')
+                .then(r => r.json())
+                .then(data => {
+                    let html = '';
+                    for (const [site, docs] of Object.entries(data.by_site)) {
+                        html += `<div style="padding: 0.5rem 0; font-weight: 600; color: var(--primary);">${site} (${docs})</div>`;
+                        
+                        data.documents
+                            .filter(d => d.site === site)
+                            .forEach(doc => {
+                                let statusClass = doc.status === 'unclassified' ? 'status-unclassified' : 'status-classified';
+                                let riskClass = '';
+                                let riskBadge = '';
+                                
+                                if (doc.classification && doc.classification.is_high_risk) {
+                                    statusClass = 'status-high-risk';
+                                    let riskColor = doc.classification.risk_score >= 8.0 ? '#D13438' : '#FF8C00';
+                                    riskBadge = `<span class="risk-badge" style="background: ${riskColor}20; color: ${riskColor};">⚠ Risk: ${doc.classification.risk_score}</span>`;
+                                }
+                                
+                                let piiWarning = doc.classification && doc.classification.has_pii ? '<span style="color: #D13438; margin-left: 0.5rem;">🔒 Has PII</span>' : '';
+                                
+                                html += `
+                                    <div class="document-item" onclick="selectDocument('${doc.path}', '${doc.name}')">
+                                        <div>
+                                            <div class="document-name">${doc.name}</div>
+                                            <div class="document-size">${doc.size_mb} MB</div>
+                                            <div style="margin-top: 0.35rem;">
+                                                <span class="document-status ${statusClass}">${doc.status.toUpperCase()}</span>
+                                                ${riskBadge}
+                                                ${piiWarning}
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-chevron-right" style="color: #ccc;"></i>
+                                    </div>
+                                `;
+                            });
+                    }
+                    document.getElementById('documentList').innerHTML = html || '<div class="no-data"><p>No documents found</p></div>';
+                });
+        }
+
+        // Select document
+        function selectDocument(path, name) {
+            selectedDocument = path;
+            document.getElementById('selectedDocInfo').innerHTML = `<strong>${name}</strong> selected`;
+            document.getElementById('classifyBtn').disabled = false;
+        }
+
+        // Classify selected
+        function classifySelected() {
+            if (!selectedDocument) return;
+
+            document.getElementById('classifyProgress').style.display = 'block';
+
+            fetch('/api/classify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file_path: selectedDocument })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    displaySingleResult(data);
+                })
+                .finally(() => {
+                    document.getElementById('classifyProgress').style.display = 'none';
+                });
+        }
+
+        // Custom popup system
+        function showPopup(type, title, message, callback = null) {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            
+            const popup = document.createElement('div');
+            popup.className = 'custom-popup';
+            
+            const iconMap = { success: '✓', error: '✕', warning: '⚠' };
+            
+            popup.innerHTML = `
+                <div class="popup-header">
+                    <div class="popup-icon ${type}">${iconMap[type] || '!'}</div>
+                    <div class="popup-title">${title}</div>
+                </div>
+                <div class="popup-message">${message}</div>
+                <div class="popup-actions">
+                    <button class="popup-btn primary" onclick="closePopup()">OK</button>
+                </div>
+            `;
+            
+            overlay.appendChild(popup);
+            document.body.appendChild(overlay);
+            
+            window.closePopup = function() {
+                document.body.removeChild(overlay);
+                if (callback) callback();
+            };
+        }
+
+        // Display single result
+        function displaySingleResult(data) {
+            if (data.error) {
+                showPopup('error', 'Classification Error', data.error);
+                return;
+            }
+
+            const c = data.classification;
+            const r = data.risk_assessment || {};
+            
+            document.getElementById('resultFile').textContent = data.file;
+            document.getElementById('resultGroup').textContent = c.functional_group || 'N/A';
+            document.getElementById('resultSensitivity').textContent = c.sensitivity_level || 'N/A';
+            document.getElementById('resultSensitivity').className = `badge-sensitivity badge-${c.sensitivity_level ? c.sensitivity_level.toLowerCase() : 'low'}`;
+            document.getElementById('resultRisk').textContent = r.risk_score || c.risk_score || 'N/A';
+            document.getElementById('resultReasoning').textContent = c.reasoning || 'No reasoning provided';
+            
+            // Update confidence bars and text
+            const groupConf = (c.functional_group_confidence * 100) || 0;
+            const sensConf = (c.sensitivity_confidence * 100) || 0;
+            
+            document.getElementById('groupConfBar').style.width = groupConf + '%';
+            document.getElementById('groupConfText').textContent = groupConf.toFixed(0) + '%';
+            document.getElementById('sensConfBar').style.width = sensConf + '%';
+            document.getElementById('sensConfText').textContent = sensConf.toFixed(0) + '%';
+            
+            // Update risk score circle
+            const riskScore = r.risk_score || c.risk_score || 0;
+            const riskCircle = document.getElementById('riskScoreCircle');
+            riskCircle.textContent = riskScore.toFixed(1);
+            
+            if (riskScore >= 8) {
+                riskCircle.style.background = 'linear-gradient(135deg, #D13438, #FF6B6B)';
+            } else if (riskScore >= 6) {
+                riskCircle.style.background = 'linear-gradient(135deg, #FF8C00, #FFB84D)';
+            } else if (riskScore >= 4) {
+                riskCircle.style.background = 'linear-gradient(135deg, #FFB900, #FFD700)';
+            } else {
+                riskCircle.style.background = 'linear-gradient(135deg, #107C10, #52C41A)';
+            }
+            
+            // Risk indicators
+            const indicators = document.getElementById('riskIndicators');
+            let indicatorHtml = '';
+            
+            if (r.has_pii || (c.pii_detected && c.pii_detected.length > 0)) {
+                indicatorHtml += '<div style="color: #D13438; font-size: 0.85rem; margin-bottom: 0.25rem;">🔒 Contains PII</div>';
+            }
+            
+            if (r.is_high_risk) {
+                indicatorHtml += '<div style="color: #D13438; font-size: 0.85rem; margin-bottom: 0.25rem;">⚠️ High Risk Document</div>';
+            }
+            
+            if (c.sensitivity_level === 'High') {
+                indicatorHtml += '<div style="color: #FF8C00; font-size: 0.85rem; margin-bottom: 0.25rem;">🔐 High Sensitivity</div>';
+            }
+            
+            indicators.innerHTML = indicatorHtml || '<div style="color: #107C10; font-size: 0.85rem;">✓ Standard Risk Level</div>';
+
+            // PII
+            const piiDiv = document.getElementById('resultPII');
+            const piiData = c.pii_detected || [];
+            if (piiData.length > 0) {
+                piiDiv.innerHTML = piiData.map(pii => 
+                    `<span style="background: rgba(209, 52, 56, 0.2); color: #D13438; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">🔒 ${pii}</span>`
+                ).join('');
+            } else {
+                piiDiv.innerHTML = '<span style="color: #107C10; font-style: italic;">No PII detected</span>';
+            }
+
+            document.getElementById('singleResults').style.display = 'block';
+            document.getElementById('scanResults').style.display = 'none';
+            document.getElementById('resultsPanel').style.display = 'block';
+            document.getElementById('resultSubtitle').textContent = `Individual Document Classification`;
+        }
+
+        // Upload file classification
+        function uploadFile() {
+            const fileInput = document.getElementById('fileUpload');
+            if (!fileInput.files.length) {
+                showPopup('warning', 'No File Selected', 'Please select a file to upload and classify.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            document.getElementById('uploadProgress').style.display = 'block';
+            
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        showPopup('error', 'Upload Failed', data.error);
+                    } else {
+                        showPopup('success', 'File Classified', `Successfully classified: ${file.name}`);
+                        displaySingleResult(data);
+                    }
+                })
+                .catch(error => {
+                    showPopup('error', 'Network Error', 'Failed to upload file. Please check your connection and try again.');
+                })
+                .finally(() => {
+                    document.getElementById('uploadProgress').style.display = 'none';
+                    fileInput.value = '';
+                });
+        }
+                piiDiv.innerHTML = '<span style="color: #999;">None detected</span>';
+            }
+
+            // RAG
+            const ragDiv = document.getElementById('resultRAG');
+            ragDiv.innerHTML = data.rag_context.map((r, i) => `
+                <div style="margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 6px;">
+                    <strong>${i + 1}. ${r.name}</strong> (Similarity: ${(r.similarity_score * 100).toFixed(1)}%)
+                    ${r.matched_keywords.length > 0 ? `<div style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Keywords: ${r.matched_keywords.join(', ')}</div>` : ''}
+                </div>
+            `).join('');
+
+            document.getElementById('singleResults').style.display = 'block';
+            document.getElementById('scanResults').style.display = 'none';
+            document.getElementById('resultSubtitle').textContent = 'Single Document Classification';
+            document.getElementById('resultsPanel').style.display = 'block';
+        }
+
+        // Scan all sites
+        // Classify selected document
+        function classifyDocument() {
+            if (!selectedDocument) {
+                showPopup('warning', 'No Document Selected', 'Please select a document from the Browse tab first.');
+                return;
+            }
+
+            document.getElementById('classifyProgress').style.display = 'block';
+
+            fetch('/api/classify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file_path: selectedDocument.path })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        showPopup('error', 'Classification Failed', data.error);
+                    } else {
+                        displaySingleResult(data);
+                        showPopup('success', 'Classification Complete', `Successfully classified: ${selectedDocument.name}`);
+                    }
+                })
+                .catch(error => {
+                    showPopup('error', 'Network Error', 'Classification failed. Please check your connection and try again.');
+                })
+                .finally(() => {
+                    document.getElementById('classifyProgress').style.display = 'none';
+                });
+        }
+
+        function scanAllSites() {
+            document.getElementById('scanProgress').style.display = 'block';
+
+            fetch('/api/scan/all', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    displayScanResult(data.report);
+                })
+                .finally(() => {
+                    document.getElementById('scanProgress').style.display = 'none';
+                });
+        }
+
+        // Display scan result
+        function displayScanResult(report) {
+            // Metrics
+            const metricsDiv = document.getElementById('reportMetrics');
+            metricsDiv.innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-label">Total Documents</div>
+                    <div class="metric-value">${report.total_documents_scanned}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">High Risk</div>
+                    <div class="metric-value">${report.high_risk_count} (${report.high_risk_percentage}%)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">PII Detected</div>
+                    <div class="metric-value">${report.pii_detected_count}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Avg Risk Score</div>
+                    <div class="metric-value">${report.average_risk_score.toFixed(1)}</div>
+                </div>
+            `;
+
+            // Sensitive Data Alert (Priority Alert)
+            const alertDiv = document.getElementById('reportMetrics');
+            if (report.sensitive_data_alert && report.sensitive_data_alert.total_with_pii > 0) {
+                const alertHtml = `
+                    <div style="grid-column: 1 / -1; background: rgba(209, 52, 56, 0.15); border: 2px solid #D13438; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                        <div style="color: #D13438; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;">
+                            ⚠️ SENSITIVE DATA ALERT
+                        </div>
+                        <div style="color: #333; margin-bottom: 0.5rem;">
+                            <strong>${report.sensitive_data_alert.total_with_pii} documents</strong> contain personally identifiable information (PII)
+                        </div>
+                        <div style="color: #666; font-size: 0.9rem;">
+                            Types detected: ${report.sensitive_data_alert.types_found.join(', ')}
+                        </div>
+                    </div>
+                `;
+                alertDiv.innerHTML += alertHtml;
+            }
+
+            // Group distribution
+            const groupDiv = document.getElementById('groupDistribution');
+            let maxCount = Math.max(...Object.values(report.by_group));
+            groupDiv.innerHTML = Object.entries(report.by_group).map(([group, count]) => {
+                const pct = (count / report.total_documents_scanned * 100).toFixed(1);
+                const width = (count / maxCount * 100).toFixed(1);
+                return `
+                    <div style="margin-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <strong style="font-size: 0.9rem;">${group}</strong>
+                            <span>${count}</span>
+                        </div>
+                        <div class="distribution-bar" style="width: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: ${pct}%;">
+                            ${pct}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Sensitivity distribution
+            const sensDiv = document.getElementById('sensitivityDistribution');
+            sensDiv.innerHTML = Object.entries(report.by_sensitivity).map(([sens, count]) => {
+                const pct = (count / report.total_documents_scanned * 100).toFixed(1);
+                const color = sens === 'High' ? '#D13438' : sens === 'Moderate' ? '#FFB900' : '#107C10';
+                return `
+                    <div style="margin-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <strong style="font-size: 0.9rem;">${sens}</strong>
+                            <span>${count}</span>
+                        </div>
+                        <div style="width: 100%; height: 25px; background: ${color}; border-radius: 4px; display: flex; align-items: center; color: white; font-weight: 600; padding: 0 0.75rem;">
+                            ${pct}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Top risks
+            const risksTable = document.getElementById('topRisksTable');
+            risksTable.innerHTML = report.top_risks.map((risk, i) => {
+                const sensClass = `badge-${risk.sensitivity.toLowerCase()}`;
+                return `
+                    <tr>
+                        <td>#${i + 1}</td>
+                        <td>${risk.file_name}</td>
+                        <td>${risk.functional_group}</td>
+                        <td><span class="badge-sensitivity ${sensClass}">${risk.sensitivity}</span></td>
+                        <td><strong>${risk.risk_score}</strong></td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('singleResults').style.display = 'none';
+            document.getElementById('scanResults').style.display = 'block';
+            document.getElementById('resultSubtitle').textContent = `Full Site Scan - ${report.total_documents_scanned} documents analyzed`;
+            document.getElementById('resultsPanel').style.display = 'block';
+        }
+
+        // Upload handler
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileUpload');
+
+            // Load documents on page load
+            loadDocuments();
+
+            uploadZone.addEventListener('click', () => fileInput.click());
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+            function handleFiles(files) {
+                if (!files.length) return;
+                
+                const file = files[0];
+                const formData = new FormData();
+                formData.append('file', file);
+
+                document.getElementById('uploadProgress').style.display = 'block';
+
+                fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.error) {
+                            showToast('Error: ' + data.error, 'error');
+                        } else {
+                            displaySingleResult(data);
+                            showToast('File uploaded and classified successfully!', 'success');
+                        }
+                    })
+                    .finally(() => {
+                        document.getElementById('uploadProgress').style.display = 'none';
+                        fileInput.value = '';
+                    });
+            }
+
+            loadDocuments();
+        });
+
+        // Export
+        function exportResults() {
+            window.location.href = '/api/export/json';
+        }
+
+        function showToast(msg, type) {
+            var t = document.getElementById('siteToast');
+            var icons = { success:'check-circle', error:'exclamation-circle', warning:'exclamation-triangle', info:'info-circle' };
+            var colors = { success:'#10B981', error:'#EF4444', warning:'#F59E0B', info:'#3B82F6' };
+            var k = type || 'info';
+            t.innerHTML = '<div style="display:flex;align-items:center;gap:.65rem;background:#1E293B;color:#F1F5F9;padding:.75rem 1.1rem;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:.84rem;font-weight:500;border-left:3px solid ' + (colors[k]||colors.info) + ';max-width:360px;pointer-events:auto"><i class="fas fa-' + (icons[k]||icons.info) + '" style="color:' + (colors[k]||colors.info) + ';font-size:.95rem;flex-shrink:0"></i><span>' + msg + '</span></div>';
+            t.style.display = 'block';
+            clearTimeout(t._tid);
+            t._tid = setTimeout(function(){ t.style.display='none'; }, 4200);
+        }
+    </script>
+<div id="siteToast" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;display:none;pointer-events:none"></div>
+</body>
+</html>

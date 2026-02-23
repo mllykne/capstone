@@ -1,0 +1,13 @@
+Customer Contact Directory
+==========================
+
+Generated: 2026-02-20 13:27:54
+
+Enterprise Agreement - Customer ABC Corporation: Annual contract value $500,000. Service tier: Premium with dedicated account manager (Sarah Johnson, sarah.j@ourcompany.com). Pricing model: $35/user/month for up to 2,000 users. Volume discounts apply for increments beyond 2,000. Contract renewal: 12/31/2026.
+
+Customer Service Standard Operating Procedures v3.2: All support staff must verify customer identity using SSN or account number before discussing account details. Escalation protocol: issues > 24 hours escalate to management. Customer satisfaction target: 4.5/5.0 stars. SLA: 98% uptime commitment with $100/hour credit for violations.
+
+Q4 2024 Customer Satisfaction Survey: Overall satisfaction 4.3/5.0 (target: 4.5). Top complaint: Billing accuracy (22% of responses). Top strength: Technical support responsiveness (89% positive). Client retention rate: 94% (target: 95%). Churn risk clients identified: 3 accounts representing $2.1M revenue.
+
+CUSTOMER CASE STUDY: Acme Corporation implemented our platform and achieved 40% efficiency improvement in Q4 2024. Key metrics: Processing time reduced from 8 hours to 4.8 hours, error rate decreased by 35%. Primary contact: John Smith (john.smith@acmecorp.com, 555-123-4567, SSN on file: 234-56-7890).
+

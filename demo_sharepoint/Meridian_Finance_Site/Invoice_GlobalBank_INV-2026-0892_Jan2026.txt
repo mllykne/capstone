@@ -1,0 +1,52 @@
+MERIDIAN CONSULTING GROUP
+ACCOUNTS RECEIVABLE — INVOICE
+
+Invoice Number: INV-2026-0892
+Invoice Date: February 1, 2026
+Due Date: March 3, 2026
+
+BILL TO:
+GlobalBank Financial Services
+Attn: Accounts Payable
+120 Park Avenue
+New York, NY 10017
+AP Contact: finance@globalbank.com
+Purchase Order: PO-GB-2026-04471
+
+FROM:
+Meridian Consulting Group, Inc.
+500 Boylston Street, Suite 2000
+Boston, MA 02116
+Tax ID: 04-7231899
+Remittance: Bank of America, ABA 026009593, Account #4892-7731-00
+
+ENGAGEMENT: Digital Transformation Advisory (ENG-2026-0047)
+Period: January 1 – January 31, 2026
+
+LINE ITEMS
+─────────────────────────────────────────────────────────────────
+  Service                      Hours    Rate        Amount
+─────────────────────────────────────────────────────────────────
+  Partner (M. Chen)              24    $425.00     $10,200.00
+  Senior Manager (S. Williams)  116    $285.00     $33,060.00
+  Senior Consultant (T. Becker) 156    $195.00     $30,420.00
+  Senior Consultant (A. Park)   148    $195.00     $28,860.00
+  Consultant (J. Morris)        172    $165.00     $28,380.00
+  Analyst (K. Zhang)            168    $125.00     $21,000.00
+  Travel Expenses (receipts attached)               $8,742.35
+  Business Center / Materials                       $1,450.00
+─────────────────────────────────────────────────────────────────
+  SUBTOTAL                                        $162,112.35
+  Retainer Applied (per SOW Section 4.2)          -$40,000.00
+─────────────────────────────────────────────────────────────────
+  TOTAL DUE                                       $122,112.35
+─────────────────────────────────────────────────────────────────
+
+PAYMENT INSTRUCTIONS
+Wire Transfer: Bank of America, ABA 026009593, Acct 4892773100
+ACH: Same ABA/Account
+Check: Payable to Meridian Consulting Group, Inc. — mail to Boston address above
+
+For billing questions: billing@meridian-consulting.com | (617) 555-0300
+
+NOTE: Late payments accrue interest at 1.5% per month per MSA Section 6.3.

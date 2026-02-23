@@ -1,0 +1,177 @@
+CONFIDENTIAL SETTLEMENT AGREEMENT AND RELEASE
+LEGAL DEPARTMENT — LITIGATION FILE
+
+Document Classification: ATTORNEY-CLIENT PRIVILEGED | WORK PRODUCT PROTECTED
+Case Reference:       ACME-LIT-2024-007 / Docket: 1:24-cv-04512-AT (N.D. Ga.)
+Prepared By:          Charles Hale, Esq. — Tarkington & Hale LLP (Outside Counsel)
+Internal Co-Counsel:  Priya Sharma, General Counsel | EMP-00009 | priya.sharma@acme.com
+Date Executed:        February 28, 2026
+Version:              FINAL — SIGNED COPY
+
+THIS DOCUMENT MUST NOT BE SHARED, FORWARDED, OR REPRODUCED.
+Disclosure outside named parties violates confidentiality clause §9 and may
+constitute actionable breach. Any questions: legal@acme.com / (404) 555-0310.
+
+==================================================================
+PARTIES
+==================================================================
+
+PLAINTIFF:
+  Name:              Victor E. Castillo
+  Former Title:      Senior Sales Manager
+  Employee ID:       EMP-55021 (terminated October 14, 2024)
+  SSN:               759-00-5566
+  Address:           881 Peachtree Hills Ave NE, Atlanta, GA 30305
+  Attorney:          Rebecca Gold, Esq.
+  Law Firm:          Gold & Carmichael LLP
+  Firm Address:      Suite 1800, 191 Peachtree St NE, Atlanta, GA 30303
+  Attorney Phone:    (404) 555-0455
+  Attorney Email:    rgb@goldcarmichael.com
+
+DEFENDANT:
+  Name:              Acme Corp LLC
+  Registered Agent:  Janet Lawson, CEO | EXE-00001
+  Address:           1420 Peachtree St NE, Suite 600, Atlanta, GA 30309
+  Attorney:          Charles Hale, Esq. — Tarkington & Hale LLP
+  Attorney Phone:    (404) 555-0310
+
+==================================================================
+BACKGROUND / RECITALS
+==================================================================
+
+Plaintiff filed a complaint on November 2, 2024, in the United States District Court
+for the Northern District of Georgia, Case No. 1:24-cv-04512-AT, asserting claims for:
+
+  (1) Wrongful termination in violation of the Americans with Disabilities Act
+      (42 U.S.C. § 12101 et seq.) related to Plaintiff's diagnosis of Type 2
+      diabetes requiring accommodation;
+  (2) Retaliation under the ADA following Plaintiff's August 2024 EEOC charge;
+  (3) Failure to accommodate (interactive process claim);
+  (4) State law claim: intentional infliction of emotional distress (Georgia).
+
+Defendant denies all allegations and admits no liability whatsoever.
+
+The parties, having engaged in good-faith arm's-length negotiations facilitated
+by mediator Judge (Ret.) Patricia Owens on January 30, 2026, agree to settle fully
+and finally on the terms set forth herein.
+
+==================================================================
+SETTLEMENT TERMS
+==================================================================
+
+SECTION 1 — SETTLEMENT PAYMENT
+
+1.1  Total Settlement Amount:    $312,500.00 (Three Hundred Twelve Thousand,
+                                  Five Hundred Dollars and Zero Cents)
+
+1.2  Payment Breakdown:
+       a) Compensatory damages (lost wages, emotional distress):  $187,500.00
+       b) Attorneys' fees and costs (direct to Gold & Carmichael):  $93,750.00
+       c) COBRA premium reimbursement (6 months):                    $4,800.00
+       d) Tax gross-up (1099 characterization agreed):              $26,450.00
+
+1.3  Payment Method:
+       Compensatory + Gross-up ($213,950.00):
+         ACH to Plaintiff's account:
+           Bank: Wells Fargo Bank, N.A.
+           Routing: 121000248
+           Account: 7722334411
+           Account Name: Victor E. Castillo
+
+       Attorneys' Fees ($93,750.00) wire directly to:
+         Gold & Carmichael LLP Client Trust Account
+         Bank: SunTrust (Truist), N.A.
+         Routing: 061000104
+         Account: 991122334466
+
+       COBRA ($4,800.00): Paid directly to BCBS GA, policy ending overlap.
+
+1.4  Payment Deadline: 21 calendar days from execution of this Agreement.
+     Late Payment Penalty: 12% per annum on outstanding balance.
+
+SECTION 2 — RELEASE OF ALL CLAIMS
+
+2.1  Plaintiff, on behalf of himself and his heirs, estate, executors, assigns,
+     attorneys, and agents, hereby irrevocably and unconditionally releases and
+     forever discharges Acme Corp LLC, its officers, directors, employees, agents,
+     affiliates, successors, and assigns from:
+       - Any and all claims, demands, actions, causes of action, suits, debts,
+         damages, costs, attorneys' fees, or liabilities of any nature whatsoever,
+         known or unknown, arising out of or related to Plaintiff's employment
+         with or separation from Acme Corp LLC.
+
+2.2  This release includes but is not limited to all claims under:
+       Title VII of the Civil Rights Act of 1964, ADA, ADEA, FMLA, NLRA,
+       ERISA, Georgia Fair Employment Practices Act, state tort law claims,
+       and all EEOC charges including Charge No. 410-2024-07833.
+
+SECTION 3 — NON-DISCLOSURE / CONFIDENTIALITY
+
+3.1  The existence of this Agreement, the Settlement Amount, and all terms herein
+     are STRICTLY CONFIDENTIAL. Neither party shall disclose to any third party
+     (including family members, friends, or media) any information about:
+       (a) the fact of settlement; (b) the settlement amount; (c) the underlying facts.
+
+3.2  Permitted disclosures: attorneys, accountants, tax advisors, spouse (under NDA),
+     or as required by law, court order, or SEC/regulatory requirement.
+
+3.3  Liquidated damages for breach: $25,000 per occurrence, plus attorneys' fees.
+
+SECTION 4 — NON-DISPARAGEMENT
+
+4.1  Plaintiff agrees not to make any oral, written, or social media statements
+     that disparage or damage the reputation of Acme Corp LLC, its officers,
+     employees, or products.
+
+4.2  Acme Corp agrees to provide only neutral reference: dates of employment and
+     title only. Designated reference: Carla Jones, HR Director | (404) 555-0145.
+
+SECTION 5 — NO REHIRE / NO ADMISSION
+
+5.1  Plaintiff agrees not to seek re-employment with Acme Corp LLC or any affiliate.
+5.2  Nothing herein constitutes admission of liability, wrongdoing, or violation of law.
+
+SECTION 6 — TAX INDEMNIFICATION
+
+6.1  Plaintiff solely responsible for tax liability on all payments received.
+     Acme Corp will issue IRS Form 1099-MISC for compensatory portion and
+     W-2 supplemental income reporting where applicable.
+
+SECTION 7 — GOVERNING LAW & DISPUTES
+
+7.1  This Agreement governed by the laws of the State of Georgia.
+7.2  Disputes resolved exclusively by binding arbitration (AAA rules, Atlanta, GA).
+
+SECTION 8 — ENTIRE AGREEMENT / SEVERABILITY
+
+8.1  This Agreement constitutes the entire agreement between the parties.
+8.2  If any provision is unenforceable, the remainder continues in full force.
+
+==================================================================
+SIGNATURES
+==================================================================
+
+PLAINTIFF:
+  Signature: _________________________________  Date: February 28, 2026
+  Victor E. Castillo
+  SSN on file: 759-00-5566
+
+DEFENDANT — ACME CORP LLC:
+  Signature: _________________________________  Date: February 28, 2026
+  Janet Lawson, CEO | EXE-00001
+
+  Witness / Notary: Sofia Reed, Notary (GA Commission #1234567)
+
+PLAINTIFF'S COUNSEL:
+  Rebecca Gold, Esq. | Gold & Carmichael LLP | Date: February 28, 2026
+
+DEFENDANT'S COUNSEL:
+  Charles Hale, Esq. | Tarkington & Hale LLP  | Date: February 28, 2026
+
+==================================================================
+DOCUMENT CONTROL
+==================================================================
+File Location:      \\acme-fs01\Legal\Litigation\2024\ACME-LIT-2024-007\ (encrypted)
+Copies Held By:     Charles Hale (Tarkington & Hale), Priya Sharma (General Counsel)
+Destruction Date:   February 28, 2033 (7-year hold per litigation retention policy)
+Distribution:       STRICTLY LIMITED — CEO, CFO, General Counsel, Outside Counsel ONLY

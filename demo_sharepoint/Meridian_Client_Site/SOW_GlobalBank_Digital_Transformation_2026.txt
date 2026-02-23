@@ -1,0 +1,48 @@
+STATEMENT OF WORK
+Project: Digital Transformation Advisory
+Client: GlobalBank Financial Services
+Engagement Code: ENG-2026-0047
+Date: January 15, 2026
+Prepared by: Meridian Consulting Group
+
+PARTIES
+This Statement of Work is entered into between Meridian Consulting Group ("Meridian") and GlobalBank Financial Services ("Client"), with registered offices at 120 Park Avenue, New York, NY 10017.
+
+Client Contact: James Thornton, SVP Technology
+Email: j.thornton@globalbank.com
+Phone: +1 (212) 555-0193
+Billing Address: 120 Park Avenue, New York, NY 10017
+
+SCOPE OF WORK
+Meridian will provide advisory services to support GlobalBank's digital transformation initiative across three workstreams:
+1. Core Banking Platform Modernization - Assessment and roadmap for migrating from legacy COBOL-based systems to a cloud-native architecture
+2. Customer Data Platform - Design and implementation of a unified customer data platform to consolidate data from 14 disparate source systems
+3. Digital Channel Strategy - Advisory on mobile and online banking improvements targeting 40% increase in digital adoption
+
+ENGAGEMENT TIMELINE
+Phase 1 - Discovery & Assessment: February 1 - March 15, 2026
+Phase 2 - Strategy Development: March 16 - April 30, 2026
+Phase 3 - Roadmap & Business Case: May 1 - May 31, 2026
+Phase 4 - Implementation Support: June 1 - December 31, 2026
+
+TEAM COMPOSITION
+- Engagement Partner: Michael Chen (m.chen@meridian-consulting.com)
+- Project Manager: Sarah Williams
+- Senior Consultants: 3 FTEs
+- Analysts: 4 FTEs
+
+FEES AND PAYMENT
+Phase 1: $485,000 fixed fee
+Phase 2: $620,000 fixed fee
+Phase 3: $195,000 fixed fee
+Phase 4: $1,800,000 time and materials (not to exceed)
+Total Engagement Value: $3,100,000
+
+Payment Terms: Net 30 from invoice date. Late payments accrue interest at 1.5% per month.
+
+CONFIDENTIALITY
+All work product, deliverables, and information exchanged under this agreement is subject to the Non-Disclosure Agreement dated December 1, 2025 between Meridian and GlobalBank.
+
+SIGNATURES
+Michael Chen, Managing Partner - Meridian Consulting Group
+James Thornton, SVP Technology - GlobalBank Financial Services

@@ -1,0 +1,45 @@
+MERIDIAN CONSULTING GROUP
+VENDOR CONTRACT — PROFESSIONAL SERVICES
+
+Contract ID: VC-2026-0019
+Effective Date: January 1, 2026
+
+VENDOR: Lighthouse Analytics LLC
+Vendor Address: 88 Newbury Street, Boston, MA 02116
+Vendor EIN: 82-4471092
+Primary Contact: Dr. Patricia Odum, CEO
+Email: p.odum@lighthouse-analytics.com
+Phone: (617) 555-0771
+Payment Terms: Net 30 | Wire preferred
+Bank: Citizen Bank, ABA 211070175, Acct 9834-001-4492
+
+SCOPE
+Lighthouse Analytics will provide data science subcontracting services to support Meridian's engagements. Services include:
+- Advanced statistical modeling and ML model development
+- Data pipeline architecture
+- Custom dashboard development (Power BI, Tableau)
+- R and Python programming for analytical deliverables
+
+RATE SCHEDULE
+Data Scientist (PhD): $285/hour
+Data Scientist (MS): $240/hour
+Data Engineer: $225/hour
+BI Developer: $195/hour
+
+CURRENT PROJECT ALLOCATIONS (FY2026):
+- GlobalBank Digital Transformation: Up to $180,000
+- Continental Aerospace Workforce Planning: Up to $95,000
+- Northstar Retail Supply Chain: Up to $140,000
+Total Authorized 2026: $415,000
+
+CONFIDENTIALITY
+All client data shared with Lighthouse Analytics is subject to Meridian's master NDA and applicable client data protection agreements. Lighthouse Analytics has executed a Business Associate Agreement for protected health information.
+
+BACKGROUND CHECKS
+All Lighthouse Analytics personnel assigned to Meridian engagements have passed criminal background checks. Records on file with Meridian HR.
+
+IP OWNERSHIP
+All work product and deliverables created under this contract are work-for-hire and are the property of Meridian Consulting Group.
+
+Approved by: Lynn Foster, CFO — Meridian Consulting Group
+Date: January 1, 2026

@@ -1,0 +1,47 @@
+MERIDIAN CONSULTING GROUP
+EXPENSE REPORT — TRAVEL & BUSINESS EXPENSES
+
+Report Number: EXP-2026-0341
+Employee: Thomas Becker, Senior Consultant
+Employee ID: MC-2847
+Department: Technology & Digital Practice
+Manager: Sarah Williams
+Period: January 13–17, 2026
+Client: GlobalBank Financial Services (ENG-2026-0047)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DATE       CATEGORY        DESCRIPTION                    AMOUNT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Jan 13     Airfare         BOS → JFK (Delta DL408)       $387.00
+Jan 13     Ground Trans    Uber to Logan Airport           $34.50
+Jan 13     Hotel           Marriott Marquis NYC, 1 night $289.00
+Jan 13     Meals - Dinner  Client dinner (4 attendees)   $312.40
+Jan 14     Hotel           Marriott Marquis NYC, 1 night $289.00
+Jan 14     Meals - Lunch   Working lunch (3 attendees)    $89.60
+Jan 14     Meals - Dinner  Solo dinner                    $47.20
+Jan 15     Conference      Zoom Room / AV rental          $85.00
+Jan 15     Hotel           Marriott Marquis NYC, 1 night $289.00
+Jan 15     Meals - Breakfast Breakfast meeting (2 ppl)    $62.40
+Jan 16     Hotel           Marriott Marquis NYC, 1 night $289.00
+Jan 16     Meals - Dinner  Team dinner (5 attendees)     $428.75
+Jan 17     Airfare         JFK → BOS (Delta DL521)       $412.00
+Jan 17     Ground Trans    Uber from Logan                $38.20
+Jan 17     Parking         Logan Airport parking, 4 days $128.00
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOTAL CLAIMED:                                          $3,241.05
+Advance Paid:                                          $1,500.00
+NET REIMBURSEMENT DUE:                                 $1,741.05
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PAYMENT METHOD
+Direct deposit to: Chase Bank (personal)
+Account ending: 4492 (on file in Concur)
+Routing: 021000021
+
+CLIENT BILLING
+100% billable to GlobalBank ENG-2026-0047
+Approved for billing by: Sarah Williams, SM
+Approved by Finance: Lynn Foster
+
+Employee Certification: All expenses are accurate, business-related, and supported by attached receipts.
+Signature: Thomas Becker | Date: January 20, 2026

@@ -1,0 +1,138 @@
+[
+  {
+    "file_path": "demo_sharepoint/Finance_Site/Budget_Variance_Analysis.txt",
+    "action": "accept",
+    "timestamp": "2026-02-20T15:38:18.101649",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/Budget_Variance_Analysis.txt",
+    "action": "accept",
+    "timestamp": "2026-02-20T15:43:03.567764",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/Budget_Variance_Analysis.txt",
+    "action": "accept",
+    "timestamp": "2026-02-20T20:39:42.171235",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/Budget_Variance_Analysis.docx",
+    "action": "accept",
+    "timestamp": "2026-02-21T10:33:31.617481",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/Budget_Variance_Analysis.docx",
+    "action": "reject",
+    "timestamp": "2026-02-21T11:04:17.100826",
+    "corrections": {},
+    "reason": "Classification rejected by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/Budget_Variance_Analysis.docx",
+    "action": "accept",
+    "timestamp": "2026-02-21T11:04:51.079495",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/ConsultingReport_01.txt",
+    "action": "accept",
+    "timestamp": "2026-02-21T11:05:03.165138",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/Budget_Variance_Analysis.docx",
+    "action": "accept",
+    "timestamp": "2026-02-21T11:08:17.037178",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/HR_Site/HR_03.docx",
+    "action": "accept",
+    "timestamp": "2026-02-21T11:14:06.809688",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/HR_Site/HR_Performance_Improvement_Plan.txt",
+    "action": "accept",
+    "timestamp": "2026-02-21T11:28:48.688198",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Marketing_Site/social_media_credentials.txt",
+    "action": "accept",
+    "timestamp": "2026-02-21T11:41:57.808416",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/Budget_Variance_Analysis.txt",
+    "action": "accept",
+    "timestamp": "2026-02-21T11:47:05.826532",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/ConsultingReport_06.txt",
+    "action": "accept",
+    "timestamp": "2026-02-21T11:58:55.863307",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/ConsultingReport_06.txt",
+    "action": "accept",
+    "timestamp": "2026-02-21T11:58:56.078176",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/ConsultingReport_06.txt",
+    "action": "reject",
+    "timestamp": "2026-02-21T12:03:45.031278",
+    "corrections": {},
+    "reason": "Classification rejected by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/Budget_Variance_Analysis.txt",
+    "action": "accept",
+    "timestamp": "2026-02-21T12:25:57.653255",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  },
+  {
+    "file_path": "demo_sharepoint/Finance_Site/ConsultingReport_03.txt",
+    "action": "accept",
+    "timestamp": "2026-02-21T12:58:42.623352",
+    "corrections": {},
+    "reason": "Classification accepted by human reviewer",
+    "reviewer": "Human Reviewer"
+  }
+]

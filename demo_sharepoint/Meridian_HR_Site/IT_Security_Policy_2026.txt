@@ -1,0 +1,63 @@
+MERIDIAN CONSULTING GROUP
+INFORMATION SECURITY & IT POLICY
+
+Document ID: IT-POL-2026-001
+Owner: IT Department / General Counsel
+Last Reviewed: January 15, 2026
+Classification: INTERNAL USE ONLY
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. ACCEPTABLE USE POLICY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+All Meridian employees and contractors must use firm technology resources (laptops, phones, email, VPN, cloud services) exclusively for business purposes. Limited personal use is permitted provided it does not compromise firm security or productivity.
+
+Prohibited activities:
+- Installing unauthorized software on firm devices
+- Using personal cloud storage (personal Dropbox, Google Drive) for client data
+- Connecting to public Wi-Fi without activating the Meridian VPN (Cisco AnyConnect)
+- Sharing credentials with any other party including colleagues
+- Accessing client systems with personal devices unless approved by IT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. DATA CLASSIFICATION POLICY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Level 1 — Public: Marketing materials, published whitepapers, public website content
+Level 2 — Internal: Internal memos, staff announcements, training materials
+Level 3 — Confidential: Client data, financial results, HR records, partner comp
+Level 4 — Restricted: Passwords, security keys, PII containing SSN/DOB, BAA-protected PHI
+
+All Level 3 and 4 data must be stored in approved SharePoint libraries or encrypted at rest.
+Sharing Level 3/4 data via email requires encryption (use Outlook S/MIME or Virtru).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. ACCESS CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+All user accounts require Multi-Factor Authentication (Microsoft Authenticator).
+VPN: Required for all remote access to firm systems.
+Privileged accounts (IT Admins): Additional 2FA via hardware token (YubiKey).
+  Admin accounts: sys.admin@meridian-consulting.com (DO NOT share credentials)
+  Emergency admin break-glass: Contact IT Director (it.director@meridian-consulting.com)
+
+Current firewall and network infrastructure managed by CrowdStrike Falcon.
+Endpoint protection: All laptops enrolled in Microsoft Intune / Defender ATP.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. INCIDENT RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Report security incidents immediately:
+  IT Help Desk: it-help@meridian-consulting.com | (617) 555-0345 (24/7)
+  Security Hotline: (617) 555-0346
+  CISO: Marcus Webb — m.webb@meridian-consulting.com
+
+Common incidents to report:
+- Phishing emails (forward to phishing@meridian-consulting.com)
+- Suspected data breach or unauthorized access
+- Lost or stolen device (IT will remotely wipe within 4 hours)
+- Ransomware or malware alerts
+
+Backup recovery: All SharePoint data is backed up per Microsoft 365 retention (90 days).
+DR environment: Azure West US 2. RTO 4 hours, RPO 24 hours.
+
+Network diagram and architecture details: IT-ARCH-2026-001 (RESTRICTED)
+Firewall rules and IP whitelist: Stored in CyberArk. Access: IT Director + CISO only.
+Admin credentials: CyberArk Enterprise vault (credentials rotate every 90 days)

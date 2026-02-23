@@ -1,0 +1,57 @@
+================================================================================
+                        FY2024 Revenue Recognition Memo                         
+================================================================================
+
+Prepared by: Michael Zhang
+Date: 2026-02-10
+Fiscal Year: FY 2024
+GL Code: ACC-4100-REC
+
+--------------------------------------------------------------------------------
+
+FY2024 REVENUE RECOGNITION ANALYSIS
+
+Total Revenue Recognized: $87.3M (vs forecast $82.1M, +6.3% variance)
+Accounting Standard: ASC 606
+
+REVENUE BY SERVICE LINE
+Strategic Advisory: $32.1M (24 contracts, 36.8% of total)
+Transformation: $28.4M (18 contracts, 32.5% of total)
+Operations: $19.2M (31 contracts, 22.0% of total)
+Technology: $7.6M (12 contracts, 8.7% of total)
+
+RECOGNITION METHOD ANALYSIS
+Fixed-price contracts (58% of revenue): Recognized upon milestone completion
+Time-and-materials (31% of revenue): Recognized monthly as services delivered
+Retainer arrangements (11% of revenue): Recognized ratably over contract term
+
+KEY JUDGMENT ITEMS
+Milestone achievement assessment: Reliance on engagement manager sign-off
+T&M estimation accuracy: Large contract estimates reviewed quarterly
+
+RESTATEMENT ADJUSTMENTS (Prior Period)
+Contract ACC-2024-847: $1.2M revenue reversal (milestone waived)
+Contract ACC-2024-923: $850K revenue deferral (scope change extension)
+Contract ACC-2024-445: $420K adjustment (client change order credit)
+Contract ACC-2024-681: $680K reserve (disputed invoice, pending resolution)
+Contract ACC-2024-762: $240K write-off (early termination)
+
+ACCOUNTS RECEIVABLE
+Current (<30 days): $12.4M
+30-60 days: $3.2M
+60-90 days: $1.8M
+>90 days: $680K
+Allowance for doubtful accounts: $340K (50% of >90 day balance)
+
+BANK ACCOUNT FOR COLLECTIONS
+Primary account: 2847-5938-2019
+Collections in progress on Invoice #87342: $240K with debt collector
+Recovery rate estimate: 15% = $36K reserve
+
+AUDITOR STATUS
+PwC audit in progress (engagement partner: John Martinez)
+Anticipated clearance: February 28, 2026
+
+================================================================================
+CONFIDENTIAL - NORTHBRIDGE ADVISORY GROUP
+================================================================================

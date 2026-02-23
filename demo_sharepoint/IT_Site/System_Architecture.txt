@@ -1,0 +1,13 @@
+Network Infrastructure Plan
+===========================
+
+Generated: 2026-02-20 13:28:17
+
+Data Center Migration Project: Target completion date: 6/30/2025. Phase 1 (Apr): Database migration (est. 2TB data transfer). Phase 2 (May): Application server migration (est. 48-hour cutover window). Phase 3 (Jun): Decommission legacy DC-1. Estimated downtime: <2 hours. Vendor: IBM Cloud (contract value: $250K). Rollback plan: Full restore from backups within 4 hours.
+
+API Documentation v2.3: Authentication: OAuth 2.0 with JWT tokens (exp: 24 hours). Base URL: https://api.ourcompany.com/v2. Rate limits: 10,000 req/hour per API key. Key endpoints documented: /users (CRUD operations), /products (GET, POST), /orders (GET, POST, PUT, DELETE). Sample API key for testing: sk-test-45678901234567890abcdef.
+
+SECURITY CLASSIFIED: System architecture employs multi-layer security. Production database credentials: Username "dbadmin", encrypted password stored in vault (Vault ID: prod-db-01). API keys for production: [API_KEY_PROD_001: sk-...(truncated)]. All sensitive credentials stored in AWS Secrets Manager. Access log review: 127 authentication attempts in Feb, 3 denied, 2 suspicious patterns detected.
+
+Software License Inventory (Compliance Review): Microsoft Enterprise Agreement: 450 user licenses ($125/user/year), expires 12/31/2025. Adobe Creative Cloud: 75 licenses ($65/month/user). Salesforce: 150 licenses at Enterprise tier ($300/user/month). AWS: Pay-as-you-go model, monthly spend ~$85K (spike to $150K during peak). Compliance risk: Possible over-licensing in underutilized tools.
+

@@ -1,0 +1,133 @@
+BUILDING SECURITY & PHYSICAL ACCESS CONTROL — CONFIDENTIAL
+INFRASTRUCTURE SECURITY DOCUMENT
+
+Document Classification: RESTRICTED — FACILITIES + SECURITY ONLY
+Prepared by: Marcus Webb, Head of Physical Security
+Date: February 10, 2026
+Review Period: Q1 2026
+
+WARNING: This document contains active access codes and passcodes for all
+company facilities. Unauthorised disclosure is a terminable offense and may
+constitute a criminal violation under 18 U.S.C. § 1030.
+
+=================================================================
+HEADQUARTERS — 1411 Meridian Tower, Suite 1200, Atlanta, GA 30309
+=================================================================
+
+MAIN LOBBY ENTRY
+  Key-pad code:    7842#
+  After-hours code: 7842*99#
+  Badge override PIN: 0091
+
+EXECUTIVE FLOOR (12th)
+  Door entry code:  3317*
+  Server room ante-room: 5521#
+  Emergency override: 0000# (changes monthly — current until 03/01/2026)
+
+SERVER ROOM SR-01 (12th Floor, East Wing)
+  Primary keypad:       9934#
+  Dual-authentication PIN (required after 8 PM): 7712
+  Cage lock combination: 44-08-31
+  Biometric backup PIN:  2209
+  Contact: schen@acme.local / (404) 555-0192
+
+SERVER ROOM SR-02 (Basement B1)
+  Entry code:              1186*
+  UPS room code:           4402#
+  Network patch panel room: 6613#
+  Emergency generator room: 8801*
+  Contact: mrodriguez@acme.local / (404) 555-0193
+
+MEDIA DESTRUCTION ROOM (B2)
+  Door code: 2277#
+  Safe combination: 13-27-41 (contains backup encryption keys)
+
+=================================================================
+SATELLITE OFFICE — 88 Commerce Blvd, Nashville, TN 37201
+=================================================================
+
+MAIN ENTRY
+  Standard hours code:  4419#
+  After-hours badge PIN: 7733
+
+IT CLOSET / WIRING ROOM
+  Door code:    3308#
+  Alarm disarm: 5541# (30-second window after door open)
+
+FINANCE ARCHIVE ROOM
+  Combination lock: 07-34-52
+  Contents: Physical backup tapes, signed contracts, tax filings (2019–2025)
+
+=================================================================
+DATA CENTER — 900 Colo Drive, Dallas, TX 75201 (Third-party co-location)
+=================================================================
+
+Co-location Provider: CyrusOne Dallas Campus 1
+Customer Access PIN (required at reception): 883920
+Cage Number: C-04-19B
+  Combination lock: 29-14-47
+  Smart hand PIN: 6634#
+
+Remote Hands Contact: ColoSupport@cyrusone.com
+  Account Number: ACM-209847
+  Password phrase: "BlueSky-2026-Delta"
+
+=================================================================
+EXECUTIVE KEY FOBS — MASTER LIST
+=================================================================
+
+Name                  | Employee ID  | Fob Serial | PIN   | Access Level
+----------------------|--------------|------------|-------|----------------
+Robert Thompson (CEO) | EXE-00001    | FOB-10001  | 1122  | Global - All
+Linda Watson (CFO)    | EXE-00002    | FOB-10002  | 3344  | Global - All
+David Kim (CTO)       | EXE-00003    | FOB-10003  | 5566  | Global - All
+Marcus Webb (Security)| SEC-30001    | FOB-30001  | 0091  | Global + Override
+Sarah Chen (IT Admin) | EMP-10002    | FOB-10010  | 7788  | Server Rooms + IT
+John Mitchell (IT Dir)| EMP-10001    | FOB-10009  | 9900  | Server Rooms + IT
+
+=================================================================
+ALARM SYSTEM — MONITORING COMPANY CREDENTIALS
+=================================================================
+
+Provider:          SecureAlert Pro, Inc.
+Customer Account:  ACM-ATL-00291
+Portal Login:      admin_acme
+Portal Password:   Securealert!Admin2026#
+Central Station Phone: (800) 555-0911
+Verbal Verification Code: "Arroyo-Blue-7"
+
+Alarm Zones:
+  Zone 1 — Lobby/Reception:        Code 1100#
+  Zone 2 — Executive Floor:        Code 2200#
+  Zone 3 — Server Rooms SR-01/02:  Code 3300# (triggers silent alert if used outside 7AM-9PM)
+  Zone 4 — Finance & Legal Floor:  Code 4400#
+  Zone 5 — Perimeter/Parking:      Code 5500#
+
+=================================================================
+SAFE & COMBINATION VAULT INVENTORY
+=================================================================
+
+Location            | Serial         | Combination       | Contents
+--------------------|----------------|-------------------|-----------------------------------
+CEO Office          | SFE-ATL-001    | 18-36-54          | Stock certificates, exec contracts
+CFO Office          | SFE-ATL-002    | 22-44-06          | Tax filings, banking tokens
+Legal Archives      | SFE-ATL-003    | 30-12-48          | Executed litigation settlements
+IT Server Room SR-01| SFE-ATL-004    | 44-08-31          | Encryption keys, master passwords
+Nashville Finance   | SFE-NSV-001    | 07-34-52          | Backup media, legacy tax docs
+
+=================================================================
+CHANGE LOG
+=================================================================
+
+Date        | Changed By      | Change Description
+------------|-----------------|---------------------------------------------------
+01/15/2026  | M. Webb         | Quarterly passcode rotation — all Atlanta zones
+01/15/2026  | M. Webb         | Updated server room SR-02 code (previous: 0944#)
+12/01/2025  | M. Webb         | Added Nashville satellite codes after expansion
+11/15/2025  | J. Mitchell     | Revoked fob FOB-10015 (terminated employee T. Garner)
+
+NEXT SCHEDULED ROTATION: April 1, 2026
+APPROVER: Marcus Webb, EMP ID: SEC-30001, SSN: 444-55-6666
+
+DISTRIBUTION: CEO, CFO, CTO, Head of Security, IT Director ONLY
+DO NOT FORWARD — DO NOT PRINT — DO NOT STORE IN EMAIL

@@ -1,0 +1,45 @@
+MUTUAL NON-DISCLOSURE AGREEMENT
+
+This Non-Disclosure Agreement ("Agreement") is entered into as of January 20, 2026 between:
+
+Meridian Consulting Group, Inc., a Delaware corporation ("Meridian")
+500 Boylston Street, Suite 2000, Boston, MA 02116
+
+AND
+
+Vertex Capital Partners, LLC, a New York limited liability company ("Recipient")
+575 Fifth Avenue, 14th Floor, New York, NY 10017
+
+Primary Contact at Recipient: William Hartley, Managing Director
+Email: w.hartley@vertexcap.com | Direct: (646) 555-0127
+SSN/EIN (for tax purposes): 47-3829104
+
+1. PURPOSE
+The parties wish to explore a potential business relationship involving advisory services for portfolio company operational improvements (the "Purpose"). In connection with the Purpose, each party may disclose Confidential Information to the other party.
+
+2. DEFINITION OF CONFIDENTIAL INFORMATION
+"Confidential Information" means information relating to the disclosing party's business, including but not limited to:
+- Client names, contact details, and commercial terms
+- Proprietary methodologies and intellectual property
+- Financial projections, pricing models, and fee structures
+- Personnel information and organizational structures
+- Any information marked CONFIDENTIAL or which a reasonable person would understand to be confidential
+
+3. OBLIGATIONS
+Each party agrees to: (a) hold Confidential Information in strict confidence; (b) not disclose to any third party without prior written consent; (c) use only for the Purpose; (d) restrict access to employees with need-to-know; (e) immediately notify upon discovery of unauthorized disclosure.
+
+4. EXCLUSIONS
+Obligations do not apply to information that: (a) is or becomes public through no breach of this Agreement; (b) was rightfully known prior to disclosure; (c) is rightfully received from a third party without restriction; (d) is required to be disclosed by law or court order.
+
+5. TERM
+This Agreement shall remain in effect for three (3) years from the date of execution. The confidentiality obligations survive termination of this Agreement for ten (10) years.
+
+6. REMEDIES
+The parties acknowledge that breach would cause irreparable harm for which monetary damages would be insufficient. Each party is entitled to seek equitable relief, including injunction, without bond or other security.
+
+SIGNATURES
+Sarah Mitchell, General Counsel — Meridian Consulting Group
+Date: January 20, 2026
+
+William Hartley, Managing Director — Vertex Capital Partners
+Date: January 20, 2026

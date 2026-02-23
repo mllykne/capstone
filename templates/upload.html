@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload & Classify — AI Document Classification</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233B82F6'%3E%3Cpath d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --primary-light: #60A5FA;
+            --navy: #0F172A;
+            --navy-light: #1E293B;
+            --slate: #334155;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg-light: #F8FAFC;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --border-light: #E2E8F0;
+            --brand-gradient: linear-gradient(135deg, #1E3A5F 0%, #0F172A 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F1F5F9;
+            padding-top: 0;
+        }
+
+        /* ── UNIFIED TOPBAR ── */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 1.5rem; height: 52px; background: var(--navy);
+            position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,.25);
+        }
+        .topbar-brand {
+            font-weight: 700; font-size: 1.05rem; color: white;
+            text-decoration: none; display: flex; align-items: center; gap: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .topbar-brand .brand-dot {
+            width: 8px; height: 8px; background: var(--primary);
+            border-radius: 50%; display: inline-block;
+        }
+        .topbar-nav { display: flex; align-items: center; gap: 0.25rem; }
+        .topbar-nav a {
+            color: #94A3B8; text-decoration: none; font-size: 0.82rem;
+            font-weight: 500; padding: 0.35rem 0.7rem; border-radius: 6px; transition: all 0.15s;
+        }
+        .topbar-nav a:hover { color: white; background: rgba(255,255,255,.07); }
+        .topbar-nav a.active { color: white; background: rgba(59,130,246,.25); }
+
+        .page-header {
+            background: var(--brand-gradient);
+            color: white;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .upload-zone {
+            border: 2px dashed #CBD5E1;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 1.25rem;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.04);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.08);
+            transform: scale(1.01);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .file-info {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        }
+
+        .progress-container {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        }
+
+        .results-container {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        }
+
+        .confidence-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            transition: width 0.8s ease;
+        }
+
+        .risk-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 1rem auto;
+        }
+
+        .pii-badge {
+            background: rgba(209, 52, 56, 0.2);
+            color: #D13438;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0.25rem;
+            display: inline-block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+            color: white;
+        }
+
+        .supported-formats {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation (unified dark topbar) -->
+    <nav class="topbar">
+        <a class="topbar-brand" href="/">
+            <span class="brand-dot"></span>
+            AI Document Classifier
+        </a>
+        <div class="topbar-nav">
+            <a href="/">Home</a>
+            <a href="/browse"><i class="fas fa-folder-open me-1"></i>Browse</a>
+            <a href="/upload" class="active">Upload</a>
+            <a href="/scan">Scanner</a>
+            <a href="/dashboard"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div style="max-width:960px;margin:0 auto">
+            <h1 style="font-size:1.4rem;font-weight:700;margin:0 0 0.25rem;letter-spacing:-0.03em"><i class="fas fa-upload me-2" style="color:#60A5FA"></i>Upload &amp; Classify</h1>
+            <p class="mb-0" style="font-size:0.85rem;color:#94A3B8">Upload documents for instant AI classification and risk assessment</p>
+        </div>
+    </div>
+
+    <div class="container" style="padding-top:1.5rem;padding-bottom:2rem">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                
+                <!-- Supported Formats -->
+                <div class="supported-formats">
+                    <h5><i class="fas fa-info-circle me-2 text-primary"></i>Supported File Types</h5>
+                    <div class="row text-center mt-3">
+                        <div class="col-md-4">
+                            <i class="fas fa-file-text fa-2x text-primary mb-2"></i>
+                            <div class="fw-bold">Text Files</div>
+                            <small class="text-muted">.txt</small>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                            <div class="fw-bold">PDF Documents</div>
+                            <small class="text-muted">.pdf</small>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-file-word fa-2x text-primary mb-2"></i>
+                            <div class="fw-bold">Word Documents</div>
+                            <small class="text-muted">.docx</small>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Maximum file size: 5MB</small>
+                    </div>
+                </div>
+
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">Drag & Drop Files Here</div>
+                    <div class="upload-hint">or click to browse files</div>
+                    <input type="file" id="fileInput" style="display: none;" accept=".txt,.docx,.pdf">
+                </div>
+
+                <!-- File Info -->
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <h5>Selected File</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="mb-1"><strong>Name:</strong> <span id="fileName"></span></p>
+                            <p class="mb-1"><strong>Size:</strong> <span id="fileSize"></span></p>
+                            <p class="mb-0"><strong>Type:</strong> <span id="fileType"></span></p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn-upload" onclick="uploadAndClassify()">
+                                <i class="fas fa-wand-magic-sparkles me-2"></i>
+                                Classify Document
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="progress-container" id="progressContainer">
+                    <div class="text-center">
+                        <div class="spinner me-2"></div>
+                        <span>Uploading and analyzing document...</span>
+                    </div>
+                    <div class="progress mt-3">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             style="width: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-dark));"></div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="results-container" id="resultsContainer">
+                    <h4 class="mb-4"><i class="fas fa-chart-line me-2 text-primary"></i>Classification Results</h4>
+                    
+                    <div class="row">
+                        <!-- Classification Details -->
+                        <div class="col-md-8">
+                            <h6>Document Classification</h6>
+                            <p class="mb-2"><strong>Functional Group:</strong> <span id="functionalGroup"></span></p>
+                            <p class="mb-2"><strong>Sensitivity Level:</strong> <span id="sensitivityLevel" class="badge"></span></p>
+                            
+                            <h6 class="mt-4">Confidence Scores</h6>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Functional Group:</span>
+                                    <span id="groupConfText" class="fw-bold text-success"></span>
+                                </div>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" id="groupConfBar"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Sensitivity Level:</span>
+                                    <span id="sensConfText" class="fw-bold text-primary"></span>
+                                </div>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" id="sensConfBar"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Risk Assessment -->
+                        <div class="col-md-4">
+                            <h6>Risk Assessment</h6>
+                            <div class="text-center">
+                                <div class="risk-circle" id="riskCircle"></div>
+                                <div class="fw-bold">Risk Score</div>
+                                <div id="riskIndicators" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reasoning -->
+                    <div class="mt-4">
+                        <h6>Analysis Reasoning</h6>
+                        <div class="bg-light p-3 rounded">
+                            <p id="reasoning" class="mb-0 text-muted"></p>
+                        </div>
+                    </div>
+
+                    <!-- PII Detection -->
+                    <div class="mt-4" id="piiSection">
+                        <h6>PII / Sensitive Data Detection</h6>
+                        <div id="piiResults">
+                            <span class="text-success"><i class="fas fa-check-circle me-2"></i>No PII detected</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-4 text-center">
+                        <button class="btn btn-outline-primary me-2" onclick="resetForm()">
+                            <i class="fas fa-plus me-2"></i>Upload Another File
+                        </button>
+                        <a href="/browse" class="btn btn-primary">
+                            <i class="fas fa-folder-open me-2"></i>Browse All Documents
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Notification System -->
+    <div id="notificationContainer" style="position:fixed;top:1rem;right:1rem;z-index:10000;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Unified Notification System
+        function showNotification(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="display:flex;align-items:center;gap:0.75rem">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:white;opacity:0.7;margin-left:auto;cursor:pointer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, duration);
+        }
+        let selectedFile = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+
+            // Click to upload
+            uploadZone.addEventListener('click', () => fileInput.click());
+
+            // Drag and drop
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            // File input change
+            fileInput.addEventListener('change', () => {
+                handleFiles(fileInput.files);
+            });
+        });
+
+        function handleFiles(files) {
+            if (!files.length) return;
+
+            const file = files[0];
+            
+            // Validate file
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['.txt', '.pdf', '.docx'];
+            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+
+            if (file.size > maxSize) {
+                showToast('File size exceeds 5MB limit.', 'error');
+                return;
+            }
+
+            if (!allowedTypes.includes(fileExt)) {
+                showToast('Unsupported file type. Please upload .txt, .pdf, or .docx files.', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            showFileInfo(file);
+        }
+
+        function showFileInfo(file) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileType').textContent = file.type || 'Unknown';
+            
+            document.getElementById('fileInfo').style.display = 'block';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function uploadAndClassify() {
+            if (!selectedFile) return;
+
+            // Show progress
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('resultsContainer').style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                displayResults(data);
+
+            } catch (error) {
+                showToast('Upload failed: ' + error.message, 'error');
+            } finally {
+                document.getElementById('progressContainer').style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            const c = data.classification;
+            const r = data.risk_assessment || {};
+
+            // Basic classification
+            document.getElementById('functionalGroup').textContent = c.functional_group;
+            
+            const sensitivityBadge = document.getElementById('sensitivityLevel');
+            sensitivityBadge.textContent = c.sensitivity_level;
+            sensitivityBadge.className = `badge ${getSensitivityBadgeClass(c.sensitivity_level)}`;
+
+            // Confidence scores
+            const groupConf = (c.functional_group_confidence * 100) || 0;
+            const sensConf = (c.sensitivity_confidence * 100) || 0;
+
+            document.getElementById('groupConfText').textContent = groupConf.toFixed(0) + '%';
+            document.getElementById('groupConfBar').style.width = groupConf + '%';
+            
+            document.getElementById('sensConfText').textContent = sensConf.toFixed(0) + '%';
+            document.getElementById('sensConfBar').style.width = sensConf + '%';
+
+            // Risk assessment
+            const riskScore = r.risk_score || c.risk_score || 0;
+            const riskCircle = document.getElementById('riskCircle');
+            riskCircle.textContent = riskScore.toFixed(1);
+            riskCircle.style.background = getRiskColor(riskScore);
+
+            // Risk indicators
+            let indicators = '';
+            if (r.has_pii || (c.pii_detected && c.pii_detected.length > 0)) {
+                indicators += '<div class="text-danger"><i class="fas fa-lock me-1"></i>Contains PII</div>';
+            }
+            if (r.is_high_risk) {
+                indicators += '<div class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>High Risk</div>';
+            }
+            if (!indicators) {
+                indicators = '<div class="text-success"><i class="fas fa-check-circle me-1"></i>Standard Risk</div>';
+            }
+            document.getElementById('riskIndicators').innerHTML = indicators;
+
+            // Reasoning
+            document.getElementById('reasoning').textContent = c.reasoning || 'No reasoning provided';
+
+            // PII Detection
+            const piiData = c.pii_detected || [];
+            if (piiData.length > 0) {
+                let piiHtml = '';
+                piiData.forEach(pii => {
+                    piiHtml += `<span class="pii-badge"><i class="fas fa-lock me-1"></i>${pii}</span>`;
+                });
+                document.getElementById('piiResults').innerHTML = piiHtml;
+            }
+
+            // Show results
+            document.getElementById('resultsContainer').style.display = 'block';
+        }
+
+        function getSensitivityBadgeClass(level) {
+            switch (level?.toLowerCase()) {
+                case 'high': return 'bg-danger';
+                case 'moderate': return 'bg-warning';
+                case 'low': return 'bg-success';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function getRiskColor(score) {
+            if (score >= 8) return 'linear-gradient(135deg, #D13438, #FF6B6B)';
+            if (score >= 6) return 'linear-gradient(135deg, #FF8C00, #FFB84D)';
+            if (score >= 4) return 'linear-gradient(135deg, #FFB900, #FFD700)';
+            return 'linear-gradient(135deg, #107C10, #52C41A)';
+        }
+
+        function resetForm() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+        }
+
+        function showToast(msg, type) {
+            var t = document.getElementById('siteToast');
+            var icons = { success:'check-circle', error:'exclamation-circle', warning:'exclamation-triangle', info:'info-circle' };
+            var colors = { success:'#10B981', error:'#EF4444', warning:'#F59E0B', info:'#3B82F6' };
+            var k = type || 'info';
+            t.innerHTML = '<div style="display:flex;align-items:center;gap:.65rem;background:#1E293B;color:#F1F5F9;padding:.75rem 1.1rem;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:.84rem;font-weight:500;border-left:3px solid ' + (colors[k]||colors.info) + ';max-width:360px;pointer-events:auto"><i class="fas fa-' + (icons[k]||icons.info) + '" style="color:' + (colors[k]||colors.info) + ';font-size:.95rem;flex-shrink:0"></i><span>' + msg + '</span></div>';
+            t.style.display = 'block';
+            clearTimeout(t._tid);
+            t._tid = setTimeout(function(){ t.style.display='none'; }, 4200);
+        }
+    </script>
+<div id="siteToast" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;display:none;pointer-events:none"></div>
+</body>
+</html>

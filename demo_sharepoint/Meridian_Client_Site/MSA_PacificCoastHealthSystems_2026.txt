@@ -1,0 +1,54 @@
+MERIDIAN CONSULTING GROUP
+MASTER SERVICES AGREEMENT
+
+Agreement Number: MSA-2026-0031
+Effective Date: February 1, 2026
+
+PARTIES
+Meridian Consulting Group, Inc. ("Meridian")
+500 Boylston Street, Suite 2000, Boston, MA 02116
+Federal Tax ID: 04-7231899
+
+Pacific Coast Health Systems ("Client")
+2100 Harbor Drive, San Diego, CA 92101
+Federal Tax ID: 33-1029847
+Primary Contact: Robert Lewis, CIO | r.lewis@pchealth.org | (619) 555-0442
+Billing Contact: Finance Department | ap@pchealth.org
+
+SERVICES
+Meridian will provide professional consulting services as detailed in individual Statements of Work executed under this Agreement. Current active engagements:
+- SOW-001: EHR System Selection and Implementation Advisory ($2.1M)
+- SOW-002: HIPAA Security Risk Assessment ($340,000)
+- SOW-003: Revenue Cycle Optimization ($780,000)
+
+FEES AND BILLING
+Standard Billing Rates (effective January 1, 2026):
+- Partner: $425/hour
+- Principal: $350/hour
+- Senior Manager: $285/hour
+- Manager: $230/hour
+- Senior Consultant: $195/hour
+- Consultant: $165/hour
+- Analyst: $125/hour
+
+Payment Terms: Net 30. ACH preferred. Client bank account on file: Pacific Coast Credit Union, ABA 322282001, Acct ending 8847.
+
+DATA PROTECTION — HIPAA PROVISIONS
+Client will share Protected Health Information (PHI) of patients with Meridian staff as necessary for services. This Agreement includes Business Associate Agreement (BAA) Exhibit A. PHI data handling governed by 45 CFR Part 164. Incident reporting: within 60 days of discovery. Data retention: 6 years post-contract.
+
+INTELLECTUAL PROPERTY
+All pre-existing Meridian methodologies, tools, and frameworks remain Meridian property. All client-specific work product and deliverables become Client property upon final payment.
+
+TERM AND TERMINATION
+Initial term: 3 years from Effective Date. Either party may terminate with 90 days written notice. Client obligations survive termination for any unpaid fees.
+
+LIMITATION OF LIABILITY
+Meridian's total liability shall not exceed fees paid by Client in the 6 months preceding the claim.
+
+GOVERNING LAW
+This Agreement shall be governed by the laws of the Commonwealth of Massachusetts.
+
+Signed:
+Michael Chen, Managing Partner — Meridian Consulting Group
+Robert Lewis, CIO — Pacific Coast Health Systems
+Date: February 1, 2026

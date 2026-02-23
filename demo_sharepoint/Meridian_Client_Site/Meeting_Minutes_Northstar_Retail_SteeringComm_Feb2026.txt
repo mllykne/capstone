@@ -1,0 +1,53 @@
+MEETING MINUTES — PROJECT STEERING COMMITTEE
+Client: Northstar Retail Group
+Project: Supply Chain Optimization
+Meeting Date: February 10, 2026
+Location: Virtual (Zoom) | Recording Link: https://meridian.zoom.us/rec/abc123
+
+ATTENDEES
+Meridian Team:
+- Ryan Okafor, Engagement Partner
+- Lisa Huang, Project Manager
+- Tom Becker, Senior Consultant (Data Analytics)
+
+Northstar Retail Group:
+- CEO: Patricia Huang — p.huang@northstar-retail.com
+- CFO: Derek Hammond — d.hammond@northstar-retail.com
+- VP Supply Chain: Marco Dellatorre — m.dellatorre@northstar-retail.com
+- IT Director: Sandra Kohl — s.kohl@northstar-retail.com
+
+AGENDA ITEMS
+
+1. Phase 2 Status Update (Ryan Okafor)
+Current status: GREEN. All Phase 2 milestones on track.
+Data warehouse migration is 78% complete. Target: March 1, 2026.
+Vendor API integrations for 7 of 9 suppliers are live.
+SKU rationalization analysis completed — identified 4,200 slow-moving SKUs for potential discontinuation.
+
+2. Financial Review (Lisa Huang)
+Phase 2 Budget: $1,450,000
+Incurred to date: $978,000 (67.4%)
+Forecast remaining: $412,000
+Expected Phase 2 overage: $0 (within budget)
+
+3. Key Risk: Vendor Data Quality
+Supplier ABC Logistics (Account #: 7734892) is providing incomplete shipment records. 
+Missing ~30% of transactions for Q4 2025. Resolution: Data reconciliation workshop scheduled Feb 17.
+Risk owner: Marco Dellatorre. Escalation path: Derek Hammond.
+
+4. Phase 3 Preview — January 2026 Kick Off
+Scope: Demand forecasting model deployment + 6-month change management
+Fee estimate: $920,000
+Signed SOW required by March 15, 2026.
+
+5. Issues Log
+[OPEN] Issue #14: Legacy AS/400 system cannot export in required format. Risk: HIGH. 
+  Owner: Sandra Kohl | Target resolution: Feb 28, 2026
+[CLOSED] Issue #11: Missing PO data for 2024 resolved via data extract from ERP.
+
+ACTION ITEMS
+- Marco Dellatorre: Confirm ABC Logistics availability for Feb 17 workshop
+- Lisa Huang: Draft Phase 3 SOW for review by Feb 20
+- Sandra Kohl: Confirm AS/400 data export workaround
+
+NEXT MEETING: February 24, 2026 at 2:00 PM EST

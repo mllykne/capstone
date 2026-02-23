@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — AI Document Classifier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* ============================================================
+           DESIGN TOKENS
+        ============================================================ */
+        :root {
+            --blue:   #2563EB;
+            --blue-lt:#EFF6FF;
+            --red:    #DC2626;
+            --red-lt: #FEF2F2;
+            --amber:  #D97706;
+            --amber-lt:#FFFBEB;
+            --green:  #16A34A;
+            --green-lt:#F0FDF4;
+            --purple: #7C3AED;
+            --purple-lt:#F5F3FF;
+            --slate:  #334155;
+            --slate-lt:#F8FAFC;
+            --border: #E2E8F0;
+            --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+            --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+        }
+
+        /* ============================================================
+           BASE
+        ============================================================ */
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #F1F5F9;
+            color: #1E293B;
+            margin: 0;
+            padding-top: 0;
+        }
+
+        /* ============================================================
+           TOPBAR / NAVBAR
+        ============================================================ */
+        .topbar {
+            background: #0F172A;
+            padding: 0 1.5rem;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,.25);
+        }
+        .topbar-brand {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .topbar-brand .brand-dot {
+            width: 8px; height: 8px;
+            background: #3B82F6;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .topbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .topbar-nav a {
+            color: #94A3B8;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 0.35rem 0.7rem;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+        .topbar-nav a:hover { color: white; background: rgba(255,255,255,.07); }
+        .topbar-nav a.active { color: white; background: rgba(59,130,246,.25); }
+
+        /* ============================================================
+           PAGE SHELL
+        ============================================================ */
+        .page-header {
+            background: linear-gradient(135deg, #1E3A5F 0%, #0F172A 100%);
+            padding: 1.5rem 1.75rem 1.75rem;
+            color: white;
+        }
+        .page-header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 0.2rem;
+            letter-spacing: -0.03em;
+        }
+        .page-header .sub { font-size: 0.82rem; color: #94A3B8; }
+        .page-actions { display: flex; gap: 0.5rem; }
+        .btn-ghost {
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.15);
+            color: white;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: background 0.15s;
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,.15); }
+        .btn-ghost-danger { border-color: rgba(220,38,38,.4); color: #FCA5A5; }
+        .btn-ghost-danger:hover { background: rgba(220,38,38,.15); }
+
+        .content-wrap { padding: 1.25rem 1.75rem 2rem; max-width: 1400px; margin: 0 auto; }
+
+        /* ============================================================
+           METRIC CARDS
+        ============================================================ */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.875rem;
+            margin-bottom: 1.25rem;
+        }
+        @media (max-width: 900px) { .metrics-row { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 600px) { .metrics-row { grid-template-columns: repeat(2, 1fr); } }
+
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            box-shadow: var(--shadow);
+            border-top: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            right: -8px; top: -8px;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            opacity: 0.07;
+        }
+        .metric-card .icon {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .metric-card .val {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+        .metric-card .lbl { font-size: 0.73rem; color: #64748B; margin-top: 0.25rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .metric-card .trend { font-size: 0.7rem; margin-top: 0.3rem; }
+
+        .mc-total  { border-color: var(--blue);   } .mc-total  .icon,.mc-total  .val { color: var(--blue);   } .mc-total::after  { background: var(--blue);   }
+        .mc-high   { border-color: var(--red);    } .mc-high   .icon,.mc-high   .val { color: var(--red);    } .mc-high::after   { background: var(--red);    }
+        .mc-review { border-color: var(--amber);  } .mc-review .icon,.mc-review .val { color: var(--amber);  } .mc-review::after { background: var(--amber);  }
+        .mc-pii    { border-color: var(--purple); } .mc-pii    .icon,.mc-pii    .val { color: var(--purple); } .mc-pii::after    { background: var(--purple); }
+        .mc-ok     { border-color: var(--green);  } .mc-ok     .icon,.mc-ok     .val { color: var(--green);  } .mc-ok::after     { background: var(--green);  }
+
+        /* ============================================================
+           PANELS
+        ============================================================ */
+        .panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .panel-head {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .panel-head h6 { margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--slate); }
+        .panel-head .hint { font-size: 0.73rem; color: #94A3B8; }
+        .panel-body { padding: 0.75rem 1rem; }
+
+        /* ============================================================
+           QUEUE ITEMS
+        ============================================================ */
+        .q-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #F8FAFC;
+            font-size: 0.81rem;
+        }
+        .q-item:last-child { border-bottom: none; }
+        .q-item .q-name { flex: 1; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .q-item .q-actions { display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0; }
+        .btn-review {
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: 1px solid var(--blue);
+            color: var(--blue);
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+        .btn-review:hover { background: var(--blue); color: white; }
+
+        /* ============================================================
+           BREAKDOWN BARS
+        ============================================================ */
+        .bar-row { margin-bottom: 0.65rem; }
+        .bar-row .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.76rem;
+            margin-bottom: 3px;
+            font-weight: 500;
+        }
+        .bar-track {
+            height: 6px;
+            background: #F1F5F9;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+        .bar-danger  { background: var(--red);    }
+        .bar-warning { background: var(--amber);  }
+        .bar-success { background: var(--green);  }
+        .bar-purple  { background: var(--purple); }
+        .bar-blue    { background: var(--blue);   }
+        .bar-slate   { background: #94A3B8;       }
+
+        /* ============================================================
+           RISK DISTRIBUTION STRIP
+        ============================================================ */
+        .risk-strip {
+            display: flex;
+            height: 8px;
+            border-radius: 99px;
+            overflow: hidden;
+            gap: 2px;
+        }
+        .risk-strip-seg { transition: flex 0.4s ease; }
+
+        /* ============================================================
+           BADGES & PILLS
+        ============================================================ */
+        .bx {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .bx-red    { background: var(--red-lt);    color: var(--red);    }
+        .bx-amber  { background: var(--amber-lt);  color: var(--amber);  }
+        .bx-green  { background: var(--green-lt);  color: var(--green);  }
+        .bx-blue   { background: var(--blue-lt);   color: var(--blue);   }
+        .bx-purple { background: var(--purple-lt); color: var(--purple); }
+        .bx-slate  { background: #F1F5F9;          color: #64748B;       }
+
+        .status-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.69rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .sp-pending   { background: var(--amber-lt);  color: var(--amber);  }
+        .sp-accepted  { background: var(--green-lt);  color: var(--green);  }
+        .sp-corrected { background: var(--blue-lt);   color: var(--blue);   }
+        .sp-rejected  { background: var(--red-lt);    color: var(--red);    }
+
+        /* ============================================================
+           FILTER TABS
+        ============================================================ */
+        .ftab {
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            background: white;
+            color: #64748B;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+        .ftab:hover { border-color: var(--blue); color: var(--blue); }
+        .ftab.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+        /* ============================================================
+           RECORDS TABLE
+        ============================================================ */
+        .rec-table { font-size: 0.8rem; border-collapse: collapse; width: 100%; }
+        .rec-table thead th {
+            background: #F8FAFC;
+            color: #64748B;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.55rem 0.75rem;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+        .rec-table thead th.sortable { cursor: pointer; }
+        .rec-table thead th.sortable:hover { color: var(--blue); }
+        .rec-table tbody tr {
+            border-bottom: 1px solid #F8FAFC;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .rec-table tbody tr:hover { background: #F8FAFF; }
+        .rec-table tbody tr.row-danger  { background: #FFF5F5; }
+        .rec-table tbody tr.row-warning { background: #FFFBF0; }
+        .rec-table tbody tr.row-danger:hover  { background: #FFE9E9; }
+        .rec-table tbody tr.row-warning:hover { background: #FFF3D4; }
+        .rec-table td { padding: 0.5rem 0.75rem; vertical-align: middle; }
+
+        /* ============================================================
+           EMPTY STATE
+        ============================================================ */
+        .empty-wrap {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+        .empty-wrap .empty-icon {
+            width: 70px; height: 70px;
+            background: var(--blue-lt);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            font-size: 1.8rem;
+            color: var(--blue);
+        }
+        .empty-wrap h4 { font-weight: 700; font-size: 1.2rem; margin-bottom: 0.4rem; }
+        .empty-wrap p  { color: #64748B; font-size: 0.9rem; margin-bottom: 1.25rem; }
+
+        /* ============================================================
+           CATEGORY CHIP
+        ============================================================ */
+        .cat-chip {
+            display: inline-block;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        /* ============================================================
+           RISK NUMBER HIGHLIGHTS
+        ============================================================ */
+        .risk-num { font-weight: 800; font-size: 0.92rem; }
+        .risk-high   { color: var(--red);   }
+        .risk-med    { color: var(--amber); }
+        .risk-low    { color: var(--green); }
+
+        /* ============================================================
+           SECTION DIVIDER LABELS
+        ============================================================ */
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #94A3B8;
+            margin-bottom: 0.6rem;
+        }
+
+        /* ============================================================
+           WORKFLOW STEPS
+        ============================================================ */
+        .workflow-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 0.85rem 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+        .wf-step { display: flex; align-items: center; gap: 0.55rem; flex: 1; min-width: 120px; }
+        .wf-icon {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; flex-shrink: 0;
+        }
+        .wf-done  { background: var(--green-lt);  color: var(--green);  }
+        .wf-active { background: var(--amber-lt);  color: var(--amber);  }
+        .wf-ready  { background: var(--blue-lt);   color: var(--blue);   }
+        .wf-pending { background: #F1F5F9; color: #94A3B8; }
+        .wf-label { font-size: 0.79rem; font-weight: 700; }
+        .wf-sub   { font-size: 0.67rem; color: #94A3B8; margin-top: 1px; }
+        .wf-label-pending { color: #94A3B8; }
+        .wf-sep   { width: 1px; height: 28px; background: var(--border); margin: 0 1rem; flex-shrink: 0; }
+
+        /* ============================================================
+           STATUS BANNER
+        ============================================================ */
+        .status-banner {
+            border-radius: 10px;
+            padding: 0.9rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.875rem;
+            box-shadow: var(--shadow);
+        }
+        .sb-critical { background: linear-gradient(135deg,#7F1D1D,#991B1B); color:#fff; border:1px solid var(--red); }
+        .sb-high     { background: linear-gradient(135deg,#78350F,#92400E); color:#fff; border:1px solid var(--amber); }
+        .sb-moderate { background: linear-gradient(135deg,#1E3A5F,#2D4A7A); color:#fff; border:1px solid #3B82F6; }
+        .sb-good     { background: linear-gradient(135deg,#064E3B,#065F46); color:#fff; border:1px solid var(--green); }
+        .sb-icon  { font-size: 1.75rem; flex-shrink: 0; }
+        .sb-title { font-size: 1rem; font-weight: 700; }
+        .sb-sub   { font-size: 0.78rem; opacity: 0.85; margin-top: 2px; }
+        .sb-score { font-size: 2rem; font-weight: 800; line-height: 1; text-align: right; flex-shrink: 0; }
+        .sb-score-lbl { font-size: 0.66rem; opacity: 0.7; text-align: right; }
+
+        /* ============================================================
+           KPI STRIP (4-card scan-style row)
+        ============================================================ */
+        .kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.75rem; margin-bottom: 0.875rem; }
+        @media(max-width:768px){ .kpi-strip { grid-template-columns: repeat(2,1fr); } }
+        .kpi-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 0.9rem 1rem;
+            border: 1px solid var(--border);
+            border-left: 3px solid;
+            box-shadow: var(--shadow);
+        }
+        .kpi-card .kv { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+        .kpi-card .kl { font-size: 0.71rem; color: #64748B; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-top: 4px; }
+        .kpi-card .kt { font-size: 0.69rem; margin-top: 3px; }
+
+        /* ============================================================
+           ACTION TABS
+        ============================================================ */
+        .action-tabs { display: flex; gap: 0; margin: 0 -1rem; padding: 0 1rem; border-bottom: 1px solid var(--border); }
+        .atab { padding: 0.5rem 0.85rem; font-size: 0.78rem; font-weight: 600; color: #64748B; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.12s; white-space: nowrap; }
+        .atab:hover { color: var(--blue); }
+        .atab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+        /* ============================================================
+           BREAKDOWN TABS (right column)
+        ============================================================ */
+        .bdn-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 0 0 0; }
+        .bdntab { padding: 0.45rem 0.85rem; font-size: 0.78rem; font-weight: 600; color: #64748B; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.12s; white-space: nowrap; }
+        .bdntab:hover { color: var(--blue); }
+        .bdntab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+        /* ============================================================
+           EXPORT BAR
+        ============================================================ */
+        .export-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 0.9rem 1.25rem;
+            display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-top: 0.875rem;
+        }
+        .export-label { font-size: 0.85rem; font-weight: 600; color: var(--slate); flex: 1; min-width: 160px; }
+        .btn-exp {
+            border: none; padding: 0.45rem 0.9rem; border-radius: 7px;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            transition: filter 0.15s, background 0.15s;
+            color: #fff;
+        }
+        .btn-exp:hover { filter: brightness(1.1); }
+        .btn-exp-pdf    { background: var(--purple); }
+        .btn-exp-csv    { background: var(--blue); }
+        .btn-exp-browse { background: transparent; color: var(--blue); border: 1px solid var(--blue); }
+        .btn-exp-browse:hover { background: var(--blue); color: #fff; filter: none; }
+        .btn-exp-sel    { background: #475569; }
+        .btn-exp-danger { background: var(--red); }
+    </style>
+</head>
+<body>
+
+    <!-- ── TOP BAR ─────────────────────────────────────────────── -->
+    <nav class="topbar">
+        <a class="topbar-brand" href="/">
+            <span class="brand-dot"></span>
+            AI Document Classifier
+        </a>
+        <div class="topbar-nav">
+            <a href="/">Home</a>
+            <a href="/browse">Browse</a>
+            <a href="/upload">Upload</a>
+            <a href="/scan">Scanner</a>
+            <a href="/dashboard" class="active"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a>
+        </div>
+    </nav>
+
+    <!-- ── PAGE HEADER ──────────────────────────────────────────── -->
+    <div class="page-header">
+        <div style="max-width:1400px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem">
+            <div>
+                <h1><i class="fas fa-tachometer-alt me-2" style="color:#60A5FA"></i>Classification Dashboard</h1>
+                <div class="sub" id="lastUpdated">Loading…</div>
+            </div>
+            <div class="page-actions">
+                <button class="btn-ghost" onclick="location.href='/browse'"><i class="fas fa-folder-open"></i>Browse &amp; Classify</button>
+                <button class="btn-ghost" onclick="location.href='/scan'"><i class="fas fa-satellite-dish"></i>Site Scanner</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CONTENT ───────────────────────────────────────────────── -->
+    <div class="content-wrap">
+
+        <!-- Empty state -->
+        <div id="emptyState" style="display:none">
+            <div class="empty-wrap">
+                <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                <h4>No classified records yet</h4>
+                <p>Head to Browse Documents, classify some files, and they will appear here automatically.</p>
+                <a href="/browse" class="btn btn-primary px-4" style="font-weight:600">
+                    <i class="fas fa-brain me-2"></i>Start Classifying
+                </a>
+            </div>
+        </div>
+
+        <div id="mainDash" style="display:none">
+
+            <!-- STATUS STRIP -->
+            <div id="statusStrip" style="border-radius:10px;padding:.6rem 1rem 0.6rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;font-size:.82rem;font-weight:600;border:1px solid transparent;box-shadow:var(--shadow)">
+                <span><span id="sbIcon" style="margin-right:.5rem">&#128202;</span><span id="sbTitle">Loading…</span><span id="sbSub" style="font-weight:400;margin-left:.65rem;font-size:.78rem;opacity:.85"></span></span>
+                <span style="font-size:.95rem;font-weight:800" id="sbScore"></span>
+            </div>
+
+            <!-- KPI STRIP -->
+            <div class="kpi-strip" id="metricRow"></div>
+
+            <!-- MAIN TWO-COLUMN -->
+            <div class="row g-3 mb-0">
+
+                <!-- LEFT: Action panel + table -->
+                <div class="col-lg-8">
+
+                    <!-- ACTION REQUIRED -->
+                    <div class="panel mb-3">
+                        <div class="panel-head" style="border-bottom:none;padding-bottom:0.35rem">
+                            <h6><i class="fas fa-tasks me-2" style="color:var(--amber)"></i>Action Required</h6>
+                            <span class="bx bx-amber" id="reviewBadge">0</span>
+                        </div>
+                        <div class="action-tabs">
+                            <div class="atab active" id="atab-review" onclick="switchActionTab('review')">
+                                Needs Review &nbsp;<span class="bx bx-amber" id="atabCntReview" style="font-size:.65rem">0</span>
+                            </div>
+                            <div class="atab" id="atab-high" onclick="switchActionTab('high')">
+                                High Risk &nbsp;<span class="bx bx-red" id="atabCntHigh" style="font-size:.65rem">0</span>
+                            </div>
+                        </div>
+                        <div class="panel-body" style="max-height:230px;overflow-y:auto" id="reviewQueue"></div>
+                        <div class="panel-body" style="max-height:230px;overflow-y:auto;display:none" id="highRiskQueue"></div>
+                    </div>
+
+                    <!-- RECORDS TABLE -->
+                    <div class="panel">
+                        <div class="panel-head flex-wrap gap-2">
+                            <h6 class="me-2"><i class="fas fa-table me-2"></i>All Classified Records</h6>
+                            <div class="d-flex gap-1 flex-wrap" id="filterTabs">
+                                <button class="ftab active" onclick="setFilter('all',this)">All</button>
+                                <button class="ftab" onclick="setFilter('review',this)">Needs Review</button>
+                                <button class="ftab" onclick="setFilter('high',this)">High Risk</button>
+                                <button class="ftab" onclick="setFilter('pii',this)">Has PII</button>
+                                <button class="ftab" onclick="setFilter('accepted',this)">Accepted</button>
+                                <button class="ftab" onclick="setFilter('rejected',this)">Rejected</button>
+                            </div>
+                            <input type="text" class="form-control form-control-sm ms-auto"
+                                   style="max-width:190px;border-radius:8px;border-color:var(--border)"
+                                   id="tableSearch" placeholder="Search…" oninput="renderTable()">
+                        </div>
+                        <div style="padding:0.5rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+                            <span style="font-size:0.72rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0">Category:</span>
+                            <div class="d-flex gap-1 flex-wrap" id="categoryTabs"></div>
+                        </div>
+                        <div style="max-height:420px;overflow-y:auto">
+                            <table class="rec-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:28px"><input type="checkbox" id="selectAll" title="Select all" onchange="toggleSelectAll(this)"></th>
+                                        <th style="width:28px">#</th>
+                                        <th>Document</th>
+                                        <th>Category</th>
+                                        <th class="sortable" onclick="toggleSort('sensitivity')">Sensitivity</th>
+                                        <th class="sortable" onclick="toggleSort('risk')">Risk</th>
+                                        <th>PII Found</th>
+                                        <th>Status</th>
+                                        <th style="width:56px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recordsBody"></tbody>
+                            </table>
+                        </div>
+                        <div style="padding:0.5rem 0.75rem;font-size:0.75rem;color:#94A3B8;border-top:1px solid var(--border);display:flex;justify-content:space-between" id="tableFooter">
+                            <span id="tableCount"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Breakdowns (tabbed) -->
+                <div class="col-lg-4">
+                    <div class="panel">
+                        <div class="panel-head" style="padding-bottom:0;border-bottom:none">
+                            <h6><i class="fas fa-chart-bar me-2" style="color:var(--slate)"></i>Breakdown</h6>
+                            <span class="hint" id="riskDistHint"></span>
+                        </div>
+                        <div class="bdn-tabs">
+                            <div class="bdntab active" id="bdntab-risk" onclick="switchBdnTab('risk')">Risk</div>
+                            <div class="bdntab" id="bdntab-sens" onclick="switchBdnTab('sens')">Sensitivity</div>
+                            <div class="bdntab" id="bdntab-pii" onclick="switchBdnTab('pii')">PII</div>
+                            <div class="bdntab" id="bdntab-cat" onclick="switchBdnTab('cat')">Categories</div>
+                        </div>
+                        <div class="panel-body" id="bdn-risk">
+                            <div class="risk-strip mb-2" id="riskStrip"></div>
+                            <div style="font-size:.72rem;color:#94A3B8;display:flex;flex-wrap:wrap;gap:0.75rem" id="riskLegend"></div>
+                        </div>
+                        <div class="panel-body" style="display:none" id="bdn-sens">
+                            <div id="sensitivityBars"></div>
+                        </div>
+                        <div class="panel-body" style="display:none" id="bdn-pii">
+                            <div id="piiBars"></div>
+                        </div>
+                        <div class="panel-body" style="display:none" id="bdn-cat">
+                            <div id="categoryBars"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPORT / ACTION BAR -->
+            <div class="export-bar">
+                <div class="export-label"><i class="fas fa-check-circle me-2" style="color:var(--green)"></i><span id="exportBarSummary">Classification complete</span></div>
+                <button class="btn-exp btn-exp-pdf" onclick="exportPdf()"><i class="fas fa-file-pdf"></i>Export PDF</button>
+                <button class="btn-exp btn-exp-csv" onclick="exportCsv()"><i class="fas fa-download"></i>Export CSV</button>
+                <a href="/browse" class="btn-exp btn-exp-browse"><i class="fas fa-folder-open"></i>Browse &amp; Classify</a>
+                <button id="approveSelBtn" class="btn-exp" style="display:none;background:var(--green)" onclick="approveSelected()"><i class="fas fa-check-circle"></i>Approve (<span id="appSelCount">0</span>)</button>
+                <button id="rejectSelBtn" class="btn-exp" style="display:none;background:var(--amber)" onclick="rejectSelected()"><i class="fas fa-ban"></i>Reject (<span id="rejSelCount">0</span>)</button>
+                <button id="removeSelBtn" class="btn-exp btn-exp-sel" style="display:none" onclick="removeSelected()"><i class="fas fa-times-circle"></i>Remove (<span id="selCount">0</span>)</button>
+                <button class="btn-exp btn-exp-danger" onclick="clearData()"><i class="fas fa-trash"></i>Clear All</button>
+            </div>
+
+        </div><!-- /mainDash -->
+    </div><!-- /content-wrap -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        let currentFilter = 'all';
+        let currentCategory = 'all';
+        let sortCol = 'risk';
+        let sortDir = -1;
+        const selectedPaths = new Set();
+
+        function riskBadge(s) {
+            s = parseFloat(s) || 0;
+            if (s >= 8) return `<span class="risk-num risk-high">${s}<span style="font-size:.65rem;opacity:.7">/10</span></span>`;
+            if (s >= 5) return `<span class="risk-num risk-med">${s}<span style="font-size:.65rem;opacity:.7">/10</span></span>`;
+            return `<span class="risk-num risk-low">${s}<span style="font-size:.65rem;opacity:.7">/10</span></span>`;
+        }
+        function sensBadge(l) {
+            if (l === 'High')     return `<span class="bx bx-red">${l}</span>`;
+            if (l === 'Moderate') return `<span class="bx bx-amber">${l}</span>`;
+            return `<span class="bx bx-green">${l || 'Low'}</span>`;
+        }
+        function statusPill(s) {
+            const map = { accepted:'sp-accepted', corrected:'sp-corrected', rejected:'sp-rejected' };
+            const lb  = { accepted:'Accepted', corrected:'Corrected', rejected:'Rejected' };
+            return `<span class="status-pill ${map[s]||'sp-pending'}">${lb[s]||'Pending Review'}</span>`;
+        }
+        const pct = (n, d) => d ? Math.round(n / d * 100) : 0;
+
+        function loadData() {
+            try {
+                const cd = JSON.parse(localStorage.getItem('classifiedDocuments') || '{}');
+                const ds = JSON.parse(localStorage.getItem('docStatuses') || '{}');
+                return { cd, ds };
+            } catch(e) { return { cd: {}, ds: {} }; }
+        }
+
+        function buildRecords(cd, ds) {
+            return Object.entries(cd).map(([path, data]) => {
+                const c = (data && data.classification) || {};
+                const r = (data && data.risk_assessment) || {};
+                const risk = parseFloat(r.risk_score || c.risk_score || 0) || 0;
+                const pii = Array.isArray(c.pii_detected) ? c.pii_detected : [];
+                return {
+                    path,
+                    name: (data && data.file) || path.split('/').pop(),
+                    category: c.functional_group || 'Uncategorised',
+                    sensitivity: c.sensitivity_level || 'Low',
+                    risk, pii,
+                    findings: Array.isArray(c.confidential_findings) ? c.confidential_findings : [],
+                    summary: c.document_summary || '',
+                    status: (ds && ds[path]) || 'classified',
+                    hasPii: pii.length > 0,
+                };
+            });
+        }
+
+        function render() {
+            const { cd, ds } = loadData();
+            const records = buildRecords(cd, ds);
+            const n = records.length;
+            const ts = localStorage.getItem('classifiedAt');
+            const sub = document.getElementById('lastUpdated');
+            if (sub) sub.textContent = n > 0
+                ? (ts ? `Last updated ${new Date(ts).toLocaleString()} \u00b7 ${n} record${n!==1?'s':''}` : `${n} record${n!==1?'s':''} loaded`)
+                : 'No records yet \u2014 classify documents in Browse';
+
+            if (n === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('mainDash').style.display   = 'none';
+                return;
+            }
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('mainDash').style.display   = 'block';
+
+            renderMetrics(records);
+            renderRiskStrip(records);
+            renderQueues(records);
+            renderBreakdowns(records);
+            renderTable(cd, ds);
+        }
+
+        function renderMetrics(records) {
+            const total       = records.length;
+            const highRisk    = records.filter(r => r.risk >= 7).length;
+            const needsReview = records.filter(r => r.status === 'classified').length;
+            const hasPii      = records.filter(r => r.hasPii).length;
+            const accepted    = records.filter(r => r.status === 'accepted' || r.status === 'corrected').length;
+            // Update action tabs badge counts
+            const rb = document.getElementById('reviewBadge');   if (rb)   rb.textContent = needsReview;
+            const ar = document.getElementById('atabCntReview'); if (ar)   ar.textContent = needsReview;
+            const ah = document.getElementById('atabCntHigh');   if (ah)   ah.textContent = highRisk;
+            // Export bar summary
+            const es = document.getElementById('exportBarSummary');
+            if (es) es.textContent = total + ' classified \u00b7 ' + highRisk + ' high risk \u00b7 ' + accepted + ' verified';
+            // Status strip
+            const allScores = records.map(r => r.risk);
+            const avg = allScores.length ? allScores.reduce((a,b)=>a+b,0)/allScores.length : 0;
+            const stripEl = document.getElementById('statusStrip'),
+                  sbIcon  = document.getElementById('sbIcon'),
+                  sbTitle = document.getElementById('sbTitle'),
+                  sbSub   = document.getElementById('sbSub'),
+                  sbScore = document.getElementById('sbScore');
+            if (stripEl && sbTitle) {
+                let bg, border, color, icon, title, sub;
+                if (avg >= 8.0) {
+                    bg='#FEF2F2'; border='#FCA5A5'; color='#991B1B'; icon='\uD83D\uDD34'; title='CRITICAL RISK \u2014 Immediate Action Required';
+                    sub = needsReview + ' pending review';
+                } else if (avg >= 6.5) {
+                    bg='#FFFBEB'; border='#FCD34D'; color='#92400E'; icon='\uD83D\uDFE0'; title='HIGH RISK \u2014 Significant Exposure';
+                    sub = needsReview + ' pending review';
+                } else if (avg >= 4.5) {
+                    bg='#EFF6FF'; border='#93C5FD'; color='#1D4ED8'; icon='\uD83D\uDFE1'; title='MODERATE RISK \u2014 Review Recommended';
+                    sub = needsReview > 0 ? needsReview + ' pending review' : 'No urgent issues';
+                } else {
+                    bg='#F0FDF4'; border='#86EFAC'; color='#15803D'; icon='\uD83D\uDFE2'; title='GOOD POSTURE \u2014 Low Risk';
+                    sub = 'All clear';
+                }
+                stripEl.style.background   = bg;
+                stripEl.style.borderColor  = border;
+                stripEl.style.color        = color;
+                if (sbIcon)  sbIcon.textContent  = icon;
+                sbTitle.textContent = title;
+                if (sbSub)  sbSub.textContent  = sub;
+                if (sbScore) sbScore.textContent = avg.toFixed(1) + '/10';
+            }
+            // KPI strip
+            const avgColor = avg>=8?'var(--red)':avg>=5?'var(--amber)':'var(--green)';
+            document.getElementById('metricRow').innerHTML =
+                `<div class="kpi-card" style="border-color:var(--blue)"><div class="kv" style="color:var(--blue)">${total}</div><div class="kl">Documents Classified</div></div>` +
+                `<div class="kpi-card" style="border-color:var(--red)"><div class="kv" style="color:var(--red)">${highRisk}</div><div class="kl">High Risk</div><div class="kt" style="color:${highRisk>0?'var(--red)':'var(--green)'}">${highRisk>0?'Requires attention':'All clear'}</div></div>` +
+                `<div class="kpi-card" style="border-color:var(--amber)"><div class="kv" style="color:var(--amber)">${needsReview}</div><div class="kl">Pending Review</div><div class="kt" style="color:var(--amber)">${needsReview>0?'Verification needed':'All reviewed'}</div></div>` +
+                `<div class="kpi-card" style="border-color:var(--purple)"><div class="kv" style="color:var(--purple)">${hasPii}</div><div class="kl">Contain PII</div><div class="kt" style="color:#94A3B8">${total?pct(hasPii,total)+'% of docs':''}</div></div>`;
+        }
+
+        function renderRiskStrip(records) {
+            const low  = records.filter(r => r.risk < 4).length;
+            const med  = records.filter(r => r.risk >= 4 && r.risk < 7).length;
+            const high = records.filter(r => r.risk >= 7).length;
+            const total = records.length || 1;
+            const p = n => Math.max(2, Math.round(n/total*100));
+            const hint = document.getElementById('riskDistHint');
+            if (hint) hint.textContent = records.length + ' doc' + (records.length!==1?'s':'');
+            document.getElementById('riskStrip').innerHTML = `
+                <div class="risk-strip-seg" style="flex:${p(low)};background:var(--green);border-radius:99px 0 0 99px"></div>
+                <div class="risk-strip-seg" style="flex:${p(med)};background:var(--amber)"></div>
+                <div class="risk-strip-seg" style="flex:${p(high)};background:var(--red);border-radius:0 99px 99px 0"></div>`;
+            document.getElementById('riskLegend').innerHTML = `
+                <span><span style="color:var(--green);font-weight:700">${low}</span> Low (0-3)</span>
+                <span><span style="color:var(--amber);font-weight:700">${med}</span> Med (4-6)</span>
+                <span><span style="color:var(--red);font-weight:700">${high}</span> High (7+)</span>`;
+        }
+
+        function renderQueues(records) {
+            const qItem = rec => {
+                const tags = rec.pii.slice(0,2).map(p => `<span class="bx bx-red" style="font-size:.65rem">${p.split(':')[0].trim()}</span>`).join('');
+                const ep = rec.path.replace(/'/g,"\\'"), en = rec.name.replace(/'/g,"\\'");
+                return `<div class="q-item"><div class="q-name" title="${rec.name}">${rec.name}</div>
+                    <div class="q-actions">${tags}${riskBadge(rec.risk)}
+                    <button class="btn-review" onclick="openDoc('${ep}','${en}')">Review</button></div></div>`;
+            };
+            const needsReview = records.filter(r => r.status === 'classified').sort((a,b) => b.risk - a.risk);
+            const highRisk    = records.filter(r => r.risk >= 7).sort((a,b) => b.risk - a.risk);
+            document.getElementById('reviewQueue').innerHTML = needsReview.length
+                ? needsReview.map(qItem).join('')
+                : '<p class="text-center py-3 mb-0" style="color:var(--green);font-size:.85rem;font-weight:600"><i class="fas fa-check-circle me-2"></i>All records reviewed!</p>';
+            document.getElementById('highRiskQueue').innerHTML = highRisk.length
+                ? highRisk.map(qItem).join('')
+                : '<p class="text-center py-3 mb-0" style="color:var(--green);font-size:.85rem;font-weight:600"><i class="fas fa-shield-alt me-2"></i>No high-risk documents.</p>';
+        }
+
+        function renderBreakdowns(records) {
+            const total = records.length || 1;
+            const sd = { High:0, Moderate:0, Low:0 };
+            records.forEach(r => { sd[r.sensitivity] = (sd[r.sensitivity]||0)+1; });
+            document.getElementById('sensitivityBars').innerHTML =
+                [['High','bar-danger'],['Moderate','bar-warning'],['Low','bar-success']].map(([l,cls]) => {
+                    const n = sd[l]||0;
+                    return `<div class="bar-row"><div class="bar-label"><span style="font-weight:600">${l}</span><span style="color:#94A3B8">${n} (${pct(n,total)}%)</span></div>
+                        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct(n,total)}%"></div></div></div>`;
+                }).join('');
+            const piiFreq = {};
+            records.forEach(r => r.pii.forEach(p => { const k = p.split(':')[0].trim(); piiFreq[k]=(piiFreq[k]||0)+1; }));
+            const piiSorted = Object.entries(piiFreq).sort((a,b) => b[1]-a[1]);
+            document.getElementById('piiBars').innerHTML = piiSorted.length
+                ? piiSorted.slice(0,7).map(([type,count]) => {
+                    const p = pct(count, piiSorted[0][1]);
+                    return `<div class="bar-row"><div class="bar-label"><span style="font-weight:600">${type}</span><span class="bx bx-red" style="font-size:.65rem">${count}</span></div>
+                        <div class="bar-track"><div class="bar-fill bar-danger" style="width:${p}%"></div></div></div>`;
+                }).join('')
+                : '<p class="text-center py-3 mb-0" style="color:var(--green);font-size:.85rem;font-weight:600"><i class="fas fa-check me-1"></i>No PII detected</p>';
+            const catFreq = {};
+            records.forEach(r => { catFreq[r.category]=(catFreq[r.category]||0)+1; });
+            const catSorted = Object.entries(catFreq).sort((a,b) => b[1]-a[1]);
+            document.getElementById('categoryBars').innerHTML = catSorted.map(([cat, count]) => {
+                const p = pct(count, catSorted[0][1]);
+                const short = cat.length > 26 ? cat.slice(0,24)+'\u2026' : cat;
+                const active = currentCategory === cat;
+                const safecat = cat.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+                return `<div class="bar-row" style="cursor:pointer" title="${cat}" data-cat="${safecat}" onclick="window._setCat(this.dataset.cat)">
+                    <div class="bar-label"><span style="font-weight:600;color:${active?'var(--blue)':'inherit'}">${short}</span><span style="color:#94A3B8">${count}</span></div>
+                    <div class="bar-track"><div class="bar-fill ${active?'bar-purple':'bar-blue'}" style="width:${p}%"></div></div></div>`;
+            }).join('');
+        }
+
+        function renderTable(cd, ds) {
+            if (!cd) { const d = loadData(); cd = d.cd; ds = d.ds; }
+            let records = buildRecords(cd, ds);
+            const cats = {};
+            records.forEach(r => { cats[r.category]=(cats[r.category]||0)+1; });
+            const catSorted = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+            document.getElementById('categoryTabs').innerHTML =
+                `<button class="ftab ${currentCategory==='all'?'active':''}" onclick="window._setCat('all')">All</button>` +
+                catSorted.map(([cat,n]) => {
+                    const short = cat.length > 22 ? cat.slice(0,20)+'\u2026' : cat;
+                    const safecat = cat.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+                    return `<button class="ftab ${currentCategory===cat?'active':''}" data-cat="${safecat}" onclick="window._setCat(this.dataset.cat)" title="${cat}">${short} <span style="opacity:.6">(${n})</span></button>`;
+                }).join('');
+            const search = (document.getElementById('tableSearch').value||'').toLowerCase();
+            if (currentFilter==='review')   records = records.filter(r => r.status==='classified');
+            else if (currentFilter==='high') records = records.filter(r => r.risk>=7);
+            else if (currentFilter==='pii')  records = records.filter(r => r.hasPii);
+            else if (currentFilter==='accepted') records = records.filter(r => r.status==='accepted'||r.status==='corrected');
+            if (currentCategory !== 'all') records = records.filter(r => r.category === currentCategory);
+            if (search) records = records.filter(r => r.name.toLowerCase().includes(search)||r.category.toLowerCase().includes(search));
+            records.sort((a, b) => {
+                if (sortCol==='risk') return sortDir*(a.risk-b.risk);
+                if (sortCol==='sensitivity') { const o={High:3,Moderate:2,Low:1}; return sortDir*((o[a.sensitivity]||0)-(o[b.sensitivity]||0)); }
+                return 0;
+            });
+            const tbody = document.getElementById('recordsBody');
+            if (!records.length) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#94A3B8;padding:2.5rem">No records match this filter</td></tr>`;
+                document.getElementById('tableCount').textContent = 'No records'; return;
+            }
+            tbody.innerHTML = records.map((rec, i) => {
+                const piiCell = rec.pii.length>0
+                    ? rec.pii.slice(0,2).map(p=>`<span class="bx bx-red" style="font-size:.65rem;margin-right:2px">${p.split(':')[0].trim()}</span>`).join('')+(rec.pii.length>2?`<span class="bx bx-slate" style="font-size:.65rem">+${rec.pii.length-2}</span>`:'')
+                    : '<span style="color:var(--green);font-weight:600">&#10003; None</span>';
+                const rowCls = rec.risk>=8?'row-danger':rec.risk>=5?'row-warning':'';
+                const ep = rec.path.replace(/'/g,"\\'"), en = rec.name.replace(/'/g,"\\'");
+                const checked = selectedPaths.has(rec.path) ? 'checked' : '';
+                return `<tr class="${rowCls}" onclick="openDoc('${ep}','${en}')">
+                    <td onclick="event.stopPropagation()"><input type="checkbox" ${checked} onchange="toggleRowSelect(this,'${ep}')" class="row-check"></td>
+                    <td style="color:#94A3B8;font-size:.72rem">${i+1}</td>
+                    <td><span class="cat-chip" title="${rec.name}" style="max-width:200px;font-weight:500;display:block">${rec.name}</span></td>
+                    <td><span class="cat-chip" title="${rec.category}" style="color:#64748B">${rec.category}</span></td>
+                    <td>${sensBadge(rec.sensitivity)}</td>
+                    <td>${riskBadge(rec.risk)}</td>
+                    <td>${piiCell}</td>
+                    <td>${statusPill(rec.status)}</td>
+                    <td style="white-space:nowrap" onclick="event.stopPropagation()">
+                        <button class="btn-review" onclick="openDoc('${ep}','${en}')">Open</button>
+                        ${rec.status==='classified'?`<button class="btn-review" style="background:rgba(22,163,74,.12);color:#16A34A;margin-left:2px" title="Approve" onclick="approveOne('${ep}')"><i class="fas fa-check"></i></button>`:''}
+                        <button class="btn-review" style="background:rgba(239,68,68,.12);color:#EF4444;margin-left:2px" title="Remove" onclick="removeOne('${ep}','${en}')"><i class="fas fa-times"></i></button>
+                    </td></tr>`;
+            }).join('');
+            document.getElementById('tableCount').textContent = `Showing ${records.length} of ${Object.keys(cd).length} records`;
+            updateSelBtn();
+        }
+
+        window.switchActionTab = function(tab) {
+            const rQ = document.getElementById('reviewQueue'),
+                  hQ = document.getElementById('highRiskQueue'),
+                  tR = document.getElementById('atab-review'),
+                  tH = document.getElementById('atab-high');
+            if (tab === 'review') {
+                rQ.style.display = ''; hQ.style.display = 'none';
+                tR.classList.add('active'); tH.classList.remove('active');
+            } else {
+                rQ.style.display = 'none'; hQ.style.display = '';
+                tH.classList.add('active'); tR.classList.remove('active');
+            }
+        };
+        window.switchBdnTab = function(tab) {
+            ['risk','sens','pii','cat'].forEach(function(t) {
+                const pane = document.getElementById('bdn-' + t);
+                const btn  = document.getElementById('bdntab-' + t);
+                if (pane) pane.style.display = (t === tab) ? '' : 'none';
+                if (btn)  btn.classList.toggle('active', t === tab);
+            });
+        };
+        window.setFilter = function(f, btn) {
+            currentFilter = f;
+            document.querySelectorAll('#filterTabs .ftab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const {cd,ds} = loadData(); renderTable(cd,ds);
+        };
+        window._setCat = function(cat) { currentCategory = cat; render(); };
+        window.toggleSort = function(col) { if (sortCol===col) sortDir*=-1; else {sortCol=col;sortDir=-1;} const {cd,ds}=loadData();renderTable(cd,ds); };
+        window.toggleSelectAll = function(cb) {
+            const checks = document.querySelectorAll('.row-check');
+            checks.forEach(c => { c.checked = cb.checked; });
+            selectedPaths.clear();
+            if (cb.checked) {
+                const {cd} = loadData(); Object.keys(cd).forEach(p => selectedPaths.add(p));
+            }
+            updateSelBtn();
+        };
+        window.toggleRowSelect = function(cb, path) {
+            if (cb.checked) selectedPaths.add(path); else selectedPaths.delete(path);
+            const allChecks = document.querySelectorAll('.row-check');
+            const sa = document.getElementById('selectAll');
+            if (sa) sa.checked = allChecks.length > 0 && [...allChecks].every(c => c.checked);
+            updateSelBtn();
+        };
+        function updateSelBtn() {
+            const n = selectedPaths.size;
+            const show = n > 0 ? '' : 'none';
+            const setBtn = (id, cntId) => { const b=document.getElementById(id); const c=document.getElementById(cntId); if(b)b.style.display=show; if(c)c.textContent=n; };
+            setBtn('approveSelBtn','appSelCount');
+            setBtn('rejectSelBtn','rejSelCount');
+            setBtn('removeSelBtn','selCount');
+        }
+        function _bulkSetStatus(status) {
+            const n = selectedPaths.size;
+            if (!n) return;
+            const ds = JSON.parse(localStorage.getItem('docStatuses')||'{}');
+            selectedPaths.forEach(p => { ds[p] = status; });
+            localStorage.setItem('docStatuses', JSON.stringify(ds));
+            selectedPaths.clear();
+            render();
+            showToast(n + ' record' + (n!==1?'s':'') + ' marked as ' + status + '.', status==='accepted'?'success':'warning');
+        }
+        window.approveSelected = function() { _bulkSetStatus('accepted'); };
+        window.rejectSelected  = function() { _bulkSetStatus('rejected'); };
+        window.approveOne = function(path) {
+            const ds = JSON.parse(localStorage.getItem('docStatuses')||'{}');
+            ds[path] = 'accepted';
+            localStorage.setItem('docStatuses', JSON.stringify(ds));
+            render();
+        };
+        window.removeSelected = function() {
+            const n = selectedPaths.size;
+            if (!n) return;
+            if (!confirm(`Remove classification for ${n} selected document${n!==1?'s':''}?\nThey will revert to unclassified and can be re-classified.`)) return;
+            const cd = JSON.parse(localStorage.getItem('classifiedDocuments')||'{}');
+            const ds = JSON.parse(localStorage.getItem('docStatuses')||'{}');
+            selectedPaths.forEach(p => { delete cd[p]; delete ds[p]; });
+            selectedPaths.clear();
+            const slim = {};
+            Object.entries(cd).forEach(([p,d]) => { slim[p]={file:d.file,classification:d.classification,risk_assessment:d.risk_assessment,status:d.status}; });
+            localStorage.setItem('classifiedDocuments', JSON.stringify(slim));
+            localStorage.setItem('docStatuses', JSON.stringify(ds));
+            if (!Object.keys(cd).length) localStorage.removeItem('classifiedAt');
+            render();
+        };
+        window.openDoc = function(path, name) {
+            localStorage.setItem('dashboardOpenDoc', JSON.stringify({path,name}));
+            window.location.href = '/browse#open=' + encodeURIComponent(path);
+        };
+        window.removeOne = function(path, name) {
+            if (!confirm('Remove classification for "' + (name||path.split('/').pop()) + '"?\nThe document will revert to unclassified and can be re-classified.')) return;
+            const cd = JSON.parse(localStorage.getItem('classifiedDocuments')||'{}');
+            const ds = JSON.parse(localStorage.getItem('docStatuses')||'{}');
+            delete cd[path]; delete ds[path];
+            const slim = {};
+            Object.entries(cd).forEach(([p,d]) => { slim[p]={file:d.file,classification:d.classification,risk_assessment:d.risk_assessment,status:d.status}; });
+            localStorage.setItem('classifiedDocuments', JSON.stringify(slim));
+            localStorage.setItem('docStatuses', JSON.stringify(ds));
+            if (!Object.keys(cd).length) localStorage.removeItem('classifiedAt');
+            render();
+        };
+        window.renderTable = function() { const {cd,ds}=loadData();renderTable(cd,ds); };
+        window.clearData = function() {
+            if (!confirm('Clear all classified records? Document files are not affected.')) return;
+            ['classifiedDocuments','docStatuses','classifiedAt','dashboardOpenDoc'].forEach(k => localStorage.removeItem(k));
+            render();
+        };
+        window.exportPdf = function() {
+            const cd = JSON.parse(localStorage.getItem('classifiedDocuments') || '{}');
+            const entries = Object.values(cd);
+            if (!entries.length) { showToast('No classified records to export.', 'warning'); return; }
+            if (!window.jspdf) { showToast('PDF library not loaded — please refresh.', 'error'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            const margin = 16;
+            const contentW = pageW - margin * 2;
+            const C = {
+                navyDark:[15,23,42], navy:[30,58,95], blue:[59,130,246], blueLight:[96,165,250],
+                red:[220,38,38], orange:[234,88,12], green:[22,163,74],
+                slate100:[241,245,249], slate200:[226,232,240], slate400:[148,163,184],
+                slate600:[100,116,139], slate800:[30,41,59], white:[255,255,255]
+            };
+            function riskNum(e) { return parseFloat(e.risk_assessment?.risk_score ?? e.classification?.risk_score ?? 0); }
+            const highRisk  = entries.filter(e => riskNum(e) >= 8);
+            const withPii   = entries.filter(e => (e.classification?.pii_detected ?? []).length > 0);
+            const allScores = entries.map(e => riskNum(e));
+            const avgScore  = allScores.length ? allScores.reduce((a,b)=>a+b,0)/allScores.length : 0;
+            const sensDist  = { High:0, Moderate:0, Low:0 };
+            entries.forEach(e => { const s = e.classification?.sensitivity_level || 'Low'; sensDist[s]=(sensDist[s]||0)+1; });
+            const piiFreq = {};
+            entries.forEach(e => (e.classification?.pii_detected ?? []).forEach(p => { const k=p.split(':')[0].trim(); piiFreq[k]=(piiFreq[k]||0)+1; }));
+            const piiSorted   = Object.entries(piiFreq).sort((a,b)=>b[1]-a[1]);
+            const groupFreq   = {};
+            entries.forEach(e => { const g=e.classification?.functional_group||'Unknown'; groupFreq[g]=(groupFreq[g]||0)+1; });
+            const groupSorted = Object.entries(groupFreq).sort((a,b)=>b[1]-a[1]);
+            const sorted = [...entries].sort((a,b)=>riskNum(b)-riskNum(a));
+            const now = new Date();
+            // ── COVER HEADER ──
+            doc.setFillColor(...C.navyDark); doc.rect(0,0,pageW,46,'F');
+            doc.setFillColor(...C.blue);     doc.rect(0,0,4,46,'F');
+            doc.setFillColor(...C.blue);     doc.circle(margin+8,15,4.5,'F');
+            doc.setFillColor(...C.navyDark); doc.circle(margin+8,15,2.2,'F');
+            doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(17);
+            doc.text('AI Document Classification Report', margin+16, 13);
+            doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...C.slate400);
+            doc.text('Confidential  \u2014  Generated by AI Document Classifier', margin+16, 20);
+            doc.setFontSize(7.5);
+            doc.text(`${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}   \u00B7   ${entries.length} document${entries.length!==1?'s':''} analysed`, margin+16, 28);
+            doc.setFillColor(...C.red); doc.roundedRect(pageW-margin-28,9,28,8,1.5,1.5,'F');
+            doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+            doc.text('CONFIDENTIAL', pageW-margin-14, 14, {align:'center'});
+            let y = 56;
+            // ── KPI CARDS ──
+            const avgColor = avgScore>=8?C.red:avgScore>=5?C.orange:C.green;
+            const metrics = [
+                {label:'Documents Analyzed', val:entries.length, color:C.blue},
+                {label:'Critical Risk (\u22658)', val:highRisk.length, color:C.red},
+                {label:'Contain PII', val:withPii.length, color:C.orange},
+                {label:'Avg Risk Score', val:avgScore.toFixed(1), color:avgColor}
+            ];
+            const boxW = (contentW-9)/4;
+            metrics.forEach((m,i) => {
+                const bx = margin + i*(boxW+3);
+                doc.setFillColor(...C.slate100); doc.roundedRect(bx,y,boxW,24,2,2,'F');
+                doc.setFillColor(...m.color); doc.roundedRect(bx,y,boxW,3,1.5,1.5,'F');
+                doc.setFillColor(...m.color); doc.rect(bx,y+1.5,boxW,1.5,'F');
+                doc.setTextColor(...m.color); doc.setFont('helvetica','bold'); doc.setFontSize(18);
+                doc.text(String(m.val), bx+boxW/2, y+15, {align:'center'});
+                doc.setTextColor(...C.slate600); doc.setFont('helvetica','normal'); doc.setFontSize(7);
+                doc.text(m.label, bx+boxW/2, y+21, {align:'center'});
+            });
+            y += 32;
+            // ── RISK & SENSITIVITY ──
+            doc.setFillColor(...C.navy); doc.rect(margin,y,contentW,7.5,'F');
+            doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+            doc.text('RISK & SENSITIVITY BREAKDOWN', margin+4, y+5.2);
+            y += 11;
+            [{level:'High',color:C.red},{level:'Moderate',color:C.orange},{level:'Low',color:C.green}].forEach((item,i) => {
+                const n=sensDist[item.level]||0, pct=entries.length?n/entries.length:0;
+                const bx=margin+i*((contentW/3-4)+6);
+                const cw=contentW/3-4;
+                doc.setTextColor(...item.color); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+                doc.text(`${item.level}: ${n}`, bx, y);
+                doc.setFontSize(7.5); doc.setTextColor(...C.slate600); doc.setFont('helvetica','normal');
+                doc.text(`${Math.round(pct*100)}% of documents`, bx, y+5);
+                doc.setFillColor(...C.slate200); doc.roundedRect(bx,y+7,cw,4.5,1,1,'F');
+                if(pct>0){ doc.setFillColor(...item.color); doc.roundedRect(bx,y+7,cw*pct,4.5,1,1,'F'); }
+            });
+            y += 20;
+            // ── PII ──
+            if (piiSorted.length > 0) {
+                doc.setFillColor(...C.navy); doc.rect(margin,y,contentW,7.5,'F');
+                doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+                doc.text('PII & SENSITIVE DATA DETECTED', margin+4, y+5.2);
+                y += 11;
+                const maxCount=piiSorted[0][1], colW4=contentW/4-3;
+                piiSorted.slice(0,8).forEach(([type,count],i) => {
+                    const row=Math.floor(i/4),col=i%4,px=margin+col*(colW4+4),py=y+row*12,pct=count/maxCount;
+                    doc.setTextColor(...C.slate800); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                    doc.text(type, px, py);
+                    doc.setTextColor(...C.red); doc.setFontSize(7);
+                    doc.text(`\u00D7${count}`, px+colW4, py, {align:'right'});
+                    doc.setFillColor(...C.slate200); doc.roundedRect(px,py+1.5,colW4,3,0.5,0.5,'F');
+                    if(pct>0){ doc.setFillColor(...C.red); doc.roundedRect(px,py+1.5,colW4*pct,3,0.5,0.5,'F'); }
+                });
+                y += Math.ceil(Math.min(piiSorted.length,8)/4)*12+5;
+            }
+            // ── CATEGORY DISTRIBUTION ──
+            if (groupSorted.length > 0) {
+                doc.setFillColor(...C.navy); doc.rect(margin,y,contentW,7.5,'F');
+                doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+                doc.text('DOCUMENT CATEGORY DISTRIBUTION', margin+4, y+5.2);
+                y += 11;
+                const maxG=groupSorted[0][1];
+                groupSorted.slice(0,8).forEach(([group,count]) => {
+                    const pct=count/maxG;
+                    doc.setTextColor(...C.slate800); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                    doc.text(group.length>40?group.slice(0,38)+'\u2026':group, margin, y);
+                    doc.setTextColor(...C.slate600);
+                    doc.text(String(count), margin+contentW, y, {align:'right'});
+                    doc.setFillColor(...C.slate200); doc.roundedRect(margin,y+1.5,contentW-18,3.5,0.5,0.5,'F');
+                    doc.setFillColor(...C.blue); doc.roundedRect(margin,y+1.5,(contentW-18)*pct,3.5,0.5,0.5,'F');
+                    y += 8;
+                });
+                y += 4;
+            }
+            // ── DOCUMENT TABLE (page 2) ──
+            doc.addPage();
+            doc.setFillColor(...C.navyDark); doc.rect(0,0,pageW,14,'F');
+            doc.setFillColor(...C.blue);     doc.rect(0,0,4,14,'F');
+            doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+            doc.text('All Classified Documents \u2014 Ranked by Risk Score', margin+2, 9.5);
+            const tableRows = sorted.map((e,i) => {
+                const score = riskNum(e);
+                const piis  = (e.classification?.pii_detected ?? []).slice(0,3).map(p=>p.split(':')[0].trim()).join(', ');
+                const findings = e.classification?.confidential_findings ?? [];
+                return [i+1, e.file||'-', e.classification?.functional_group||'-',
+                        e.classification?.sensitivity_level||'-', `${score.toFixed(1)}/10`,
+                        piis||'\u2014', findings[0]?(findings[0].length>60?findings[0].slice(0,58)+'\u2026':findings[0]):'\u2014'];
+            });
+            doc.autoTable({
+                startY:18, head:[['#','Document','Category','Sensitivity','Risk','PII Found','Key Finding']],
+                body:tableRows, margin:{left:margin,right:margin},
+                headStyles:{fillColor:C.slate800,textColor:C.white,fontSize:7,fontStyle:'bold',halign:'center',cellPadding:2.5},
+                bodyStyles:{fontSize:6.5,textColor:C.slate800,cellPadding:2},
+                alternateRowStyles:{fillColor:C.slate100},
+                columnStyles:{0:{halign:'center',cellWidth:7},1:{cellWidth:44},2:{cellWidth:36},
+                              3:{halign:'center',cellWidth:20},4:{halign:'center',cellWidth:15},5:{cellWidth:28},6:{cellWidth:'auto'}},
+                didParseCell:(data) => {
+                    if(data.section!=='body') return;
+                    if(data.column.index===4){ const v=parseFloat(data.cell.text[0]); data.cell.styles.textColor=v>=8?C.red:v>=5?C.orange:C.green; data.cell.styles.fontStyle='bold'; }
+                    if(data.column.index===3){ const lvl=data.cell.text[0]; data.cell.styles.textColor=lvl==='High'?C.red:lvl==='Moderate'?C.orange:C.green; data.cell.styles.fontStyle='bold'; }
+                }
+            });
+            // ── FOOTER ──
+            const totalPages = doc.internal.getNumberOfPages();
+            for(let p=1;p<=totalPages;p++){
+                doc.setPage(p);
+                doc.setFillColor(...C.navyDark); doc.rect(0,pageH-9,pageW,9,'F');
+                doc.setTextColor(...C.slate400); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+                doc.text('AI Document Classifier  \u2014  Confidential & Proprietary', margin, pageH-3.5);
+                doc.text(`Page ${p} of ${totalPages}`, pageW-margin, pageH-3.5, {align:'right'});
+            }
+            doc.save(`classification_report_${now.toISOString().slice(0,10)}.pdf`);
+        };
+        window.exportCsv = function() {
+            const {cd,ds} = loadData();
+            const records = buildRecords(cd,ds);
+            if (!records.length) { showToast('No records to export.', 'warning'); return; }
+            const header = ['Document','Category','Sensitivity','Risk Score','PII Types','Status','Summary'];
+            const rows = records.map(r => [r.name,r.category,r.sensitivity,r.risk,
+                r.pii.map(p=>p.split(':')[0].trim()).join('; '),r.status,(r.summary||'').replace(/,/g,';').replace(/\n/g,' ')]);
+            const csv = [header,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+            a.download = `classification_report_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        };
+
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState==='visible') render(); });
+        window.addEventListener('focus', render);
+        if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', render);
+        else render();
+    })();
+
+    function showToast(msg, type) {
+        var t = document.getElementById('siteToast');
+        var icons = { success:'check-circle', error:'exclamation-circle', warning:'exclamation-triangle', info:'info-circle' };
+        var colors = { success:'#10B981', error:'#EF4444', warning:'#F59E0B', info:'#3B82F6' };
+        var k = type || 'info';
+        t.innerHTML = '<div style="display:flex;align-items:center;gap:.65rem;background:#1E293B;color:#F1F5F9;padding:.75rem 1.1rem;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:.84rem;font-weight:500;border-left:3px solid ' + (colors[k]||colors.info) + ';max-width:360px;pointer-events:auto"><i class="fas fa-' + (icons[k]||icons.info) + '" style="color:' + (colors[k]||colors.info) + ';font-size:.95rem;flex-shrink:0"></i><span>' + msg + '</span></div>';
+        t.style.display = 'block';
+        clearTimeout(t._tid);
+        t._tid = setTimeout(function(){ t.style.display='none'; }, 4200);
+    }
+    </script>
+<div id="siteToast" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;display:none;pointer-events:none"></div>
+</body>
+</html>

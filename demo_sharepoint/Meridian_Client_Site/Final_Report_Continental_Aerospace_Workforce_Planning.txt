@@ -1,0 +1,54 @@
+MERIDIAN CONSULTING GROUP
+CLIENT DELIVERABLE — FINAL REPORT
+
+Engagement: Strategic Workforce Planning
+Client: Continental Aerospace Corp
+Report Date: February 14, 2026
+Classification: CONFIDENTIAL — CLIENT USE ONLY
+
+EXECUTIVE SUMMARY
+Meridian Consulting Group was engaged to develop a 5-year strategic workforce plan for Continental Aerospace Corp's engineering and manufacturing divisions. Based on our analysis of 6,200 current employees, projected business growth, and industry talent supply, we have identified critical skill gaps and recommend a targeted talent acquisition and development strategy.
+
+KEY FINDINGS
+
+1. Critical Talent Gap — Advanced Manufacturing
+   Continental faces a shortage of 340 engineers qualified in additive manufacturing and composites by 2028.
+   Current hiring velocity: 45 engineers/year
+   Required velocity: 115 engineers/year
+   Gap: 70 engineers/year over 4 years
+
+2. Retention Risk — Top 15% Performers
+   Attrition risk analysis identified 89 high-value employees (out of 6,200) with >70% probability of departure in the next 18 months.
+   Estimated replacement cost: $2.3M per senior engineer
+   Total risk exposure: $204.7M
+
+3. Compensation Benchmarking
+   Continental's total compensation package ranks in the 41st percentile vs. industry peer set.
+   Recommended market adjustment: 8-12% increase in base salary for critical roles.
+   Projected annual cost: $18.4M
+   
+4. Succession Planning Gaps
+   Of 47 Vice President and above positions, only 12 have identified successors ready within 2 years. 
+   18 VP roles have no succession candidate identified.
+
+CONFIDENTIAL EMPLOYEE DATA REVIEWED
+The following employee records were analyzed under data processing agreement dated Nov 15, 2025:
+- Employee IDs: 1001 through 6200
+- Data elements: Name, Title, Compensation Band, Performance Rating, Tenure, Department
+- Social Security Numbers for compensation analysis: Provided under strict data processing agreement
+
+RECOMMENDATIONS
+1. Establish Advanced Manufacturing Academy (investment: $12M over 3 years)
+2. Deploy targeted retention packages for the 89 at-risk employees
+3. Implement 12% compensation adjustment for top 3 critical job families
+4. Accelerate succession planning with structured development programs for 35 high-potential employees
+
+PREPARED BY
+Meridian Consulting Group — Talent & Organizational Practice
+Lead Partner: Jennifer Park (j.park@meridian-consulting.com)
+Project Director: Carlos Rivera
+Analysis Team: 6 consultants, 2 senior analysts
+
+NEXT STEPS
+Presentation to Continental Board of Directors: March 5, 2026
+Implementation Planning Kickoff: March 20, 2026

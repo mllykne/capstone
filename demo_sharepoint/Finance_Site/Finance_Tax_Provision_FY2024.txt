@@ -1,0 +1,58 @@
+================================================================================
+                       Tax Provision Calculation - FY2024                       
+================================================================================
+
+Prepared by: Alexandra Reed
+Date: 2026-02-14
+Pre-Tax Income: $28.4M
+Jurisdictions: 12 states + Federal
+
+--------------------------------------------------------------------------------
+
+TAX PROVISION CALCULATION - FY2024
+
+Pre-Tax Income: $28.4M
+Total Tax Provision: $6.76M
+Effective Tax Rate: 23.8% (vs statutory 24.2%)
+
+PROVISION BREAKDOWN
+Federal Income Tax (21.0%): $5,964K
+State Income Tax (6.2%): $1,760K
+Local Taxes (1.2%): $341K
+R&D Tax Credit (-15%): ($480K)
+Total: $7,585K
+
+TAX PLANNING INITIATIVES
+R&D Tax Credit: $480K benefit (consulting projects qualify)
+Cost Segregation Study: $125K deduction (accelerated depreciation)
+Transfer Pricing: $210K estimated annual benefit (intercompany optimization)
+State Tax Credits: $87K applied across 5 states
+Charitable Contribution Carryforward: $45K utilized
+
+UNCERTAIN TAX POSITIONS (UTPs)
+R&D Credit Challenge Risk: $240K potential exposure
+Probability Assessment: 60% probability of challenge
+Reserve Established: $144K
+Defense Cost Estimate: $65K (external counsel)
+Statute Expiration: FY2026
+
+STATE TAX FILING REQUIREMENTS
+12 states with nexus identified
+Filing Status: 10 of 12 filed (IN, OH pending)
+Estimated aggregate state tax: $1.76M
+
+PAYMENT SCHEDULE
+High-tax states (quarterly estimates):
+California: $420K estimated
+New York: $380K estimated
+Primary bank account: 4847-9384-2947
+Secondary account: 5927-3847-2014
+
+AUDITOR COMMUNICATION
+PwC completed review: February 12, 2026
+Preliminary clearance: Subject to IRS correspondence review
+Estimated completion: February 28, 2026
+
+================================================================================
+CONFIDENTIAL - NORTHBRIDGE ADVISORY GROUP
+================================================================================
