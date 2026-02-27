@@ -51,6 +51,10 @@ class AIClassifier:
         self.max_retries = 3
         self.retry_delay = 2  # seconds
 
+        # Local Ollama fallback (used when Gemini quota is exhausted)
+        self.ollama_url = os.getenv('OLLAMA_URL', 'http://localhost:11434')
+        self.ollama_model = os.getenv('OLLAMA_MODEL', 'llama3.2')
+
         if not self.api_key:
             logger.warning("GEMINI_API_KEY not set. Classifier will use fallback mode.")
         logger.info(f"AIClassifier using model: {self.model}")
@@ -94,8 +98,11 @@ class AIClassifier:
             logger.warning("Empty content for classification")
             return self._fallback_classification(file_name)
 
-        # Let _build_prompt handle truncation (8000 chars) so we pass full content
-        prompt = self._build_prompt(content, file_name, file_size)
+        # Pre-analyse content for PII hits and domain signals before calling the API
+        pre_analysis = self._pre_analyze(content, file_name)
+
+        # Build prompt with pre-analysis cheat-sheet embedded
+        prompt = self._build_prompt(content, file_name, file_size, pre_analysis)
 
         # Try API call with retries
         for attempt in range(self.max_retries):
@@ -109,31 +116,221 @@ class AIClassifier:
                     model=self.model, contents=prompt
                 )
 
-                # Parse response
+                # Parse and post-validate response
                 result = self._parse_response(response.text)
+                result = self._post_validate(result, pre_analysis)
                 result['classification_status'] = 'success'
                 return result
 
             except Exception as e:
-                logger.error(f"Attempt {attempt + 1} failed: {e}")
+                error_str = str(e)
+                logger.error(f"Attempt {attempt + 1} failed: {error_str}")
+
+                # On quota/rate-limit error skip remaining retries and go straight to Ollama
+                if self._is_quota_error(e):
+                    logger.warning("Gemini quota/rate-limit reached — trying local Ollama fallback")
+                    return self._classify_with_ollama(prompt, pre_analysis, file_name, content)
+
                 if attempt < self.max_retries - 1:
                     time.sleep(self.retry_delay)
                 else:
                     logger.error(f"All retries exhausted for {file_name}")
-                    return self._fallback_classification(file_name, content)
+                    return self._classify_with_ollama(prompt, pre_analysis, file_name, content)
 
-    def _build_prompt(self, content: str, file_name: str, file_size: int = None) -> str:
+    def _pre_analyze(self, content: str, file_name: str) -> dict:
+        """Run fast regex + keyword scan BEFORE calling the LLM.
+        Returns a dict that is injected into the prompt and used for post-validation."""
+        import re
+        c = content  # original case
+        cl = content.lower()
+        fn = file_name.lower()
+        findings = []
+        pii_hits = []
+        domain_scores = {g: 0 for g in self.FUNCTIONAL_GROUPS if g != 'Outliers / Others'}
+
+        # ── PII scanners (extract actual values where possible) ──────────────
+        def _find(pattern, label, sample_fmt=None, flags=0):
+            matches = list(re.finditer(pattern, c, flags))
+            if matches:
+                samples = [m.group(0)[:40] for m in matches[:3]]
+                entry = label + (f": {', '.join(samples)}" if sample_fmt else f" ({len(matches)} match{'es' if len(matches)>1 else ''})")
+                pii_hits.append(entry)
+                findings.append(entry)
+                return len(matches)
+            return 0
+
+        _find(r'\b\d{3}-\d{2}-\d{4}\b', 'SSN', sample_fmt=True)
+        _find(r'\b(?:4[0-9]{3}|5[1-5][0-9]{2}|3[47][0-9]{2})[\s-]?\d{4}[\s-]?\d{4}[\s-]?(?:\d{3,4})\b', 'Credit Card', sample_fmt=True)
+        _find(r'\b(?:[Rr]outing|ABA|RTN)[\s:=]+\d{9}\b', 'Routing Number', sample_fmt=True)
+        _find(r'\b[A-Z]{6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3})?\b', 'SWIFT/BIC Code', sample_fmt=True)
+        _find(r'\b(?:[Aa]ccount|[Aa]cct)\.?\s*(?:#|[Nn]o\.?|[Nn]um(?:ber)?)?\s*[:=]?\s*\d{6,17}\b', 'Bank Account', sample_fmt=True)
+        _find(r'\b[A-Z]{2}\d{2}[A-Z0-9]{4}\d{7,}\b', 'IBAN', sample_fmt=True)
+        _find(r'\b[Ww]ire\s+[Tt]ransfer\b', 'Wire Transfer Instructions')
+        _find(r'\b(?:password|passwd|pwd)\s*[:=]\s*\S{4,}', 'Password/Credential', sample_fmt=False, flags=re.IGNORECASE)
+        _find(r'\bapi[_\-]?key\s*[:=]\s*[A-Za-z0-9_\-]{16,}', 'API Key', sample_fmt=False, flags=re.IGNORECASE)
+        _find(r'\bsecret[_\-]?(?:key|token)\s*[:=]\s*\S{10,}', 'Secret Key', sample_fmt=False, flags=re.IGNORECASE)
+        _find(r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b', 'Email Address', sample_fmt=True)
+        _find(r'\b\(?\d{3}\)?[\s.\-]\d{3}[\s.\-]\d{4}\b', 'Phone Number', sample_fmt=True)
+        _find(r'\bEMP[-\s#]?\d{3,}|\b[Ee]mployee\s*(?:ID|#|No\.?)\s*[:=]?\s*[\w\d\-]+', 'Employee ID', sample_fmt=True)
+        _find(r'\bDOB\b|\b[Dd]ate\s+of\s+[Bb]irth\s*[:=]?\s*\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}', 'Date of Birth', sample_fmt=True)
+        _find(r'\b\$[\d,]{4,}(?:\.\d{2})?\b', 'Dollar Amount', sample_fmt=True)
+        _find(r'\b(?:salary|compensation|payroll|base\s+pay)\s*[:=]?\s*\$?[\d,]+', 'Salary/Compensation', sample_fmt=True, flags=re.IGNORECASE)
+        _find(r'\b(?:[Mm]edical|[Hh]ealth|HIPAA|PHI|patient\s+(?:ID|record))', 'Medical/Health Data')
+        _find(r'\b(?:GDPR|CCPA|PCI[\-\s]DSS|SOX|HIPAA)\b', 'Regulatory Framework')
+
+        # ── Domain keyword scoring ────────────────────────────────────────────
+        kw_map = {
+            'HR':                               ['employee', 'payroll', 'salary', 'compensation', 'benefits', 'performance review',
+                                                 'recruiting', 'onboarding', 'headcount', 'workforce', 'talent', 'hr policy',
+                                                 'human capital', 'disciplinary', 'termination', 'background check', 'pip'],
+            'Finance and Accounting':           ['ebitda', 'balance sheet', 'general ledger', 'accounts payable', 'accounts receivable',
+                                                 'journal entry', 'tax filing', 'fiscal year', 'cash flow', 'budget variance',
+                                                 'income statement', 'revenue recognition', 'audit schedule', 'amortization', 'depreciation'],
+            'Legal + Compliance':               ['whereas', 'indemnification', 'governing law', 'jurisdiction', 'litigation',
+                                                 'settlement', 'nda', 'gdpr', 'sox', 'hipaa', 'pci-dss', 'arbitration',
+                                                 'force majeure', 'data processing agreement', 'regulatory filing', 'contractual'],
+            'IT & Systems':                     ['cloud', 'aws', 'azure', 'gcp', 'kubernetes', 'docker', 'terraform', 'infrastructure',
+                                                 'api gateway', 'devops', 'ci/cd', 'firewall', 'vpn', 'encryption', 'ssl', 'tls',
+                                                 'subnet', 'ip address', 'dns', 'active directory', 'ldap', 'iam', 'siem',
+                                                 'digital transformation', 'digital maturity', 'cloud migration', 'microservice',
+                                                 'access control', 'server', 'database server', 'load balancer', 'ssh key'],
+            'Sales & Business Development':     ['pipeline', 'deal stage', 'win probability', 'quota', 'go-to-market', 'crm',
+                                                 'opportunity tracking', 'revenue forecast', 'prospect', 'close rate'],
+            'Marketing & Communications':       ['brand guidelines', 'marketing campaign', 'social media', 'press release',
+                                                 'content strategy', 'seo', 'audience targeting', 'advertising', 'brand voice'],
+            'Product Development / R&D':        ['product roadmap', 'sprint', 'backlog', 'user story', 'mvp', 'prototype',
+                                                 'feature request', 'a/b test', 'ux research', 'engineering ticket'],
+            'Operations and Internal Documentation': ['standard operating procedure', 'sop', 'workflow', 'supply chain',
+                                                      'logistics', 'facility', 'meeting minutes', 'operational kpi', 'process improvement'],
+            'Customer / Client Documentation':  ['prepared for', 'submitted to', 'engagement summary', 'client onboarding',
+                                                 'account summary', 'customer contact', 'client relationship', 'customer success'],
+        }
+        for grp, kws in kw_map.items():
+            for kw in kws:
+                if kw in cl:
+                    domain_scores[grp] += 1
+
+        # Filename boosts
+        fn_boosts = {
+            'HR':                               ['payroll', 'employee', 'hr_', 'human', 'salary', 'benefits', 'onboard', 'talent'],
+            'Finance and Accounting':           ['financial', 'budget', 'invoice', 'revenue', 'ledger', 'accounting', 'tax', 'audit'],
+            'Legal + Compliance':               ['contract', 'legal', 'compliance', 'nda', 'agreement', 'policy', 'terms'],
+            'IT & Systems':                     ['system', 'it_', 'server', 'network', 'infra', 'access_control', 'config',
+                                                 'cloud', 'devops', 'api', 'security', 'vpn', 'credential', 'database'],
+            'Customer / Client Documentation':  ['client', 'customer', 'account', 'engagement', 'case_study'],
+            'Sales & Business Development':     ['sales', 'pipeline', 'proposal', 'deal', 'partnership'],
+            'Marketing & Communications':       ['marketing', 'campaign', 'brand', 'comms'],
+            'Product Development / R&D':        ['product', 'roadmap', 'r&d', 'research', 'design'],
+            'Operations and Internal Documentation': ['operation', 'procedure', 'sop', 'internal', 'meeting'],
+        }
+        for grp, fns in fn_boosts.items():
+            for f in fns:
+                if f in fn:
+                    domain_scores[grp] += 2  # filename is a strong signal
+
+        sorted_domains = sorted(domain_scores.items(), key=lambda x: x[1], reverse=True)
+        top_domain, top_score = sorted_domains[0]
+        second_domain, second_score = sorted_domains[1] if len(sorted_domains) > 1 else ('', 0)
+
+        return {
+            'pii_hits': pii_hits,
+            'pii_count': len(pii_hits),
+            'domain_scores': domain_scores,
+            'top_domain': top_domain,
+            'top_score': top_score,
+            'second_domain': second_domain,
+            'second_score': second_score,
+            'has_high_pii': any(t in ' '.join(pii_hits) for t in ['SSN', 'Credit Card', 'Bank Account', 'Routing', 'Password', 'API Key', 'IBAN', 'SWIFT', 'Wire Transfer']),
+        }
+
+    def _post_validate(self, result: dict, pre_analysis: dict) -> dict:
+        """Apply rule-based corrections to the LLM output using hard pre-analysis signals."""
+        pii = pre_analysis.get('pii_hits', [])
+        pii_str = ' '.join(pii).lower()
+        top = pre_analysis.get('top_domain', '')
+        top_score = pre_analysis.get('top_score', 0)
+        cur_group = result.get('functional_group', '')
+        scores = pre_analysis.get('domain_scores', {})
+
+        # 1. If high-risk PII found, always force High sensitivity
+        if pre_analysis.get('has_high_pii'):
+            result['sensitivity_level'] = 'High'
+            cur_risk = float(result.get('risk_score', 5))
+            result['risk_score'] = max(cur_risk, 7.5)
+
+        # 2. If model missed PII types that we definitively found, add them
+        existing_pii = [p.split(':')[0].strip().lower() for p in result.get('pii_detected', [])]
+        for hit in pii:
+            hit_type = hit.split(':')[0].split('(')[0].strip()
+            if not any(hit_type.lower() in ep for ep in existing_pii):
+                result.setdefault('pii_detected', []).append(hit_type)
+
+        # 3. If domain score strongly favors a group the model missed, override
+        # Only override when the score gap is decisive (4+) AND model picked a weak match
+        if top_score >= 4 and cur_group != top:
+            weak_groups = {'Customer / Client Documentation', 'Outliers / Others',
+                           'Operations and Internal Documentation'}
+            if cur_group in weak_groups and top not in weak_groups:
+                result['functional_group'] = top
+                result.setdefault('reasoning', '')
+                result['reasoning'] = (f"[Post-validator overrode '{cur_group}' → '{top}' "
+                    f"based on keyword score {top_score} vs runner-up {pre_analysis.get('second_score',0)}] "
+                    + result['reasoning'])
+
+        # 4. Bump risk_score when multiple PII types present
+        n_pii = len(pii)
+        if n_pii >= 3:
+            result['risk_score'] = max(float(result.get('risk_score', 5)), 8.0)
+        elif n_pii >= 1:
+            result['risk_score'] = max(float(result.get('risk_score', 5)), 6.0)
+
+        return result
+
+    def _build_prompt(self, content: str, file_name: str, file_size: int = None,
+                      pre_analysis: dict = None) -> str:
         """Build Gemini prompt for classification with enhanced sensitivity analysis and PII detection."""
         sensitivity_str = ', '.join(self.SENSITIVITY_LEVELS)
-        
-        # Increase content limit and add truncation notice
-        max_content = 8000
+        pre_analysis = pre_analysis or {}
+
+        # Smart chunking: take first 10 000 + last 2 000 chars for large docs
+        max_content = 12000
         content_truncated = False
         if len(content) > max_content:
-            content = content[:max_content]
+            first_part = content[:10000]
+            last_part  = content[-2000:]
+            content = first_part + '\n\n[... middle section omitted for length ...]\n\n' + last_part
             content_truncated = True
 
+        # Build pre-analysis cheat-sheet block
+        pii_hits = pre_analysis.get('pii_hits', [])
+        top_domain  = pre_analysis.get('top_domain', 'Unknown')
+        top_score   = pre_analysis.get('top_score', 0)
+        second_domain = pre_analysis.get('second_domain', '')
+        second_score  = pre_analysis.get('second_score', 0)
+        domain_scores_sorted = sorted(
+            (pre_analysis.get('domain_scores') or {}).items(),
+            key=lambda x: x[1], reverse=True
+        )[:5]
+        ds_lines = '  ' + '\n  '.join(f"{g}: {s}" for g, s in domain_scores_sorted) if domain_scores_sorted else '  (none)'
+
+        pre_block = f"""--- PRE-ANALYSIS SIGNALS (extracted by deterministic regex scan — treat as ground truth) ---
+PII / sensitive values detected:
+{chr(10).join('  - ' + h for h in pii_hits) if pii_hits else '  None detected'}
+
+Keyword domain scores (higher = stronger evidence):
+{ds_lines}
+  Top domain: {top_domain} (score {top_score})  Runner-up: {second_domain} (score {second_score})
+--- END PRE-ANALYSIS ---
+"""
+
         prompt = f"""You are a document classification expert with deep knowledge of business records and data governance. Analyze the following document and classify it into ONE of the 10 functional groups below.
+
+{pre_block}
+IMPORTANT: The PRE-ANALYSIS SIGNALS above were extracted by deterministic regex patterns and are highly reliable. Use them to:
+- Confirm or upgrade sensitivity level (if PII was found → High sensitivity)
+- Validate or adjust your functional group choice (high keyword score for a domain is strong evidence)
+- Populate pii_detected with the specific types listed (add exact examples from the document)
+- Do NOT downgrade sensitivity if the pre-analysis found high-risk PII
 
 ENHANCED SENSITIVITY CLASSIFICATION LOGIC:
 
@@ -298,43 +495,37 @@ SENSITIVITY LEVELS: {sensitivity_str}
 DOCUMENT METADATA:
 - Filename: {file_name}
 {"- File size: " + str(file_size) + " bytes" if file_size else ""}
-{"- Content truncated: Document exceeds 8000 characters, showing first 8000" if content_truncated else ""}
+{"- Content note: Large document — showing first 10,000 + last 2,000 characters" if content_truncated else ""}
 
-DOCUMENT CONTENT:{" (first 8000 chars)" if content_truncated else ""}
+DOCUMENT CONTENT:{" (truncated — first 10k + last 2k chars)" if content_truncated else ""}
 {content}
 
 ENHANCED CLASSIFICATION INSTRUCTIONS:
-1. Read the entire content carefully, scanning for ALL PII patterns and sensitive data indicators
-2. For each PII type found, note the EXACT text or pattern (e.g., "Found SSN: 123-45-6789 in employee record section")
-3. Check against ENHANCED SENSITIVITY CLASSIFICATION LOGIC to determine sensitivity level
-4. Identify the PRIMARY SUBJECT MATTER of the document — what field or discipline is this document fundamentally about?
-5. Apply PRIORITY ORDER: classify by primary subject matter first (IT, HR, Finance, Legal, Product, Sales, Marketing, Operations) before considering delivery format
-6. Only use "Customer / Client Documentation" for documents whose primary subject is client relationship management, generic engagement tracking, or mixed-topic deliverables with no dominant functional discipline
-7. Apply DISAMBIGUATION RULES — consulting/advisory documents are classified by WHAT they cover, not by WHO they were written for
-8. MUST classify to ONE of the first 9 groups — avoid "Outliers / Others" unless absolutely impossible (blank, corrupted, or zero business context)
-9. If content is unclear, choose the CLOSEST match from groups 1-9 based on document purpose or context
-10. Provide TWO confidence scores: functional_group_confidence (0.0-1.0) and sensitivity_confidence (0.0-1.0)
-11. Be strict with sensitivity: High only if regulated/PII data present; Moderate for internal business info; Low for public content
-12. Calculate risk_score (0-10): High sensitivity + multiple PII types = 8-10; High sensitivity + some PII = 6-8; Moderate = 3-6; Low = 0-3
-13. Provide detailed reasoning with SPECIFIC CITATIONS from the document content
+1. FIRST review the PRE-ANALYSIS SIGNALS at the top — they are deterministic regex results, not guesses.
+2. If the pre-analysis found PII (SSN, credit card, bank account, password, API key, etc.) → sensitivity is HIGH. Do not contradict this.
+3. If the pre-analysis keyword domain scores show a clear winner (score ≥ 4), weight that heavily when choosing the functional group.
+4. Then read the full document content, scanning for additional context and specific PII examples to cite.
+5. Identify the PRIMARY SUBJECT MATTER of the document — what field or discipline is this fundamentally about?
+6. Apply PRIORITY ORDER: classify by primary subject matter (IT, HR, Finance, Legal, Product, Sales, Marketing, Operations) before considering delivery format.
+7. Only use "Customer / Client Documentation" for documents whose primary subject is client relationship management or mixed-topic deliverables with no dominant functional discipline.
+8. Apply DISAMBIGUATION RULES — consulting/advisory documents are classified by WHAT subject they cover, not WHO they were written for.
+9. MUST classify to ONE of the first 9 groups — avoid "Outliers / Others" unless absolutely impossible.
+10. Provide TWO confidence scores: functional_group_confidence (0.0-1.0) and sensitivity_confidence (0.0-1.0).
+11. Calculate risk_score (0-10): High sensitivity + 3+ PII types = 9-10; High + 1-2 PII = 7-8; Moderate = 3-6; Low = 0-3.
+12. In pii_detected, include SPECIFIC EXAMPLES lifted from the document (e.g., "SSN: 123-45-6789", "Email: john@example.com").
+13. In reasoning, QUOTE specific text from the document to justify every classification decision.
 
-RESPONSE FORMAT REQUIREMENTS:
-- Format: JSON only (no markdown, no code blocks, no explanations outside JSON)
-- PII Citations: For each PII type found, include specific examples or patterns detected
-- Reasoning: Must quote specific text from document and explain classification logic step by step
-- Risk Score: Justify the score based on sensitivity level and PII quantity/types
-
-RESPOND IN JSON FORMAT ONLY:
+RESPOND IN JSON FORMAT ONLY — no markdown, no code fences:
 {{
-  "functional_group": "<one of the first 9 groups - avoid Outliers unless impossible>",
+  "functional_group": "<one of the first 9 groups — avoid Outliers unless impossible>",
   "functional_group_confidence": <0.0-1.0>,
-  "sensitivity_level": "<Low|Moderate|High>", 
+  "sensitivity_level": "<Low|Moderate|High>",
   "sensitivity_confidence": <0.0-1.0>,
-  "risk_score": <0-10 numeric score>,
-  "document_summary": "<2-3 sentence plain-English overview: what this document is, what information it contains, and its apparent purpose within the organization>",
-  "confidential_findings": ["<specific finding 1: describe exactly what sensitive/confidential item was found, e.g. 'SSN 123-45-6789 belonging to John Smith on line 3'>", "<specific finding 2>"],
-  "pii_detected": ["<list of specific PII types with examples: e.g., 'SSN: 123-45-6789', 'Credit Card: 4532-****-****-1234'>"],
-  "reasoning": "<DETAILED explanation with specific document quotes. Example: 'Classified as HR/High because document contains employee SSN (123-45-6789 in line 5) and salary information ($85,000 annual). Key indicators: employee performance review language, benefits enrollment section, and personal identifiers throughout.'>"
+  "risk_score": <0-10 numeric>,
+  "document_summary": "<2-3 sentence plain-English overview: what this document is, what data it contains, and its purpose>",
+  "confidential_findings": ["<specific finding with exact value, e.g. 'SSN 123-45-6789 found in employee record section'>"],
+  "pii_detected": ["<PII type with example value, e.g. 'SSN: 123-45-6789', 'Email: j.smith@company.com'>"],
+  "reasoning": "<Detailed explanation quoting specific document text. State: 1) what PII was found and where, 2) why this functional group was chosen over alternatives, 3) what drove the sensitivity level.>"
 }}
 """
         return prompt
@@ -457,6 +648,84 @@ RESPOND IN JSON FORMAT ONLY:
             logger.error(f"Failed to parse JSON response: {e}")
             logger.debug(f"Response text: {response_text[:200]}")
             raise ValueError("Invalid JSON in API response")
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Ollama local-LLM fallback
+    # ──────────────────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _is_quota_error(exc: Exception) -> bool:
+        """Return True when the exception looks like a Gemini quota / rate-limit error."""
+        msg = str(exc).lower()
+        quota_signals = [
+            'resource_exhausted', 'resourceexhausted',
+            'quota exceeded', 'quota_exceeded',
+            'rate limit', 'rate_limit',
+            '429',
+            'too many requests',
+        ]
+        return any(s in msg for s in quota_signals)
+
+    def _classify_with_ollama(
+        self,
+        prompt: str,
+        pre_analysis: dict,
+        file_name: str,
+        content: str = None,
+    ) -> Dict:
+        """Try to classify using a local Ollama server.  Falls back to keyword
+        classifier if Ollama is not running or returns an unparseable response.
+
+        Ollama must be installed and running:  https://ollama.com/download
+        Pull a model first:  ollama pull llama3.2
+        The server is expected at OLLAMA_URL (default http://localhost:11434).
+        """
+        import urllib.request
+        import urllib.error
+
+        try:
+            url = f"{self.ollama_url.rstrip('/')}/api/generate"
+            payload = json.dumps({
+                'model': self.ollama_model,
+                'prompt': prompt,
+                'stream': False,
+                'options': {
+                    'temperature': 0.1,   # low temp = deterministic classification
+                    'num_predict': 800,
+                },
+            }).encode('utf-8')
+
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={'Content-Type': 'application/json'},
+                method='POST',
+            )
+
+            logger.info(f"Calling Ollama ({self.ollama_model}) at {url}")
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                body = json.loads(resp.read().decode('utf-8'))
+
+            text = body.get('response', '')
+            if not text:
+                raise ValueError('Empty response from Ollama')
+
+            result = self._parse_response(text)
+            result = self._post_validate(result, pre_analysis)
+            result['classification_status'] = 'success'
+            result['model_used'] = f'ollama/{self.ollama_model}'
+            logger.info(f"Ollama classification succeeded for {file_name}")
+            return result
+
+        except urllib.error.URLError as e:
+            logger.warning(f"Ollama not reachable ({e}) — using keyword fallback")
+        except Exception as e:
+            logger.warning(f"Ollama classification failed ({e}) — using keyword fallback")
+
+        # Last resort: pure keyword-based classification
+        result = self._fallback_classification(file_name, content)
+        result['model_used'] = 'keyword_fallback'
+        return result
 
     def _fallback_classification(self, file_name: str, content: str = None) -> Dict:
         """

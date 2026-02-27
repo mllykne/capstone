@@ -121,7 +121,7 @@
         .btn-ghost-danger { border-color: rgba(220,38,38,.4); color: #FCA5A5; }
         .btn-ghost-danger:hover { background: rgba(220,38,38,.15); }
 
-        .content-wrap { padding: 1.25rem 1.75rem 2rem; max-width: 1400px; margin: 0 auto; }
+        .content-wrap { padding: 1.25rem 1.75rem 2rem; }
 
         /* ============================================================
            METRIC CARDS
@@ -502,6 +502,41 @@
         .btn-exp-browse:hover { background: var(--blue); color: #fff; filter: none; }
         .btn-exp-sel    { background: #475569; }
         .btn-exp-danger { background: var(--red); }
+
+        /* ============================================================
+           DOCUMENT DETAIL DRAWER
+        ============================================================ */
+        .rec-table tbody tr { cursor: pointer; }
+        .drawer-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1040; opacity:0; pointer-events:none; transition:opacity .25s; }
+        .drawer-overlay.open { opacity:1; pointer-events:auto; }
+        .doc-drawer { position:fixed; top:0; right:0; bottom:0; width:540px; max-width:96vw; background:#F8FAFC; z-index:1050; transform:translateX(100%); transition:transform .28s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; box-shadow:-4px 0 24px rgba(0,0,0,.15); }
+        .doc-drawer.open { transform:translateX(0); }
+        .drawer-head { padding:1.1rem 1.25rem .85rem; background:white; border-bottom:1px solid #E2E8F0; flex-shrink:0; position:relative; }
+        .drawer-name { font-size:1rem; font-weight:700; color:#0F172A; padding-right:2rem; line-height:1.35; word-break:break-word; }
+        .drawer-meta { font-size:.75rem; color:#64748B; margin-top:.3rem; display:flex; gap:.5rem; flex-wrap:wrap; }
+        .drawer-meta span { display:inline-flex; align-items:center; gap:.25rem; }
+        .drawer-close { position:absolute; top:.85rem; right:1rem; background:none; border:none; font-size:1.2rem; cursor:pointer; color:#94A3B8; line-height:1; padding:.2rem .4rem; border-radius:5px; }
+        .drawer-close:hover { background:#F1F5F9; color:#334155; }
+        .drawer-tabs { display:flex; background:white; border-bottom:2px solid #E2E8F0; flex-shrink:0; }
+        .drawer-tab { flex:1; padding:.6rem 1rem; font-size:.82rem; font-weight:600; color:#64748B; cursor:pointer; text-align:center; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .15s; }
+        .drawer-tab:hover { color:#2563EB; }
+        .drawer-tab.active { color:#2563EB; border-bottom-color:#2563EB; }
+        .drawer-body { flex:1; overflow-y:auto; padding:1.1rem 1.25rem; }
+        .drawer-kpis { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1rem; }
+        .drawer-kpi { background:white; border:1.5px solid #E2E8F0; border-radius:10px; padding:.75rem 1rem; }
+        .drawer-kpi .dk-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#94A3B8; margin-bottom:.25rem; }
+        .drawer-kpi .dk-val { font-size:1.5rem; font-weight:800; line-height:1; }
+        .drawer-kpi .dk-sub { font-size:.7rem; color:#94A3B8; margin-top:.2rem; }
+        .drawer-section { margin-bottom:.9rem; }
+        .drawer-section-title { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#64748B; margin-bottom:.4rem; display:flex; align-items:center; gap:.35rem; }
+        .pii-tag { display:inline-flex; align-items:center; gap:.3rem; background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; border-radius:5px; font-size:.72rem; font-weight:600; padding:.2rem .5rem; margin:.15rem; }
+        .finding-item { display:flex; align-items:flex-start; gap:.5rem; background:#FFFBEB; border:1px solid #FDE68A; border-radius:6px; padding:.45rem .65rem; font-size:.79rem; color:#92400E; margin-bottom:.35rem; }
+        .finding-item i { color:#D97706; font-size:.78rem; margin-top:.1rem; flex-shrink:0; }
+        .doc-content-wrap { font-family:'Courier New',Courier,monospace; font-size:.76rem; line-height:1.65; white-space:pre-wrap; word-break:break-word; background:white; border:1px solid #E2E8F0; border-radius:8px; padding:.9rem 1rem; max-height:calc(100vh - 220px); overflow-y:auto; color:#334155; }
+        .hl-red  { background:#FEE2E2; border-radius:2px; padding:0 2px; color:#991B1B; font-weight:600; }
+        .hl-amber{ background:#FEF3C7; border-radius:2px; padding:0 2px; color:#92400E; font-weight:600; }
+        .content-loading { text-align:center; padding:2rem 1rem; color:#94A3B8; font-size:.85rem; }
+        .dash-sens-badge { display:inline-block; font-size:.7rem; font-weight:700; padding:.2rem .55rem; border-radius:5px; }
     </style>
 </head>
 <body>
@@ -523,7 +558,7 @@
 
     <!-- ── PAGE HEADER ──────────────────────────────────────────── -->
     <div class="page-header">
-        <div style="max-width:1400px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem">
+        <div style="margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem">
             <div>
                 <h1><i class="fas fa-tachometer-alt me-2" style="color:#60A5FA"></i>Classification Dashboard</h1>
                 <div class="sub" id="lastUpdated">Loading…</div>
@@ -561,14 +596,14 @@
             <!-- KPI STRIP -->
             <div class="kpi-strip" id="metricRow"></div>
 
-            <!-- MAIN TWO-COLUMN -->
-            <div class="row g-3 mb-0">
+            <!-- MAIN TWO-COLUMN: Action + Breakdown -->
+            <div class="row g-3 mb-3">
 
-                <!-- LEFT: Action panel + table -->
+                <!-- LEFT: Action panel -->
                 <div class="col-lg-8">
 
                     <!-- ACTION REQUIRED -->
-                    <div class="panel mb-3">
+                    <div class="panel mb-0">
                         <div class="panel-head" style="border-bottom:none;padding-bottom:0.35rem">
                             <h6><i class="fas fa-tasks me-2" style="color:var(--amber)"></i>Action Required</h6>
                             <span class="bx bx-amber" id="reviewBadge">0</span>
@@ -584,9 +619,40 @@
                         <div class="panel-body" style="max-height:230px;overflow-y:auto" id="reviewQueue"></div>
                         <div class="panel-body" style="max-height:230px;overflow-y:auto;display:none" id="highRiskQueue"></div>
                     </div>
+                </div>
 
-                    <!-- RECORDS TABLE -->
+                <!-- RIGHT: Breakdowns (tabbed) -->
+                <div class="col-lg-4">
                     <div class="panel">
+                        <div class="panel-head" style="padding-bottom:0;border-bottom:none">
+                            <h6><i class="fas fa-chart-bar me-2" style="color:var(--slate)"></i>Breakdown</h6>
+                            <span class="hint" id="riskDistHint"></span>
+                        </div>
+                        <div class="bdn-tabs">
+                            <div class="bdntab active" id="bdntab-risk" onclick="switchBdnTab('risk')">Risk</div>
+                            <div class="bdntab" id="bdntab-sens" onclick="switchBdnTab('sens')">Sensitivity</div>
+                            <div class="bdntab" id="bdntab-pii" onclick="switchBdnTab('pii')">PII</div>
+                            <div class="bdntab" id="bdntab-cat" onclick="switchBdnTab('cat')">Categories</div>
+                        </div>
+                        <div class="panel-body" id="bdn-risk">
+                            <div class="risk-strip mb-2" id="riskStrip"></div>
+                            <div style="font-size:.72rem;color:#94A3B8;display:flex;flex-wrap:wrap;gap:0.75rem" id="riskLegend"></div>
+                        </div>
+                        <div class="panel-body" style="display:none" id="bdn-sens">
+                            <div id="sensitivityBars"></div>
+                        </div>
+                        <div class="panel-body" style="display:none" id="bdn-pii">
+                            <div id="piiBars"></div>
+                        </div>
+                        <div class="panel-body" style="display:none" id="bdn-cat">
+                            <div id="categoryBars"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FULL-WIDTH: Records Table -->
+            <div class="panel" style="margin-top:1rem">
                         <div class="panel-head flex-wrap gap-2">
                             <h6 class="me-2"><i class="fas fa-table me-2"></i>All Classified Records</h6>
                             <div class="d-flex gap-1 flex-wrap" id="filterTabs">
@@ -626,37 +692,6 @@
                         <div style="padding:0.5rem 0.75rem;font-size:0.75rem;color:#94A3B8;border-top:1px solid var(--border);display:flex;justify-content:space-between" id="tableFooter">
                             <span id="tableCount"></span>
                         </div>
-                    </div>
-                </div>
-
-                <!-- RIGHT: Breakdowns (tabbed) -->
-                <div class="col-lg-4">
-                    <div class="panel">
-                        <div class="panel-head" style="padding-bottom:0;border-bottom:none">
-                            <h6><i class="fas fa-chart-bar me-2" style="color:var(--slate)"></i>Breakdown</h6>
-                            <span class="hint" id="riskDistHint"></span>
-                        </div>
-                        <div class="bdn-tabs">
-                            <div class="bdntab active" id="bdntab-risk" onclick="switchBdnTab('risk')">Risk</div>
-                            <div class="bdntab" id="bdntab-sens" onclick="switchBdnTab('sens')">Sensitivity</div>
-                            <div class="bdntab" id="bdntab-pii" onclick="switchBdnTab('pii')">PII</div>
-                            <div class="bdntab" id="bdntab-cat" onclick="switchBdnTab('cat')">Categories</div>
-                        </div>
-                        <div class="panel-body" id="bdn-risk">
-                            <div class="risk-strip mb-2" id="riskStrip"></div>
-                            <div style="font-size:.72rem;color:#94A3B8;display:flex;flex-wrap:wrap;gap:0.75rem" id="riskLegend"></div>
-                        </div>
-                        <div class="panel-body" style="display:none" id="bdn-sens">
-                            <div id="sensitivityBars"></div>
-                        </div>
-                        <div class="panel-body" style="display:none" id="bdn-pii">
-                            <div id="piiBars"></div>
-                        </div>
-                        <div class="panel-body" style="display:none" id="bdn-cat">
-                            <div id="categoryBars"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- EXPORT / ACTION BAR -->
@@ -912,8 +947,8 @@
             }
             tbody.innerHTML = records.map((rec, i) => {
                 const piiCell = rec.pii.length>0
-                    ? rec.pii.slice(0,2).map(p=>`<span class="bx bx-red" style="font-size:.65rem;margin-right:2px">${p.split(':')[0].trim()}</span>`).join('')+(rec.pii.length>2?`<span class="bx bx-slate" style="font-size:.65rem">+${rec.pii.length-2}</span>`:'')
-                    : '<span style="color:var(--green);font-weight:600">&#10003; None</span>';
+                    ? `<span style="display:inline-flex;align-items:center;gap:.25rem;background:#FEE2E2;color:#DC2626;border-radius:4px;padding:1px 6px;font-size:.67rem;font-weight:600"><i class="fas fa-exclamation-triangle" style="font-size:.6rem"></i>${rec.pii.length} PII</span>`
+                    : '<span style="color:#94A3B8;font-size:.72rem">—</span>';
                 const rowCls = rec.risk>=8?'row-danger':rec.risk>=5?'row-warning':'';
                 const ep = rec.path.replace(/'/g,"\\'"), en = rec.name.replace(/'/g,"\\'");
                 const checked = selectedPaths.has(rec.path) ? 'checked' : '';
@@ -1023,9 +1058,183 @@
             render();
         };
         window.openDoc = function(path, name) {
-            localStorage.setItem('dashboardOpenDoc', JSON.stringify({path,name}));
-            window.location.href = '/browse#open=' + encodeURIComponent(path);
+            // Open slide-in detail drawer
+            var cd = JSON.parse(localStorage.getItem('classifiedDocuments') || '{}');
+            var ds = JSON.parse(localStorage.getItem('docStatuses') || '{}');
+            var data = cd[path] || {};
+            var cl = (data && data.classification) || {};
+            var ra = (data && data.risk_assessment) || {};
+            var docName = name || (data && data.file) || path.split('/').pop();
+
+            // Header
+            document.getElementById('ddName').textContent = docName;
+            document.getElementById('ddCategory').textContent = cl.functional_group || '—';
+            var status = ds[path] || 'classified';
+            var sColors = {accepted:'#16A34A',corrected:'#2563EB',rejected:'#DC2626',classified:'#94A3B8'};
+            document.getElementById('ddStatusSpan').innerHTML =
+                '<span style="font-size:.72rem;font-weight:600;color:' + (sColors[status]||'#94A3B8') + '">' +
+                (status.charAt(0).toUpperCase()+status.slice(1)) + '</span>';
+            var score = parseFloat(ra.risk_score || cl.risk_score || 0);
+            var riskColor = score>=8?'#DC2626': score>=6.5?'#D97706': score>=4.5?'#2563EB':'#059669';
+            document.getElementById('ddRiskSpan').innerHTML =
+                '<span style="font-size:.72rem;font-weight:700;color:' + riskColor + '">Risk ' + score.toFixed(1) + '</span>';
+
+            // Risk KPI
+            var rkpi = document.getElementById('ddRiskKpi');
+            var rval = document.getElementById('ddRiskVal');
+            rkpi.style.borderColor = riskColor;
+            rval.style.color = riskColor;
+            rval.textContent = score.toFixed(1);
+
+            // Sensitivity KPI
+            var sens = cl.sensitivity_level || 'Low';
+            var sensColor = sens==='High'?'#DC2626': sens==='Moderate'?'#D97706':'#059669';
+            var skpi = document.getElementById('ddSensKpi');
+            var sval = document.getElementById('ddSensVal');
+            skpi.style.borderColor = sensColor;
+            sval.style.color = sensColor;
+            sval.textContent = sens;
+
+            // Summary
+            var summary = cl.document_summary || '';
+            var summarySection = document.getElementById('ddSummarySection');
+            if (summary) {
+                document.getElementById('ddSummary').textContent = summary;
+                summarySection.style.display = '';
+            } else {
+                summarySection.style.display = 'none';
+            }
+
+            // PII
+            var piis = Array.isArray(cl.pii_detected) ? cl.pii_detected : [];
+            var piiList = document.getElementById('ddPiiList');
+            piiList.innerHTML = piis.length
+                ? piis.map(function(p){
+                    return '<span class="pii-tag"><i class="fas fa-exclamation-triangle"></i>' +
+                        p.split(':')[0].trim().replace(/</g,'&lt;') + '</span>';
+                  }).join('')
+                : '<span style="font-size:.8rem;color:#94A3B8">No PII detected</span>';
+            document.getElementById('ddPiiSection').style.display = '';
+
+            // Findings
+            var findings = Array.isArray(cl.confidential_findings) ? cl.confidential_findings : [];
+            var findSection = document.getElementById('ddFindingsSection');
+            var findEl = document.getElementById('ddFindings');
+            if (findings.length) {
+                findEl.innerHTML = findings.map(function(f){
+                    return '<div class="finding-item"><i class="fas fa-shield-alt"></i><span>' +
+                        f.replace(/</g,'&lt;') + '</span></div>';
+                }).join('');
+                findSection.style.display = '';
+            } else {
+                findSection.style.display = 'none';
+            }
+
+            // Reset content pane
+            document.getElementById('ddContentBox').innerHTML =
+                '<div class="content-loading"><i class="fas fa-circle-notch fa-spin me-2"></i>Click "Document Content" tab to load</div>';
+            window._dashDrawerPath = path;
+            window._dashDrawerContentLoaded = false;
+
+            // Switch to analysis tab and open
+            switchDashDrawerTab('analysis');
+            document.getElementById('dashDocDrawer').classList.add('open');
+            document.getElementById('dashDrawerOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
         };
+
+        window.closeDashDrawer = function() {
+            document.getElementById('dashDocDrawer').classList.remove('open');
+            document.getElementById('dashDrawerOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        };
+
+        window.switchDashDrawerTab = function(tab) {
+            ['analysis','content'].forEach(function(t){
+                document.getElementById('ddpane-' + t).style.display = t===tab ? '' : 'none';
+                document.getElementById('ddtab-' + t).classList.toggle('active', t===tab);
+            });
+            if (tab==='content' && !window._dashDrawerContentLoaded && window._dashDrawerPath) {
+                loadDashContent(window._dashDrawerPath);
+            }
+        };
+
+        window.loadDashContent = async function(path) {
+            var box = document.getElementById('ddContentBox');
+            box.innerHTML = '<div class="content-loading"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading document…</div>';
+            try {
+                var resp = await fetch('/api/documents/' + encodeURIComponent(path).replace(/%2F/g,'/'));
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                var d = await resp.json();
+                if (d.error) throw new Error(d.error);
+                window._dashDrawerContentLoaded = true;
+                var cd = JSON.parse(localStorage.getItem('classifiedDocuments') || '{}');
+                var cl = ((cd[path] || {}).classification) || {};
+                var piis = (cl.pii_detected || []).map(function(p){ return p.split(':')[0].trim().toLowerCase(); });
+                var findings = cl.confidential_findings || [];
+                var terms = piis.concat(['ssn','social security','tax id','ein','routing','account number',
+                    'iban','swift','password','credit card','passport','date of birth','dob',
+                    'salary','payroll','bank account','wire transfer','confidential','proprietary','restricted']);
+                var raw = d.content || '';
+                var truncated = d.full_length && d.full_length > raw.length;
+                var htmlLines = raw.split('\n').map(function(line){
+                    var ll = line.toLowerCase();
+                    var isSens = terms.some(function(t){ return t && ll.includes(t); }) ||
+                                 findings.some(function(f){ return f && ll.includes(f.substring(0,30).toLowerCase()); });
+                    var esc = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    if (isSens) {
+                        terms.forEach(function(term){
+                            if (!term) return;
+                            var rx = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+                            esc = esc.replace(rx, '<span class="hl-red">$1</span>');
+                        });
+                        return '<span style="display:block;background:#FFF7ED;border-left:3px solid #F59E0B;padding-left:.4rem;margin-left:-.25rem">' + esc + '</span>';
+                    }
+                    return esc;
+                });
+                box.innerHTML = htmlLines.join('\n') +
+                    (truncated ? '<div style="margin-top:.85rem"><button onclick="loadDashContentFull(\'' + path.replace(/'/g,"\\'") + '\')" style="display:inline-flex;align-items:center;gap:.45rem;background:#EFF6FF;border:1px solid #BFDBFE;color:#1D4ED8;border-radius:6px;padding:.4rem .85rem;font-size:.75rem;font-weight:600;cursor:pointer"><i class="fas fa-expand-alt"></i>View full document <span style="color:#93C5FD;font-weight:400">(' + d.full_length.toLocaleString() + ' chars)</span></button></div>' : '');
+            } catch(e) {
+                box.innerHTML = '<div style="color:#EF4444;font-size:.82rem;padding:1rem"><i class="fas fa-exclamation-triangle me-2"></i>Could not load: ' + e.message + '</div>';
+            }
+        };
+
+        window.loadDashContentFull = async function(path) {
+            var box = document.getElementById('ddContentBox');
+            box.innerHTML = '<div class="content-loading"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading full document…</div>';
+            try {
+                var resp = await fetch('/api/documents/' + encodeURIComponent(path).replace(/%2F/g,'/') + '?full=1');
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                var d = await resp.json();
+                if (d.error) throw new Error(d.error);
+                var cd = JSON.parse(localStorage.getItem('classifiedDocuments') || '{}');
+                var cl = ((cd[path] || {}).classification) || {};
+                var piis = (cl.pii_detected || []).map(function(p){ return p.split(':')[0].trim().toLowerCase(); });
+                var findings = cl.confidential_findings || [];
+                var terms = piis.concat(['ssn','social security','tax id','ein','routing','account number','iban','swift','password','credit card','passport','date of birth','dob','salary','payroll','bank account','wire transfer','confidential','proprietary','restricted']);
+                var htmlLines = (d.content || '').split('\n').map(function(line){
+                    var ll = line.toLowerCase();
+                    var isSens = terms.some(function(t){ return t && ll.includes(t); }) ||
+                                 findings.some(function(f){ return f && ll.includes(f.substring(0,30).toLowerCase()); });
+                    var esc = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    if (isSens) {
+                        terms.forEach(function(term){
+                            if (!term) return;
+                            var rx = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+                            esc = esc.replace(rx, '<span class="hl-red">$1</span>');
+                        });
+                        return '<span style="display:block;background:#FFF7ED;border-left:3px solid #F59E0B;padding-left:.4rem;margin-left:-.25rem">' + esc + '</span>';
+                    }
+                    return esc;
+                });
+                box.innerHTML = htmlLines.join('\n') +
+                    '<div style="margin-top:.85rem"><button onclick="loadDashContent(\'' + path.replace(/'/g,"\\'") + '\')" style="display:inline-flex;align-items:center;gap:.45rem;background:#F1F5F9;border:1px solid #CBD5E1;color:#475569;border-radius:6px;padding:.4rem .85rem;font-size:.75rem;font-weight:600;cursor:pointer"><i class="fas fa-compress-alt"></i>Show preview only</button></div>';
+            } catch(e) {
+                box.innerHTML = '<div style="color:#EF4444;font-size:.82rem;padding:1rem"><i class="fas fa-exclamation-triangle me-2"></i>Could not load: ' + e.message + '</div>';
+            }
+        };
+
+        document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDashDrawer(); });
         window.removeOne = function(path, name) {
             if (!confirm('Remove classification for "' + (name||path.split('/').pop()) + '"?\nThe document will revert to unclassified and can be re-classified.')) return;
             const cd = JSON.parse(localStorage.getItem('classifiedDocuments')||'{}');
@@ -1086,7 +1295,7 @@
             doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...C.slate400);
             doc.text('Confidential  \u2014  Generated by AI Document Classifier', margin+16, 20);
             doc.setFontSize(7.5);
-            doc.text(`${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}   \u00B7   ${entries.length} document${entries.length!==1?'s':''} analysed`, margin+16, 28);
+            doc.text(`${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}   \u00B7   ${entries.length} document${entries.length!==1?'s':''} analyzed`, margin+16, 28);
             doc.setFillColor(...C.red); doc.roundedRect(pageW-margin-28,9,28,8,1.5,1.5,'F');
             doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
             doc.text('CONFIDENTIAL', pageW-margin-14, 14, {align:'center'});
@@ -1236,5 +1445,58 @@
     }
     </script>
 <div id="siteToast" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;display:none;pointer-events:none"></div>
+
+<!-- DOCUMENT DETAIL DRAWER -->
+<div class="drawer-overlay" id="dashDrawerOverlay" onclick="closeDashDrawer()"></div>
+<div class="doc-drawer" id="dashDocDrawer">
+    <div class="drawer-head">
+        <div class="drawer-name" id="ddName">Document</div>
+        <div class="drawer-meta">
+            <span><i class="fas fa-tag"></i><span id="ddCategory"></span></span>
+            <span id="ddStatusSpan"></span>
+            <span id="ddRiskSpan"></span>
+        </div>
+        <button class="drawer-close" onclick="closeDashDrawer()">&#215;</button>
+    </div>
+    <div class="drawer-tabs">
+        <div class="drawer-tab active" id="ddtab-analysis" onclick="switchDashDrawerTab('analysis')"><i class="fas fa-robot me-1"></i>AI Analysis</div>
+        <div class="drawer-tab" id="ddtab-content" onclick="switchDashDrawerTab('content')"><i class="fas fa-file-alt me-1"></i>Document Content</div>
+    </div>
+    <div class="drawer-body">
+        <div id="ddpane-analysis">
+            <div class="drawer-kpis">
+                <div class="drawer-kpi" id="ddRiskKpi">
+                    <div class="dk-label"><i class="fas fa-exclamation-triangle me-1"></i>Risk Score</div>
+                    <div class="dk-val" id="ddRiskVal">—</div>
+                    <div class="dk-sub">out of 10</div>
+                </div>
+                <div class="drawer-kpi" id="ddSensKpi">
+                    <div class="dk-label"><i class="fas fa-shield-alt me-1"></i>Sensitivity</div>
+                    <div class="dk-val" id="ddSensVal" style="font-size:1.1rem;padding-top:.2rem">—</div>
+                    <div class="dk-sub">classification level</div>
+                </div>
+            </div>
+            <div class="drawer-section" id="ddSummarySection">
+                <div class="drawer-section-title"><i class="fas fa-align-left"></i>AI Summary</div>
+                <p id="ddSummary" style="font-size:.83rem;color:#334155;line-height:1.6;margin:0;background:white;border:1px solid #E2E8F0;border-radius:8px;padding:.65rem .85rem"></p>
+            </div>
+            <div class="drawer-section" id="ddPiiSection">
+                <div class="drawer-section-title"><i class="fas fa-user-shield" style="color:#DC2626"></i>PII Detected</div>
+                <div id="ddPiiList" style="line-height:2"></div>
+            </div>
+            <div class="drawer-section" id="ddFindingsSection">
+                <div class="drawer-section-title"><i class="fas fa-search" style="color:#D97706"></i>Confidential Findings</div>
+                <div id="ddFindings"></div>
+            </div>
+        </div>
+        <div id="ddpane-content" style="display:none">
+            <div style="font-size:.73rem;color:#64748B;margin-bottom:.6rem;display:flex;align-items:center;gap:.35rem">
+                <i class="fas fa-highlighter" style="color:#D97706"></i>
+                Sensitive lines are highlighted. Showing up to 2,000 characters.
+            </div>
+            <div class="doc-content-wrap" id="ddContentBox"><div class="content-loading">Click to load document content</div></div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

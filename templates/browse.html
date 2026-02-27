@@ -201,18 +201,40 @@
             50% { box-shadow: 0 0 0 10px rgba(59,130,246,0); }
         }
 
-        .nav-tabs .nav-link {
-            color: #64748B;
-            border: none;
-            border-bottom: 2px solid transparent;
-            font-weight: 500;
+        /* ── Browse document drawer (matches scan.html drawer exactly) ── */
+        .brw-overlay { position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1040;opacity:0;pointer-events:none;transition:opacity .25s; }
+        .brw-overlay.open { opacity:1;pointer-events:auto; }
+        .brw-drawer {
+            position:fixed;top:0;right:0;bottom:0;width:560px;max-width:96vw;
+            background:#F8FAFC;z-index:1050;display:flex;flex-direction:column;
+            box-shadow:-8px 0 32px rgba(0,0,0,.18);
+            transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
         }
-
-        .nav-tabs .nav-link.active {
-            color: var(--primary);
-            background: none;
-            border-bottom: 2px solid var(--primary);
-        }
+        .brw-drawer.open { transform:translateX(0); }
+        .brw-drawer .drawer-head { background:linear-gradient(135deg,#1E3A5F 0%,#0F172A 100%);padding:.9rem 1.1rem;color:#fff;flex-shrink:0;position:relative; }
+        .brw-drawer .drawer-name { font-size:.95rem;font-weight:700;margin-bottom:.22rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:440px; }
+        .brw-drawer .drawer-meta { font-size:.72rem;color:#94A3B8; }
+        .brw-drawer .drawer-close { position:absolute;top:.75rem;right:.9rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;transition:background .15s; }
+        .brw-drawer .drawer-close:hover { background:rgba(255,255,255,.22); }
+        .brw-drawer .drawer-tabs { display:flex;background:#fff;border-bottom:1px solid #E2E8F0;flex-shrink:0; }
+        .brw-drawer .drawer-tab { padding:.6rem 1.1rem;font-size:.8rem;font-weight:600;color:#64748B;cursor:pointer;border-bottom:2px solid transparent;transition:all .12s; }
+        .brw-drawer .drawer-tab:hover { color:#3B82F6; }
+        .brw-drawer .drawer-tab.active { color:#3B82F6;border-bottom-color:#3B82F6; }
+        .brw-drawer .drawer-body { flex:1;overflow-y:auto;padding:1rem; }
+        .brw-footer { padding:.65rem 1rem;display:flex;justify-content:space-between;align-items:center;background:#fff;border-top:1px solid #E2E8F0;flex-shrink:0; }
+        .doc-content-wrap { font-family:'Courier New',Courier,monospace;font-size:.76rem;line-height:1.65;white-space:pre-wrap;word-break:break-word;background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:.9rem 1rem;max-height:calc(100vh - 240px);overflow-y:auto;color:#334155; }
+        .pii-tag { display:inline-flex;align-items:center;gap:.3rem;background:#FEE2E2;color:#DC2626;border-radius:5px;padding:.25rem .55rem;font-size:.73rem;font-weight:600;margin:.2rem .2rem 0 0; }
+        .finding-item { display:flex;gap:.6rem;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:.55rem .75rem;margin-bottom:.5rem;font-size:.8rem;color:#92400E;line-height:1.5; }
+        .finding-item i { flex-shrink:0;margin-top:.2rem;color:#F59E0B; }
+        .hl-red   { background:#FEE2E2;color:#991B1B;border-radius:3px;padding:0 2px;font-weight:600; }
+        .hl-amber { background:#FEF3C7;color:#92400E;border-radius:3px;padding:0 2px;font-weight:600; }
+        .content-loading { text-align:center;padding:2rem;color:#94A3B8;font-size:.85rem; }
+        .drawer-kpis { display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1rem; }
+        .drawer-kpi { background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:.65rem .85rem;border-left:3px solid #E2E8F0; }
+        .drawer-kpi .dkv { font-size:1.5rem;font-weight:800;line-height:1; }
+        .drawer-kpi .dkl { font-size:.68rem;color:#64748B;text-transform:uppercase;letter-spacing:.05em;margin-top:3px; }
+        .drawer-section { margin-bottom:1rem; }
+        .drawer-section-title { font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;margin-bottom:.55rem;display:flex;align-items:center;gap:.4rem; }
 
         .document-viewer {
             max-height: 450px;
@@ -752,145 +774,153 @@
         </div>
     </div>
 
-    <!-- Classification Modal -->
-    <div class="modal fade" id="classifyModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header py-2">
-                    <h6 class="modal-title text-truncate" style="max-width:500px"><i class="fas fa-file-alt me-2 text-primary"></i><span id="modalDocName">Document</span></h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Browse Document Drawer -->
+    <div class="brw-overlay" id="brwOverlay" onclick="closeBrowseDrawer()"></div>
+    <div class="brw-drawer" id="brwDrawer">
+        <div class="drawer-head">
+            <div class="drawer-name" id="modalDocName">Document</div>
+            <div class="drawer-meta" id="brwDrawerMeta">&nbsp;</div>
+            <button class="drawer-close" onclick="closeBrowseDrawer()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="drawer-tabs">
+            <div class="drawer-tab active" id="content-tab" onclick="switchBrowseDrawerTab('content')"><i class="fas fa-file-alt me-1"></i>Document Content</div>
+            <div class="drawer-tab" id="ai-tab-label" onclick="switchBrowseDrawerTab('classification')"><i class="fas fa-brain me-1"></i>AI Classification</div>
+        </div>
+        <div class="drawer-body">
+            <!-- Content pane -->
+            <div id="brwpane-content">
+                <div style="font-size:.72rem;color:#94A3B8;margin-bottom:.65rem;display:flex;align-items:center;gap:.5rem">
+                    <i class="fas fa-highlighter" style="color:#F59E0B"></i>
+                    Sensitive terms are <span class="hl-red" style="font-size:.72rem;padding:0 4px">highlighted</span> in the document text below.
                 </div>
-                <div class="modal-body pt-2">
-                    
-                    <!-- Document Content Tabs -->
-                    <ul class="nav nav-tabs mb-3" id="docTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="content-tab" data-bs-toggle="tab" data-bs-target="#content" type="button" role="tab">Document Content</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="classification-tab" data-bs-toggle="tab" data-bs-target="#classification" type="button" role="tab">AI Classification</button>
-                        </li>
-                    </ul>
-                    
-                    <div class="tab-content" id="docTabsContent">
-                        <!-- Document Content Tab -->
-                        <div class="tab-pane fade show active" id="content" role="tabpanel">
-                            <div id="documentContent" class="document-viewer">
-                                <div class="document-header" id="docHeader" style="display: none;">
-                                    <h6 class="mb-1" id="docTitle"></h6>
-                                    <small class="text-muted" id="docMeta"></small>
-                                </div>
-                                <div class="document-body" id="docBody">Loading document content...</div>
+                <div class="doc-content-wrap" id="docBody"><div class="content-loading"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading document content…</div></div>
+            </div>
+            <!-- Classification pane -->
+            <div id="brwpane-classification" style="display:none">
+                <!-- Empty state -->
+                <div id="classifyButtonContainer">
+                    <div style="background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);border-radius:12px;padding:2rem 1.5rem;text-align:center;color:#fff">
+                        <div style="width:56px;height:56px;background:rgba(59,130,246,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .85rem;animation:pulse 2.5s ease-in-out infinite">
+                            <i class="fas fa-brain" style="font-size:1.5rem;color:#60A5FA"></i>
+                        </div>
+                        <div style="color:#F1F5F9;font-weight:700;font-size:1rem;margin-bottom:.4rem">AI Document Analysis</div>
+                        <p style="color:#94A3B8;font-size:.82rem;margin-bottom:1.25rem;line-height:1.6;max-width:320px;margin-left:auto;margin-right:auto">Automatically classify this document, detect PII, score risk, and surface key findings using Gemini AI.</p>
+                        <div style="display:flex;gap:.45rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem">
+                            <span style="background:rgba(59,130,246,.15);color:#93C5FD;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid rgba(59,130,246,.3)"><i class="fas fa-tag me-1"></i>Category Detection</span>
+                            <span style="background:rgba(239,68,68,.15);color:#FCA5A5;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid rgba(239,68,68,.3)"><i class="fas fa-shield-alt me-1"></i>PII Scanning</span>
+                            <span style="background:rgba(245,158,11,.15);color:#FCD34D;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid rgba(245,158,11,.3)"><i class="fas fa-tachometer-alt me-1"></i>Risk Scoring</span>
+                        </div>
+                        <button type="button" onclick="runClassification()" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border:none;color:#fff;padding:.5rem 1.6rem;border-radius:8px;font-weight:600;font-size:.88rem;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+                            <i class="fas fa-play me-2"></i>Run AI Classification
+                        </button>
+                    </div>
+                </div>
+                <!-- Loading state -->
+                <div id="modalLoading" style="display:none">
+                    <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:12px;padding:2rem 1.5rem;text-align:center;color:#fff">
+                        <div style="width:56px;height:56px;background:rgba(59,130,246,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;animation:pulse 1.5s ease-in-out infinite">
+                            <i class="fas fa-brain" style="font-size:1.5rem;color:#60A5FA"></i>
+                        </div>
+                        <div style="color:#F1F5F9;font-weight:600;margin-bottom:.3rem">Analyzing document&hellip;</div>
+                        <div style="color:#64748B;font-size:.8rem;margin-bottom:1.1rem">Gemini AI is reading and classifying your document</div>
+                        <div style="display:flex;gap:6px;justify-content:center;margin-bottom:1.25rem">
+                            <span style="width:7px;height:7px;background:#3B82F6;border-radius:50%;display:inline-block;animation:bounce 1.2s ease-in-out infinite"></span>
+                            <span style="width:7px;height:7px;background:#3B82F6;border-radius:50%;display:inline-block;animation:bounce 1.2s ease-in-out infinite .2s"></span>
+                            <span style="width:7px;height:7px;background:#3B82F6;border-radius:50%;display:inline-block;animation:bounce 1.2s ease-in-out infinite .4s"></span>
+                        </div>
+                        <button onclick="cancelSingleClassification()" id="cancelClassifyBtn" style="background:transparent;border:1px solid #475569;color:#94A3B8;padding:.35rem 1rem;border-radius:6px;font-size:.78rem;cursor:pointer" onmouseover="this.style.borderColor='#EF4444';this.style.color='#FCA5A5'" onmouseout="this.style.borderColor='#475569';this.style.color='#94A3B8'">
+                            <i class="fas fa-stop me-1"></i>Cancel
+                        </button>
+                    </div>
+                </div>
+                <!-- Results -->
+                <div id="classificationResults" style="display:none">
+                    <!-- KPI row -->
+                    <div class="drawer-kpis">
+                        <div class="drawer-kpi" id="brwRiskKpi">
+                            <div class="dkv" id="brwRiskVal" style="color:#64748B">—</div>
+                            <div class="dkl">Risk Score /10</div>
+                        </div>
+                        <div class="drawer-kpi" id="brwSensKpi">
+                            <div class="dkv" id="brwSensVal" style="color:#64748B;font-size:1.1rem;padding-top:.2rem">—</div>
+                            <div class="dkl">Sensitivity</div>
+                        </div>
+                    </div>
+                    <!-- Category -->
+                    <div class="drawer-section">
+                        <div class="drawer-section-title"><i class="fas fa-tags"></i>Category</div>
+                        <div style="font-size:.85rem;color:#1E293B;font-weight:600" id="brwCategory">—</div>
+                    </div>
+                    <!-- Summary -->
+                    <div class="drawer-section" id="brwSummarySection" style="display:none">
+                        <div class="drawer-section-title"><i class="fas fa-align-left"></i>AI Summary</div>
+                        <div style="font-size:.82rem;color:#334155;line-height:1.65;background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:.65rem .85rem" id="brwSummary"></div>
+                    </div>
+                    <!-- PII -->
+                    <div class="drawer-section" id="brwPiiSection">
+                        <div class="drawer-section-title"><i class="fas fa-user-secret" style="color:#DC2626"></i>PII &amp; Sensitive Data Detected</div>
+                        <div id="brwPiiList" style="line-height:2"></div>
+                    </div>
+                    <!-- Findings -->
+                    <div class="drawer-section" id="brwFindingsSection">
+                        <div class="drawer-section-title"><i class="fas fa-exclamation-triangle" style="color:#F59E0B"></i>Confidential Findings</div>
+                        <div id="brwFindings"></div>
+                    </div>
+                </div>
+                <!-- Verification bar -->
+                <div id="verificationSection" style="display:none;margin-top:.75rem">
+                    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+                        <div style="flex:1;min-width:120px">
+                            <div style="font-size:.65rem;color:#3B82F6;text-transform:uppercase;font-weight:700;letter-spacing:.07em;margin-bottom:3px">Review Status</div>
+                            <div id="verificationStatus" style="font-size:.82rem;color:#1E40AF;font-weight:600">Pending review</div>
+                        </div>
+                        <div style="display:flex;gap:.45rem;flex-wrap:wrap" id="verificationActions">
+                            <button id="acceptBtn" onclick="acceptClassification()" style="background:#10B981;border:none;color:#fff;font-weight:600;padding:.35rem .9rem;border-radius:6px;font-size:.82rem;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'"><i class="fas fa-check me-1"></i>Accept</button>
+                            <button id="modifyBtn" onclick="modifyClassification()" style="background:#fff;border:1px solid #CBD5E1;color:#64748B;font-weight:600;padding:.35rem .9rem;border-radius:6px;font-size:.82rem;cursor:pointer" onmouseover="this.style.borderColor='#94A3B8';this.style.color='#334155'" onmouseout="this.style.borderColor='#CBD5E1';this.style.color='#64748B'"><i class="fas fa-pencil-alt me-1"></i>Correct</button>
+                        </div>
+                    </div>
+                    <div id="modificationForm" style="display:none;background:#F8FAFC;border-radius:10px;padding:1rem;margin-top:.5rem;border:1px solid #E2E8F0">
+                        <div style="font-size:.68rem;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem"><i class="fas fa-edit me-1"></i>Override Classification</div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label style="font-size:.76rem;color:#475569;font-weight:600;display:block;margin-bottom:3px">Functional Group</label>
+                                <select class="form-select form-select-sm" id="correctedGroup">
+                                    <option value="HR">HR</option>
+                                    <option value="Finance and Accounting">Finance and Accounting</option>
+                                    <option value="Legal + Compliance">Legal + Compliance</option>
+                                    <option value="Customer / Client Documentation">Customer / Client Documentation</option>
+                                    <option value="Sales &amp; Business Development">Sales &amp; Business Development</option>
+                                    <option value="IT &amp; Systems">IT &amp; Systems</option>
+                                    <option value="Operations and Internal Documentation">Operations and Internal Documentation</option>
+                                    <option value="Product Development / R&amp;D">Product Development / R&amp;D</option>
+                                    <option value="Marketing &amp; Communications">Marketing &amp; Communications</option>
+                                    <option value="Outliers / Others">Outliers / Others</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label style="font-size:.76rem;color:#475569;font-weight:600;display:block;margin-bottom:3px">Sensitivity Level</label>
+                                <select class="form-select form-select-sm" id="correctedSensitivity">
+                                    <option value="Low">Low</option>
+                                    <option value="Moderate">Moderate</option>
+                                    <option value="High">High</option>
+                                </select>
                             </div>
                         </div>
-                        
-                        <!-- Classification Tab -->
-                        <div class="tab-pane fade" id="classification" role="tabpanel">
-
-                            <!-- Empty state -->
-                            <div id="classifyButtonContainer">
-                                <div style="background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);border-radius:12px;padding:2rem 1.5rem;text-align:center;color:#fff">
-                                    <div style="width:56px;height:56px;background:rgba(59,130,246,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .85rem;animation:pulse 2.5s ease-in-out infinite">
-                                        <i class="fas fa-brain" style="font-size:1.5rem;color:#60A5FA"></i>
-                                    </div>
-                                    <div style="color:#F1F5F9;font-weight:700;font-size:1rem;margin-bottom:.4rem">AI Document Analysis</div>
-                                    <p style="color:#94A3B8;font-size:.82rem;margin-bottom:1.25rem;line-height:1.6;max-width:320px;margin-left:auto;margin-right:auto">Automatically classify this document, detect PII, score risk, and surface key findings using Gemini AI.</p>
-                                    <div style="display:flex;gap:.45rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem">
-                                        <span style="background:rgba(59,130,246,.15);color:#93C5FD;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid rgba(59,130,246,.3)"><i class="fas fa-tag me-1"></i>Category Detection</span>
-                                        <span style="background:rgba(239,68,68,.15);color:#FCA5A5;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid rgba(239,68,68,.3)"><i class="fas fa-shield-alt me-1"></i>PII Scanning</span>
-                                        <span style="background:rgba(245,158,11,.15);color:#FCD34D;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid rgba(245,158,11,.3)"><i class="fas fa-tachometer-alt me-1"></i>Risk Scoring</span>
-                                    </div>
-                                    <button type="button" onclick="runClassification()" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border:none;color:#fff;padding:.5rem 1.6rem;border-radius:8px;font-weight:600;font-size:.88rem;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
-                                        <i class="fas fa-play me-2"></i>Run AI Classification
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Loading state -->
-                            <div id="modalLoading" style="display:none">
-                                <div style="background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:12px;padding:2rem 1.5rem;text-align:center;color:#fff">
-                                    <div style="width:56px;height:56px;background:rgba(59,130,246,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;animation:pulse 1.5s ease-in-out infinite">
-                                        <i class="fas fa-brain" style="font-size:1.5rem;color:#60A5FA"></i>
-                                    </div>
-                                    <div style="color:#F1F5F9;font-weight:600;margin-bottom:.3rem">Analyzing document&hellip;</div>
-                                    <div style="color:#64748B;font-size:.8rem;margin-bottom:1.1rem">Gemini AI is reading and classifying your document</div>
-                                    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:1.25rem">
-                                        <span style="width:7px;height:7px;background:#3B82F6;border-radius:50%;display:inline-block;animation:bounce 1.2s ease-in-out infinite"></span>
-                                        <span style="width:7px;height:7px;background:#3B82F6;border-radius:50%;display:inline-block;animation:bounce 1.2s ease-in-out infinite .2s"></span>
-                                        <span style="width:7px;height:7px;background:#3B82F6;border-radius:50%;display:inline-block;animation:bounce 1.2s ease-in-out infinite .4s"></span>
-                                    </div>
-                                    <button onclick="cancelSingleClassification()" id="cancelClassifyBtn" style="background:transparent;border:1px solid #475569;color:#94A3B8;padding:.35rem 1rem;border-radius:6px;font-size:.78rem;cursor:pointer" onmouseover="this.style.borderColor='#EF4444';this.style.color='#FCA5A5'" onmouseout="this.style.borderColor='#475569';this.style.color='#94A3B8'">
-                                        <i class="fas fa-stop me-1"></i>Cancel
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Results -->
-                            <div id="classificationResults" style="display:none"></div>
-
-                            <!-- Verification bar -->
-                            <div id="verificationSection" style="display:none;margin-top:.75rem">
-                                <div style="background:#0F172A;border-radius:10px;padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
-                                    <div style="flex:1;min-width:120px">
-                                        <div style="font-size:.65rem;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:.07em;margin-bottom:3px">Review Status</div>
-                                        <div id="verificationStatus" style="font-size:.82rem;color:#94A3B8;font-weight:500">Pending review</div>
-                                    </div>
-                                    <div style="display:flex;gap:.45rem;flex-wrap:wrap" id="verificationActions">
-                                        <button id="acceptBtn" onclick="acceptClassification()" style="background:#10B981;border:none;color:#fff;font-weight:600;padding:.35rem .9rem;border-radius:6px;font-size:.82rem;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
-                                            <i class="fas fa-check me-1"></i>Accept
-                                        </button>
-                                        <button id="modifyBtn" onclick="modifyClassification()" style="background:transparent;border:1px solid #475569;color:#94A3B8;font-weight:600;padding:.35rem .9rem;border-radius:6px;font-size:.82rem;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='#94A3B8';this.style.color='#E2E8F0'" onmouseout="this.style.borderColor='#475569';this.style.color='#94A3B8'">
-                                            <i class="fas fa-pencil-alt me-1"></i>Correct
-                                        </button>
-                                    </div>
-                                </div>
-                                <!-- Override form -->
-                                <div id="modificationForm" style="display:none;background:#F8FAFC;border-radius:10px;padding:1rem;margin-top:.5rem;border:1px solid #E2E8F0">
-                                    <div style="font-size:.68rem;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem"><i class="fas fa-edit me-1"></i>Override Classification</div>
-                                    <div class="row g-2 mb-2">
-                                        <div class="col-md-6">
-                                            <label style="font-size:.76rem;color:#475569;font-weight:600;display:block;margin-bottom:3px">Functional Group</label>
-                                            <select class="form-select form-select-sm" id="correctedGroup">
-                                                <option value="HR">HR</option>
-                                                <option value="Finance and Accounting">Finance and Accounting</option>
-                                                <option value="Legal + Compliance">Legal + Compliance</option>
-                                                <option value="Customer / Client Documentation">Customer / Client Documentation</option>
-                                                <option value="Sales &amp; Business Development">Sales &amp; Business Development</option>
-                                                <option value="IT &amp; Systems">IT &amp; Systems</option>
-                                                <option value="Operations and Internal Documentation">Operations and Internal Documentation</option>
-                                                <option value="Product Development / R&amp;D">Product Development / R&amp;D</option>
-                                                <option value="Marketing &amp; Communications">Marketing &amp; Communications</option>
-                                                <option value="Outliers / Others">Outliers / Others</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label style="font-size:.76rem;color:#475569;font-weight:600;display:block;margin-bottom:3px">Sensitivity Level</label>
-                                            <select class="form-select form-select-sm" id="correctedSensitivity">
-                                                <option value="Low">Low</option>
-                                                <option value="Moderate">Moderate</option>
-                                                <option value="High">High</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label style="font-size:.76rem;color:#475569;font-weight:600;display:block;margin-bottom:3px">Reason for Change</label>
-                                        <textarea class="form-control form-control-sm" id="correctionReason" rows="2" placeholder="Explain why you're overriding this classification&hellip;" style="font-size:.82rem"></textarea>
-                                    </div>
-                                    <div style="display:flex;gap:.5rem">
-                                        <button class="btn btn-sm btn-primary" onclick="submitCorrection()" style="font-size:.8rem"><i class="fas fa-save me-1"></i>Save Override</button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('modificationForm').style.display='none'" style="font-size:.8rem">Cancel</button>
-                                    </div>
-                                </div>
-                            </div>
-
+                        <div class="mb-2">
+                            <label style="font-size:.76rem;color:#475569;font-weight:600;display:block;margin-bottom:3px">Reason for Change</label>
+                            <textarea class="form-control form-control-sm" id="correctionReason" rows="2" placeholder="Explain why you're overriding this classification&hellip;" style="font-size:.82rem"></textarea>
+                        </div>
+                        <div style="display:flex;gap:.5rem">
+                            <button class="btn btn-sm btn-primary" onclick="submitCorrection()" style="font-size:.8rem"><i class="fas fa-save me-1"></i>Save Override</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('modificationForm').style.display='none'" style="font-size:.8rem">Cancel</button>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer py-2">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-sm btn-primary" id="classifyTabBtn" onclick="runClassificationFromModal()"><i class="fas fa-brain me-1"></i>Classify</button>
-                </div>
-            </div>
+            </div><!-- end brwpane-classification -->
+        </div><!-- end drawer-body -->
+        <div class="brw-footer">
+            <button onclick="closeBrowseDrawer()" style="background:transparent;border:1px solid #CBD5E1;color:#64748B;padding:.35rem .9rem;border-radius:6px;font-size:.82rem;cursor:pointer">Close</button>
+            <button id="classifyTabBtn" onclick="runClassificationFromModal()" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border:none;color:#fff;font-weight:600;padding:.35rem 1rem;border-radius:6px;font-size:.82rem;cursor:pointer"><i class="fas fa-brain me-1"></i>Classify</button>
         </div>
     </div>
 
@@ -902,6 +932,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script>
+        function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
         let allDocuments = [];
         let filteredDocuments = [];
         let currentDocPath = '';
@@ -914,7 +946,7 @@
         let batchMode = false;
         let batchCancelled = false;
         let classifyAbortController = null;
-        let aiInsightsController = null; // For cancelling AI insights requests
+        let aiInsightsController = null; // For canceling AI insights requests
 
         // Restore any previously classified records from localStorage
         try {
@@ -1305,6 +1337,34 @@
             document.getElementById('classifyTabBtn').innerHTML = '<i class="fas fa-brain me-1"></i>Classify';
         }
 
+        function switchBrowseDrawerTab(tab) {
+            document.querySelectorAll('.brw-drawer .drawer-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.getElementById('brwpane-content').style.display = 'none';
+            document.getElementById('brwpane-classification').style.display = 'none';
+            if (tab === 'content') {
+                document.getElementById('content-tab').classList.add('active');
+                document.getElementById('brwpane-content').style.display = 'block';
+            } else {
+                document.getElementById('ai-tab-label').classList.add('active');
+                document.getElementById('brwpane-classification').style.display = 'block';
+            }
+        }
+        // keep old name as alias so any inline onclick references still work
+        function switchBrowseTab(tab) { switchBrowseDrawerTab(tab); }
+
+        function openBrowseDrawer() {
+            document.getElementById('brwOverlay').classList.add('open');
+            document.getElementById('brwDrawer').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeBrowseDrawer() {
+            document.getElementById('brwOverlay').classList.remove('open');
+            document.getElementById('brwDrawer').classList.remove('open');
+            document.body.style.overflow = '';
+            if (typeof classifyAbortController !== 'undefined' && classifyAbortController) classifyAbortController.abort();
+        }
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeBrowseDrawer(); });
+
         async function selectDocument(path, name) {
             currentDocPath = path;
             currentDocName = name;
@@ -1319,10 +1379,9 @@
             }
 
             // Default to content tab for view-only open
-            document.getElementById('content-tab').click();
+            switchBrowseDrawerTab('content');
             loadDocumentContent(path);
-            const modal = new bootstrap.Modal(document.getElementById('classifyModal'));
-            modal.show();
+            openBrowseDrawer();
         }
 
         async function openAndClassify(path, name) {
@@ -1333,10 +1392,8 @@
 
             // Load content in background, switch to classification tab immediately
             loadDocumentContent(path);
-            document.getElementById('classification-tab').click();
-
-            const modal = new bootstrap.Modal(document.getElementById('classifyModal'));
-            modal.show();
+            switchBrowseDrawerTab('classification');
+            openBrowseDrawer();
 
             // If already classified show cached, otherwise run
             if (classifiedDocuments[path]) {
@@ -1348,7 +1405,7 @@
 
         function runClassificationFromModal() {
             // Footer button — always re-run (label updates to Re-classify after first run)
-            document.getElementById('classification-tab').click();
+            switchBrowseDrawerTab('classification');
             classifyDocument(currentDocPath, currentDocName);
         }
         
@@ -1359,24 +1416,36 @@
                 
                 if (data.error) {
                     document.getElementById('docBody').textContent = `Error loading content: ${data.error}`;
-                    document.getElementById('docHeader').style.display = 'none';
                 } else {
-                    // Show document metadata
-                    document.getElementById('docTitle').textContent = data.file;
-                    document.getElementById('docMeta').textContent = `Size: ${(data.size / 1024).toFixed(1)} KB`;
-                    document.getElementById('docHeader').style.display = 'block';
+                    document.getElementById('brwDrawerMeta').textContent = `${data.file} · ${(data.size / 1024).toFixed(1)} KB`;
                     
-                    let content = data.content || 'No text content available';
-                    
-                    // Format content nicely, passing classification data for PII highlighting
                     const classData = classifiedDocuments[path] || null;
-                    content = formatDocumentContent(content, classData);
-                    
-                    document.getElementById('docBody').innerHTML = content;
+                    const content = formatDocumentContent(data.content || 'No text content available', classData);
+                    const truncated = data.full_length && data.full_length > (data.content || '').length;
+                    const escapedPath = path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    document.getElementById('docBody').innerHTML = content +
+                        (truncated
+                            ? `<div style="margin-top:1rem"><button onclick="loadDocumentContentFull('${escapedPath}')" style="display:inline-flex;align-items:center;gap:.45rem;background:#EFF6FF;border:1px solid #BFDBFE;color:#1D4ED8;border-radius:6px;padding:.4rem .9rem;font-size:.78rem;font-weight:600;cursor:pointer"><i class="fas fa-expand-alt"></i>View full document <span style="color:#93C5FD;font-weight:400">(${data.full_length.toLocaleString()} chars)</span></button></div>`
+                            : '');
                 }
             } catch (error) {
                 document.getElementById('docBody').textContent = `Error: ${error.message}`;
-                document.getElementById('docHeader').style.display = 'none';
+            }
+        }
+
+        async function loadDocumentContentFull(path) {
+            try {
+                document.getElementById('docBody').innerHTML = '<div style="color:#64748B;font-size:.82rem;padding:.5rem 0"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading full document…</div>';
+                const response = await fetch(`/api/documents/${encodeURIComponent(path)}?full=1`);
+                const data = await response.json();
+                if (data.error) { document.getElementById('docBody').textContent = `Error: ${data.error}`; return; }
+                const classData = classifiedDocuments[path] || null;
+                const content = formatDocumentContent(data.content || '', classData);
+                const escapedPath = path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                document.getElementById('docBody').innerHTML = content +
+                    `<div style="margin-top:1rem"><button onclick="loadDocumentContent('${escapedPath}')" style="display:inline-flex;align-items:center;gap:.45rem;background:#F1F5F9;border:1px solid #CBD5E1;color:#475569;border-radius:6px;padding:.4rem .9rem;font-size:.78rem;font-weight:600;cursor:pointer"><i class="fas fa-compress-alt"></i>Show preview only</button></div>`;
+            } catch (error) {
+                document.getElementById('docBody').textContent = `Error: ${error.message}`;
             }
         }
         
@@ -1385,11 +1454,6 @@
                 return '<p class="text-muted">No text content available</p>';
             }
             
-            // Truncate if too long
-            if (text.length > 3000) {
-                text = text.substring(0, 3000) + '\n\n... (truncated for display)';
-            }
-
             // ---- Build PII highlight patterns from classification data ----
             const PII_TYPE_MAP = {
                 // SSN: dashes, spaces, or contextual label
@@ -1472,11 +1536,6 @@
                                                 patterns: [new RegExp(escaped, 'gi')] });
                     }
                 });
-            }
-
-            // Helper: escape plain text for HTML (before inserting marks)
-            function escHtml(s) {
-                return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
             }
 
             // Helper: apply PII highlight marks to a plain-text line
@@ -1571,7 +1630,7 @@
 
             const bodyHtml = formattedContent || '<p class="text-muted">No readable content found</p>';
 
-            // Build the colour-coded legend if any highlights are active
+            // Build the color-coded legend if any highlights are active
             if (activeHighlights.length > 0) {
                 const swatchBg     = { 'pii-ssn': '#fed7d7', 'pii-financial': '#feebc8', 'pii-credential': '#fde8e8', 'pii-general': '#fefcbf' };
                 const swatchBorder = { 'pii-ssn': '#e53e3e', 'pii-financial': '#dd6b20', 'pii-credential': '#c53030', 'pii-general': '#d69e2e' };
@@ -1606,7 +1665,7 @@
             if (entries.length === 0) { showToast('No documents have been classified yet.', 'warning'); return; }
 
             document.getElementById('reportTimestamp').textContent =
-                `${new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}  \u00B7  ${entries.length} document${entries.length !== 1 ? 's' : ''} analysed`;
+                `${new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}  \u00B7  ${entries.length} document${entries.length !== 1 ? 's' : ''} analyzed`;
 
             const { summaryHtml, docsHtml } = buildSessionReport(entries);
             document.getElementById('rpt-summary').innerHTML = summaryHtml;
@@ -1651,7 +1710,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating…';
             panel.innerHTML = `
                 <div style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(79,70,229,.12));border:1px solid rgba(124,58,237,.3);border-radius:12px;padding:1.25rem;color:#C4B5FD;text-align:center">
-                    <i class="fas fa-brain fa-lg me-2"></i>AI is analysing your documents…
+                    <i class="fas fa-brain fa-lg me-2"></i>AI is analyzing your documents…
                     <div style="margin-top:0.75rem;font-size:0.8rem;opacity:0.8">⏱️ Typically 5–15 seconds</div>
                     <div style="margin-top:0.75rem">
                         <button onclick="cancelAiInsights()" style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#FCA5A5;padding:0.4rem 0.8rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-weight:600">
@@ -1763,10 +1822,10 @@
                 const msg = err.name === 'AbortError'
                     ? '<i class="fas fa-ban me-2"></i>Analysis cancelled. You can try again when ready.'
                     : '<i class="fas fa-exclamation-triangle me-2"></i><strong>Error:</strong> ' + String(err.message||'Unknown error').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-                const colour = err.name === 'AbortError' ? 'rgba(156,163,175,.1)' : 'rgba(239,68,68,.1)';
+                const color  = err.name === 'AbortError' ? 'rgba(156,163,175,.1)' : 'rgba(239,68,68,.1)';
                 const border = err.name === 'AbortError' ? 'rgba(156,163,175,.3)' : 'rgba(239,68,68,.3)';
                 const text   = err.name === 'AbortError' ? '#9CA3AF' : '#FCA5A5';
-                panel.innerHTML = '<div style="background:' + colour + ';border:1px solid ' + border + ';border-radius:12px;padding:1rem;color:' + text + ';font-size:.85rem">' + msg + '</div>';
+                panel.innerHTML = '<div style="background:' + color + ';border:1px solid ' + border + ';border-radius:12px;padding:1rem;color:' + text + ';font-size:.85rem">' + msg + '</div>';
             } finally {
                 window.aiInsightsController = null;
                 const b = document.getElementById('reportAiBtn');
@@ -1839,7 +1898,7 @@
 
             // KPI strip
             const kpis = [
-                {val:total,          label:'Analysed',    sub:'documents',     color:'#3B82F6'},
+                {val:total,          label:'Analyzed',    sub:'documents',     color:'#3B82F6'},
                 {val:highRisk.length,label:'Critical',    sub:'risk \u22658',  color:'#EF4444'},
                 {val:medRisk.length, label:'Moderate',    sub:'risk 5\u20137', color:'#F59E0B'},
                 {val:withPii.length, label:'Contain PII', sub:'sensitive',     color:'#8B5CF6'},
@@ -2102,86 +2161,71 @@
             const ra = result.risk_assessment || {};
             const piis = cl.pii_detected || [];
             const findings = cl.confidential_findings || [];
-            const riskScore = parseFloat(ra.risk_score || cl.risk_score || 0);
-            const sensLevel = cl.sensitivity_level || 'Unknown';
-            const sensMap = {
-                'High':     { badgeBg:'#DC2626' },
-                'Moderate': { badgeBg:'#D97706' },
-                'Low':      { badgeBg:'#16A34A' }
-            };
-            const sc = sensMap[sensLevel] || { badgeBg:'#475569' };
-            const riskColor = riskScore >= 8 ? '#DC2626' : riskScore >= 5 ? '#D97706' : '#16A34A';
-            const riskLabel = riskScore >= 8 ? 'High Risk' : riskScore >= 5 ? 'Medium Risk' : 'Low Risk';
-            const confidence = cl.confidence_score != null
-                ? (parseFloat(cl.confidence_score) * 100).toFixed(0) + '%'
-                : (ra.confidence != null ? (parseFloat(ra.confidence) * 100).toFixed(0) + '%' : '—');
+            const score = parseFloat(ra.risk_score || cl.risk_score || 0);
+            const sens = cl.sensitivity_level || 'Low';
 
-            // Header bar
-            let html = `<div style="background:#0F172A;border-radius:12px 12px 0 0;padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
-                <div style="flex:1;min-width:0">
-                    <div style="font-size:.63rem;color:#475569;text-transform:uppercase;font-weight:700;letter-spacing:.07em">Functional Group</div>
-                    <div style="color:#F1F5F9;font-weight:700;font-size:.92rem;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cl.functional_group || '—'}</div>
-                </div>
-                <div style="display:flex;gap:.45rem;align-items:center;flex-shrink:0">
-                    <span style="background:${sc.badgeBg};color:#fff;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700">${sensLevel}</span>
-                    <span style="background:${riskColor};color:#fff;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700">${riskLabel} · ${riskScore.toFixed(1)}</span>
-                </div>
-            </div>`;
+            // Risk KPI
+            const riskColor = score >= 8 ? '#DC2626' : score >= 6.5 ? '#D97706' : score >= 4.5 ? '#2563EB' : '#059669';
+            const rkpi = document.getElementById('brwRiskKpi');
+            const rval = document.getElementById('brwRiskVal');
+            rkpi.style.borderColor = riskColor;
+            rval.style.color = riskColor;
+            rval.textContent = score.toFixed(1);
 
-            // Metric row
-            html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #E2E8F0;border-top:none;border-bottom:none">
-                <div style="padding:.65rem .75rem;border-right:1px solid #E2E8F0;text-align:center">
-                    <div style="font-size:.64rem;color:#64748B;text-transform:uppercase;font-weight:700;letter-spacing:.06em">Risk Score</div>
-                    <div style="font-size:1.45rem;font-weight:800;color:${riskColor};line-height:1.1;margin-top:3px">${riskScore.toFixed(1)}<span style="font-size:.62rem;color:#94A3B8;font-weight:500">/10</span></div>
-                </div>
-                <div style="padding:.65rem .75rem;border-right:1px solid #E2E8F0;text-align:center">
-                    <div style="font-size:.64rem;color:#64748B;text-transform:uppercase;font-weight:700;letter-spacing:.06em">PII Found</div>
-                    <div style="font-size:1.45rem;font-weight:800;color:${piis.length > 0 ? '#DC2626' : '#16A34A'};line-height:1.1;margin-top:3px">${piis.length}</div>
-                </div>
-                <div style="padding:.65rem .75rem;text-align:center">
-                    <div style="font-size:.64rem;color:#64748B;text-transform:uppercase;font-weight:700;letter-spacing:.06em">Confidence</div>
-                    <div style="font-size:1.45rem;font-weight:800;color:#3B82F6;line-height:1.1;margin-top:3px">${confidence}</div>
-                </div>
-            </div>`;
+            // Sensitivity KPI
+            const sensColor = sens === 'High' ? '#DC2626' : sens === 'Moderate' ? '#D97706' : '#059669';
+            const skpi = document.getElementById('brwSensKpi');
+            const sval = document.getElementById('brwSensVal');
+            skpi.style.borderColor = sensColor;
+            sval.style.color = sensColor;
+            sval.textContent = sens;
 
-            // Body sections
-            html += `<div style="border:1px solid #E2E8F0;border-top:none;border-radius:0 0 12px 12px;overflow:hidden">`;
+            // Category
+            document.getElementById('brwCategory').textContent = cl.functional_group || cl.category || '—';
 
-            if (cl.document_summary) {
-                html += `<div style="padding:.75rem 1rem;border-bottom:1px solid #E2E8F0">
-                    <div style="font-size:.64rem;color:#0284C7;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px"><i class="fas fa-align-left me-1"></i>Summary</div>
-                    <div style="font-size:.82rem;color:#374151;line-height:1.6">${cl.document_summary}</div>
-                </div>`;
+            // Summary
+            const summarySection = document.getElementById('brwSummarySection');
+            const summary = cl.document_summary || '';
+            if (summary) {
+                document.getElementById('brwSummary').textContent = summary;
+                summarySection.style.display = '';
+            } else {
+                summarySection.style.display = 'none';
             }
 
-            if (piis.length > 0) {
-                html += `<div style="padding:.75rem 1rem;border-bottom:1px solid #E2E8F0;background:#FFF5F5">
-                    <div style="font-size:.64rem;color:#DC2626;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px"><i class="fas fa-shield-alt me-1"></i>PII Detected (${piis.length})</div>
-                    <div style="display:flex;flex-wrap:wrap;gap:.4rem">${piis.map(p=>`<span style="background:#FEE2E2;color:#B91C1C;padding:3px 9px;border-radius:6px;font-size:.74rem;font-weight:600;border:1px solid #FECACA">${p.split(':')[0].trim()}</span>`).join('')}</div>
-                </div>`;
+            // PII
+            const piiList = document.getElementById('brwPiiList');
+            if (piis.length) {
+                piiList.innerHTML = piis.map(function(p) {
+                    return '<span class="pii-tag"><i class="fas fa-exclamation-triangle"></i>' + escHtml(p.split(':')[0].trim()) + '</span>';
+                }).join('');
+            } else {
+                piiList.innerHTML = '<span style="font-size:.8rem;color:#94A3B8">No PII detected</span>';
             }
 
-            if (findings.length > 0) {
-                html += `<div style="padding:.75rem 1rem;background:#FFFDF0">
-                    <div style="font-size:.64rem;color:#D97706;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px"><i class="fas fa-flag me-1"></i>Key Findings</div>
-                    <div style="display:flex;flex-direction:column;gap:.35rem">${findings.slice(0,5).map(f=>`<div style="display:flex;align-items:flex-start;gap:.45rem;font-size:.82rem;color:#374151"><span style="color:#F59E0B;flex-shrink:0;margin-top:1px">&#9654;</span>${f}</div>`).join('')}</div>
-                </div>`;
-            } else if (!cl.document_summary && piis.length === 0) {
-                html += `<div style="padding:1rem;text-align:center;color:#94A3B8;font-size:.82rem">No additional details available.</div>`;
+            // Findings
+            const findSection = document.getElementById('brwFindingsSection');
+            const findEl = document.getElementById('brwFindings');
+            if (findings.length) {
+                findEl.innerHTML = findings.map(function(f) {
+                    return '<div class="finding-item"><i class="fas fa-shield-alt"></i><span>' + escHtml(f) + '</span></div>';
+                }).join('');
+                findSection.style.display = '';
+            } else {
+                findSection.style.display = 'none';
             }
 
-            html += `</div>`;
-
-            document.getElementById('classificationResults').innerHTML = html;
+            // Show results + verification
             document.getElementById('classificationResults').style.display = 'block';
             document.getElementById('classifyButtonContainer').style.display = 'none';
             document.getElementById('verificationSection').style.display = 'block';
             document.getElementById('verificationStatus').textContent = 'Pending review';
+
+            // Update tabs
             document.getElementById('content-tab').innerHTML =
                 piis.length > 0
-                ? `Document Content <span class="badge bg-danger" style="font-size:.65rem">${piis.length} PII</span>`
+                ? 'Document Content <span class="badge bg-danger" style="font-size:.65rem">' + piis.length + ' PII</span>'
                 : 'Document Content';
-            // Update footer button to reflect re-classify intent
             document.getElementById('classifyTabBtn').innerHTML = '<i class="fas fa-sync-alt me-1"></i>Re-classify';
             loadDocumentContent(currentDocPath);
         }
@@ -2907,7 +2951,7 @@
 
         // Cancel AI insights generation
         function cancelAiInsights() {
-            console.log('Cancelling AI insights generation');
+            console.log('Canceling AI insights generation');
             if (window.aiInsightsController) {
                 window.aiInsightsController.abort();
                 window.aiInsightsController = null;

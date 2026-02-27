@@ -207,6 +207,70 @@
             border: 1px solid #E2E8F0;
             box-shadow: 0 1px 6px rgba(0,0,0,.06);
         }
+
+        /* ── DOCUMENT VIEWER DRAWER ── */
+        .doc-drawer {
+            position: fixed; top: 0; right: 0; bottom: 0; width: 580px;
+            max-width: 96vw; background: #F8FAFC; z-index: 1050;
+            transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+            display: flex; flex-direction: column;
+            box-shadow: -4px 0 32px rgba(0,0,0,.18);
+            border-left: 1px solid #E2E8F0;
+        }
+        .doc-drawer.open { transform: translateX(0); }
+        .doc-drawer-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,.35);
+            z-index: 1049; display: none;
+        }
+        .doc-drawer-overlay.open { display: block; }
+        .doc-drawer-header {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.85rem 1.1rem; border-bottom: 1px solid #E2E8F0;
+            background: #0F172A; color: white; flex-shrink: 0;
+        }
+        .doc-drawer-title { font-size: 0.88rem; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .doc-drawer-close {
+            background: none; border: none; color: #94A3B8; font-size: 1.1rem;
+            cursor: pointer; padding: 0.25rem 0.4rem; border-radius: 4px;
+        }
+        .doc-drawer-close:hover { color: white; background: rgba(255,255,255,.1); }
+        .doc-drawer-body { flex: 1; overflow-y: auto; padding: 1rem 1.15rem; }
+        .doc-content-box {
+            font-family: 'Courier New', Courier, monospace; font-size: .76rem;
+            line-height: 1.7; word-break: break-word;
+            background: white; border: 1px solid #E2E8F0; border-radius: 8px;
+            padding: 1rem 1.1rem; color: #334155;
+            min-height: 200px;
+        }
+        .doc-content-box .doc-line { display: block; white-space: pre-wrap; min-height: 1.2em; }
+        .doc-drawer-meta {
+            font-size: 0.75rem; color: #64748B;
+            display: flex; gap: 1.25rem; flex-wrap: wrap;
+            padding: 0.6rem 1.1rem; border-top: 1px solid #E2E8F0;
+            background: white; flex-shrink: 0;
+        }
+        /* PII highlight marks */
+        mark.pii-ssn        { background:#fed7d7; border-bottom:2px solid #e53e3e; border-radius:2px; padding:0 2px; cursor:help; }
+        mark.pii-financial  { background:#feebc8; border-bottom:2px solid #dd6b20; border-radius:2px; padding:0 2px; cursor:help; }
+        mark.pii-credential { background:#fde8e8; border-bottom:2px solid #c53030; border-radius:2px; padding:0 2px; cursor:help; }
+        mark.pii-general    { background:#fefcbf; border-bottom:2px solid #d69e2e; border-radius:2px; padding:0 2px; cursor:help; }
+        mark[data-label] { position:relative; }
+        mark[data-label]:hover::after {
+            content: attr(data-label); position:absolute; bottom:calc(100% + 4px); left:50%;
+            transform:translateX(-50%); background:#1e293b; color:#f8fafc; padding:3px 8px;
+            border-radius:5px; font-size:0.68rem; font-weight:600; white-space:nowrap;
+            pointer-events:none; z-index:9999; box-shadow:0 2px 8px rgba(0,0,0,.35);
+            letter-spacing:.03em; text-transform:uppercase;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+        }
+        .pii-legend {
+            background:#f8f9fa; border:1px solid #dee2e6; border-radius:6px;
+            padding:.45rem .75rem; margin-bottom:.75rem;
+            display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; font-size:.78rem;
+        }
+        .pii-legend .legend-title { font-weight:600; color:#495057; }
+        .pii-legend .legend-swatch { display:inline-flex; align-items:center; gap:4px; }
+        .pii-legend .swatch-box { width:13px; height:13px; border-radius:2px; display:inline-block; }
     </style>
 </head>
 <body>
@@ -363,6 +427,9 @@
 
                     <!-- Actions -->
                     <div class="mt-4 text-center">
+                        <button class="btn btn-outline-secondary me-2" onclick="openDocViewer()" id="viewDocBtn" style="display:none">
+                            <i class="fas fa-eye me-2"></i>View Document
+                        </button>
                         <button class="btn btn-outline-primary me-2" onclick="resetForm()">
                             <i class="fas fa-plus me-2"></i>Upload Another File
                         </button>
@@ -404,6 +471,8 @@
             }, duration);
         }
         let selectedFile = null;
+        let currentFilePath = null;
+        let currentPiiDetected = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const uploadZone = document.getElementById('uploadZone');
@@ -560,8 +629,151 @@
                 document.getElementById('piiResults').innerHTML = piiHtml;
             }
 
+            // Store file path + PII data and show view button
+            currentFilePath = data.file_path || null;
+            currentPiiDetected = (data.classification && data.classification.pii_detected) ? data.classification.pii_detected : [];
+            const viewBtn = document.getElementById('viewDocBtn');
+            if (currentFilePath) viewBtn.style.display = 'inline-flex';
+
             // Show results
             document.getElementById('resultsContainer').style.display = 'block';
+        }
+
+        async function openDocViewer() {
+            if (!currentFilePath) return;
+            document.getElementById('docOverlay').classList.add('open');
+            document.getElementById('docDrawer').classList.add('open');
+            const box = document.getElementById('drawerContent');
+            const meta = document.getElementById('drawerMeta');
+            const title = document.getElementById('drawerTitle');
+            box.innerHTML = '<span style="color:#94A3B8">Loading…</span>';
+            meta.innerHTML = '';
+            try {
+                const res = await fetch('/api/documents/' + currentFilePath + '?full=1');
+                const d = await res.json();
+                if (d.error) throw new Error(d.error);
+                title.textContent = d.file;
+                box.innerHTML = buildHighlightedContent(d.content || '', currentPiiDetected);
+                const kb = d.size ? (d.size / 1024).toFixed(1) + ' KB' : '';
+                const chars = d.full_length ? d.full_length.toLocaleString() + ' chars' : '';
+                meta.innerHTML = (kb ? `<span><i class="fas fa-weight-hanging me-1"></i>${kb}</span>` : '') +
+                                  (chars ? `<span><i class="fas fa-text-width me-1"></i>${chars}</span>` : '') +
+                                  `<span><i class="fas fa-folder me-1"></i>${currentFilePath}</span>`;
+            } catch(e) {
+                box.innerHTML = '<span style="color:#EF4444"><i class="fas fa-exclamation-triangle me-1"></i>Could not load document: ' + e.message + '</span>';
+            }
+        }
+
+        function escHtml(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function buildHighlightedContent(text, piiDetected) {
+            const PII_TYPE_MAP = {
+                'SSN':                  { cls:'pii-ssn',        label:'SSN',
+                    patterns:[/\b\d{3}-\d{2}-\d{4}\b/g,/\b\d{3}\s\d{2}\s\d{4}\b/g,/\bSSN[:\s#]+\d[\d\s-]{6,11}\d\b/gi] },
+                'Social Security':      { cls:'pii-ssn',        label:'SSN',
+                    patterns:[/\b\d{3}-\d{2}-\d{4}\b/g,/\bSSN[:\s#]+\d[\d\s-]{6,11}\d\b/gi] },
+                'Tax ID':               { cls:'pii-ssn',        label:'Tax ID',
+                    patterns:[/\b\d{2}-\d{7}\b/g,/\bEIN\b[:\s]+[\d-]+/gi,/\bTax\s*ID[:\s#]+[\w\d-]+/gi] },
+                'Credit Card':          { cls:'pii-financial',  label:'Credit Card',
+                    patterns:[/\b(?:4|5[1-5]|6)\d{3}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g] },
+                'Bank Account':         { cls:'pii-financial',  label:'Bank Acct',
+                    patterns:[/\b(?:Account|Acct)\s*(?:#|No\.?|Num(?:ber)?)?\s*[:=]?\s*[\d\w-]{6,}/gi,/\bRouting\s*(?:No\.?)?\s*[:=]?\s*\d{9}\b/gi] },
+                'Salary':               { cls:'pii-financial',  label:'Salary',
+                    patterns:[/\$[\d,]{4,}(?:\.\d{2})?\b/g,/\b\d{2,3},\d{3}(?:\.\d{2})?\s*(?:\/yr|\/year|annual|salary)/gi] },
+                'Salary Information':   { cls:'pii-financial',  label:'Salary',
+                    patterns:[/\$[\d,]{4,}(?:\.\d{2})?\b/g,/\bsalary\s*[:=]\s*[\$\d,\.]+/gi] },
+                'Financial':            { cls:'pii-financial',  label:'Financial',
+                    patterns:[/\$[\d,]{4,}(?:\.\d{2})?\b/g] },
+                'Password':             { cls:'pii-credential', label:'Password',
+                    patterns:[/\bpassword\s*[:=]\s*\S+/gi,/\bPass:\s*\S+/gi] },
+                'Passwords/Credentials':{ cls:'pii-credential', label:'Credentials',
+                    patterns:[/\bpassword\s*[:=]\s*\S+/gi,/\bsecret\s*[:=]\s*\S+/gi,/\btoken\s*[:=]\s*\S+/gi,/\bapi[_-]?key\s*[:=]\s*\S+/gi] },
+                'Credentials':          { cls:'pii-credential', label:'Credentials',
+                    patterns:[/\bpassword\s*[:=]\s*\S+/gi,/\bsecret\s*[:=]\s*\S+/gi] },
+                'API Keys':             { cls:'pii-credential', label:'API Key',
+                    patterns:[/\bapi[_-]?key\s*[:=]\s*\S+/gi,/\bBEARER\s+[A-Za-z0-9\-_.]{10,}/gi] },
+                'Email':                { cls:'pii-general',    label:'Email',
+                    patterns:[/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}\b/gi] },
+                'Email Address':        { cls:'pii-general',    label:'Email',
+                    patterns:[/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}\b/gi] },
+                'Phone':                { cls:'pii-general',    label:'Phone',
+                    patterns:[/\b\(?\d{3}\)?[.\s-]?\d{3}[.\s-]?\d{4}\b/g] },
+                'Phone Number':         { cls:'pii-general',    label:'Phone',
+                    patterns:[/\b\(?\d{3}\)?[.\s-]?\d{3}[.\s-]?\d{4}\b/g] },
+                'Employee ID':          { cls:'pii-general',    label:'Employee ID',
+                    patterns:[/\bEMP[-\s#]?\d{3,}/gi,/\bEmployee\s*(?:ID|#|No\.?|Number)\s*[:=]?\s*[\w\d-]+/gi,/\bE-?\d{5,}\b/gi] },
+                'Date of Birth':        { cls:'pii-general',    label:'DOB',
+                    patterns:[/\b(?:DOB|Date of Birth|Birth\s*Date)\s*[:=]?\s*\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/gi] },
+                'Full Name':            { cls:'pii-general',    label:'Name',
+                    patterns:[/\b(?:Name|Employee Name)\s*[:=]\s*[A-Z][a-z]+ [A-Z][a-z]+/g] },
+                'Home Address':         { cls:'pii-general',    label:'Address',
+                    patterns:[/\b\d{3,5}\s+[A-Z][a-z]+(?:\s+[A-Za-z]+)*\s+(?:St\.?|Ave\.?|Blvd\.?|Rd\.?|Dr\.?|Ln\.?|Way|Court|Ct\.?|Place|Pl\.?)\b/gi] },
+            };
+
+            // Build deduplicated active highlights
+            const seen = new Set();
+            const active = Object.values(PII_TYPE_MAP).reduce((acc, info) => {
+                const key = `${info.cls}:${info.label}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    acc.push({ cls: info.cls, label: info.label,
+                               patterns: info.patterns.map(r => new RegExp(r.source, r.flags)) });
+                }
+                return acc;
+            }, []);
+
+            // Add specific values named by AI (e.g. "SSN: 123-45-6789")
+            (piiDetected || []).forEach(item => {
+                const specificValue = item.includes(':') ? item.split(':').slice(1).join(':').trim() : null;
+                if (specificValue && specificValue.length > 3) {
+                    const escaped = specificValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const typePart = item.split(':')[0].trim();
+                    const matchKey = Object.keys(PII_TYPE_MAP).find(k =>
+                        typePart.toLowerCase().includes(k.toLowerCase()) ||
+                        k.toLowerCase().includes(typePart.toLowerCase()));
+                    const cls = matchKey ? PII_TYPE_MAP[matchKey].cls : 'pii-general';
+                    active.push({ cls, label: typePart, patterns: [new RegExp(escaped, 'gi')] });
+                }
+            });
+
+            function applyPii(line) {
+                let out = escHtml(line);
+                active.forEach(h => {
+                    h.patterns.forEach(pat => {
+                        pat.lastIndex = 0;
+                        out = out.replace(pat, m => `<mark class="${h.cls}" data-label="${h.label}">${m}</mark>`);
+                    });
+                });
+                return out;
+            }
+
+            // Render lines
+            const lines = text.split('\n');
+            const rendered = lines.map(line => `<span class="doc-line">${applyPii(line)}</span>`).join('');
+
+            // Build legend
+            const swatchBg     = { 'pii-ssn':'#fed7d7','pii-financial':'#feebc8','pii-credential':'#fde8e8','pii-general':'#fefcbf' };
+            const swatchBorder = { 'pii-ssn':'#e53e3e','pii-financial':'#dd6b20','pii-credential':'#c53030','pii-general':'#d69e2e' };
+            const drawnCls = new Set();
+            let swatches = '';
+            active.forEach(h => {
+                if (!drawnCls.has(h.cls)) {
+                    drawnCls.add(h.cls);
+                    swatches += `<span class="legend-swatch"><span class="swatch-box" style="background:${swatchBg[h.cls]};border-bottom:2px solid ${swatchBorder[h.cls]}"></span>${h.label}</span>`;
+                }
+            });
+            const legend = swatches
+                ? `<div class="pii-legend"><span class="legend-title"><i class="fas fa-highlighter me-1 text-warning"></i>Sensitive Data Detected:</span>${swatches}<span style="font-size:.72rem;color:#94A3B8;margin-left:auto">Hover for type</span></div>`
+                : '';
+
+            return legend + `<div class="doc-content-box" style="border:none;padding:0;background:transparent">${rendered}</div>`;
+        }
+
+        function closeDocViewer() {
+            document.getElementById('docOverlay').classList.remove('open');
+            document.getElementById('docDrawer').classList.remove('open');
         }
 
         function getSensitivityBadgeClass(level) {
@@ -582,10 +794,13 @@
 
         function resetForm() {
             selectedFile = null;
+            currentFilePath = null;
+            currentPiiDetected = [];
             document.getElementById('fileInput').value = '';
             document.getElementById('fileInfo').style.display = 'none';
             document.getElementById('progressContainer').style.display = 'none';
             document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('viewDocBtn').style.display = 'none';
         }
 
         function showToast(msg, type) {
@@ -600,5 +815,19 @@
         }
     </script>
 <div id="siteToast" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;display:none;pointer-events:none"></div>
+
+<!-- ── DOCUMENT VIEWER DRAWER ── -->
+<div class="doc-drawer-overlay" id="docOverlay" onclick="closeDocViewer()"></div>
+<div class="doc-drawer" id="docDrawer">
+    <div class="doc-drawer-header">
+        <i class="fas fa-file-alt" style="color:#60A5FA;flex-shrink:0"></i>
+        <span class="doc-drawer-title" id="drawerTitle">Document</span>
+        <button class="doc-drawer-close" onclick="closeDocViewer()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="doc-drawer-body">
+        <div class="doc-content-box" id="drawerContent"><span style="color:#94A3B8">Loading…</span></div>
+    </div>
+    <div class="doc-drawer-meta" id="drawerMeta"></div>
+</div>
 </body>
 </html>

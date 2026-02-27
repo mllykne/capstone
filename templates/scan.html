@@ -158,6 +158,80 @@
         .toast-inner { background: var(--navy); color: #fff; padding: .7rem 1rem; border-radius: 8px; font-size: .82rem; display: flex; align-items: center; gap: .5rem; box-shadow: 0 4px 16px rgba(0,0,0,.25); max-width: 320px; }
         .toast-inner.error { background: #7F1D1D; }
         @media(max-width:640px){ .kpi-strip { grid-template-columns: repeat(2,1fr); } .sites-grid { grid-template-columns: 1fr; } }
+        /* doc row hover */
+        .doc-table tbody tr.doc-row { cursor: pointer; }
+        .doc-table tbody tr.doc-row:hover td { background: #EFF6FF !important; }
+        /* ── DOCUMENT DRAWER ── */
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1040; opacity: 0; pointer-events: none; transition: opacity .25s; }
+        .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+        .doc-drawer {
+            position: fixed; top: 0; right: 0; bottom: 0; width: 520px; max-width: 96vw;
+            background: #F8FAFC; z-index: 1050; display: flex; flex-direction: column;
+            box-shadow: -8px 0 32px rgba(0,0,0,.18);
+            transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+        }
+        .doc-drawer.open { transform: translateX(0); }
+        .drawer-head {
+            background: linear-gradient(135deg, #1E3A5F 0%, #0F172A 100%);
+            padding: .9rem 1.1rem; color: #fff; flex-shrink: 0;
+        }
+        .drawer-name { font-size: .95rem; font-weight: 700; margin-bottom: .25rem;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 380px; }
+        .drawer-meta { font-size: .72rem; color: #94A3B8; display: flex; gap: .75rem; flex-wrap: wrap; }
+        .drawer-close {
+            position: absolute; top: .75rem; right: .9rem;
+            background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18);
+            color: #fff; width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+            font-size: .85rem; display: flex; align-items: center; justify-content: center;
+            transition: background .15s;
+        }
+        .drawer-close:hover { background: rgba(255,255,255,.22); }
+        .drawer-tabs { display: flex; background: #fff; border-bottom: 1px solid #E2E8F0; flex-shrink: 0; }
+        .drawer-tab {
+            padding: .6rem 1.1rem; font-size: .8rem; font-weight: 600; color: #64748B;
+            cursor: pointer; border-bottom: 2px solid transparent; transition: all .12s;
+        }
+        .drawer-tab:hover { color: var(--blue); }
+        .drawer-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+        .drawer-body { flex: 1; overflow-y: auto; padding: 1rem; }
+        .drawer-section { margin-bottom: 1rem; }
+        .drawer-section-title {
+            font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+            color: #94A3B8; margin-bottom: .55rem; display: flex; align-items: center; gap: .4rem;
+        }
+        .risk-badge-lg {
+            display: inline-flex; align-items: baseline; gap: .2rem;
+            font-size: 2.4rem; font-weight: 800; line-height: 1;
+        }
+        .risk-badge-lg .denom { font-size: .85rem; color: #94A3B8; font-weight: 500; }
+        .sens-badge {
+            display: inline-flex; align-items: center; gap: .35rem;
+            padding: .3rem .75rem; border-radius: 20px; font-size: .78rem; font-weight: 700;
+        }
+        .pii-tag {
+            display: inline-flex; align-items: center; gap: .3rem;
+            background: #FEE2E2; color: #DC2626; border-radius: 5px;
+            padding: .25rem .55rem; font-size: .73rem; font-weight: 600; margin: .2rem .2rem 0 0;
+        }
+        .finding-item {
+            display: flex; gap: .6rem; background: #FFF7ED; border: 1px solid #FED7AA;
+            border-radius: 8px; padding: .55rem .75rem; margin-bottom: .5rem; font-size: .8rem;
+            color: #92400E; line-height: 1.5;
+        }
+        .finding-item i { flex-shrink: 0; margin-top: .2rem; color: #F59E0B; }
+        .doc-content-wrap {
+            background: #fff; border: 1px solid #E2E8F0; border-radius: 8px;
+            padding: .75rem; font-size: .77rem; font-family: 'Segoe UI', monospace;
+            line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+            max-height: 600px; overflow-y: auto; color: #1E293B;
+        }
+        .hl-red   { background: #FEE2E2; color: #991B1B; border-radius: 3px; padding: 0 2px; font-weight: 600; }
+        .hl-amber { background: #FEF3C7; color: #92400E; border-radius: 3px; padding: 0 2px; font-weight: 600; }
+        .content-loading { text-align: center; padding: 2rem; color: #94A3B8; font-size: .85rem; }
+        .drawer-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin-bottom: 1rem; }
+        .drawer-kpi { background: #fff; border: 1px solid #E2E8F0; border-radius: 8px; padding: .65rem .85rem; border-left: 3px solid; }
+        .drawer-kpi .dkv { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+        .drawer-kpi .dkl { font-size: .68rem; color: #64748B; text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -182,7 +256,7 @@
                 <i class="fas fa-th-large" style="color:#0078D4"></i>
                 <span>Meridian Consulting Group &mdash; Microsoft 365</span>
                 <span style="color:#64748B">&middot;</span>
-                <span id="headerDocCount" style="color:#60A5FA">Loading...</span>
+                <span id="headerDocCount" style="color:#60A5FA">{% if sites %}{{ sites|length }} sites &middot; {{ sites|sum(attribute='doc_count') }} documents{% else %}Loading...{% endif %}</span>
             </div>
         </div>
         <div style="text-align:right;font-size:.78rem;color:#64748B">
@@ -205,9 +279,31 @@
     </div>
 
     <div class="sites-grid" id="sitesGrid">
-        <div class="site-card" style="display:flex;align-items:center;justify-content:center;height:140px;color:#94A3B8">
-            <div class="text-center"><i class="fas fa-circle-notch fa-spin fa-2x mb-2"></i><div style="font-size:.8rem">Loading sites...</div></div>
+        {% for site in sites %}
+        {% set slug = site.id | replace(' ', '_') | replace('—', '_') | replace('&', '_') | replace('-', '_') %}
+        <div class="site-card" id="card-{{ slug }}">
+            <div class="site-card-accent" style="background:{{ site.color }}"></div>
+            <div class="site-header">
+                <div class="site-icon" style="background:{{ site.color }}20;color:{{ site.color }}"><i class="fas fa-{{ site.icon }}"></i></div>
+                <div class="site-info">
+                    <div class="name">{{ site.name }}</div>
+                    <div class="desc">{{ site.description }}</div>
+                    <div class="sp-url"><i class="fas fa-link me-1" style="font-size:.6rem"></i>{{ site.url }}</div>
+                </div>
+            </div>
+            <div class="site-stats">
+                <div class="stat-chip"><i class="fas fa-file-alt"></i> {{ site.doc_count }} documents</div>
+                <div class="stat-chip" id="chip-{{ slug }}" style="display:none"><i class="fas fa-check" style="color:#10B981"></i> <span></span></div>
+            </div>
+            <button class="scan-site-btn" id="btn-{{ slug }}"
+                style="background:{{ site.color }}18;color:{{ site.color }};border:1px solid {{ site.color }}40"
+                data-site-id="{{ site.id }}" onclick="startScan(this.dataset.siteId)">
+                <i class="fas fa-play"></i> Scan This Site
+            </button>
         </div>
+        {% else %}
+        <div class="site-card" style="color:#EF4444"><i class="fas fa-exclamation-triangle me-2"></i>No SharePoint sites found.</div>
+        {% endfor %}
     </div>
 
     <div id="scanningPanel">
@@ -279,7 +375,7 @@
                     <div class="panel-title"><i class="fas fa-shield-alt"></i> Documents by Risk Level</div>
                     <div style="overflow-x:auto">
                         <table class="doc-table">
-                            <thead><tr><th>#</th><th>Document</th><th>Category</th><th>Sensitivity</th><th>Risk Score</th><th>PII</th></tr></thead>
+                            <thead><tr><th>#</th><th>Document</th><th>Category</th><th>Sensitivity</th><th>Risk Score</th><th>PII</th><th style="width:52px"></th></tr></thead>
                             <tbody id="docTableBody"></tbody>
                         </table>
                     </div>
@@ -309,21 +405,109 @@
 
 <div id="toast"><div class="toast-inner" id="toastInner"></div></div>
 
+<!-- ── DOCUMENT DETAIL DRAWER ── -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDocView()"></div>
+<div class="doc-drawer" id="docDrawer">
+    <div class="drawer-head" style="position:relative">
+        <div class="drawer-name" id="dName">Document</div>
+        <div class="drawer-meta">
+            <span><i class="fas fa-th-large me-1" style="color:#0078D4"></i><span id="dSite"></span></span>
+            <span><i class="fas fa-calendar me-1"></i><span id="dModified"></span></span>
+            <span><i class="fas fa-weight-hanging me-1"></i><span id="dSize"></span></span>
+        </div>
+        <button class="drawer-close" onclick="closeDocView()" title="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="drawer-tabs">
+        <div class="drawer-tab active" id="dtab-analysis" onclick="switchDrawerTab('analysis')"><i class="fas fa-brain me-1"></i>AI Analysis</div>
+        <div class="drawer-tab" id="dtab-content" onclick="switchDrawerTab('content')"><i class="fas fa-file-alt me-1"></i>Document Content</div>
+        <div class="drawer-tab" id="dtab-overview" onclick="switchDrawerTab('overview')"><i class="fas fa-lightbulb me-1"></i>AI Overview</div>
+    </div>
+    <div class="drawer-body">
+        <!-- AI ANALYSIS PANE -->
+        <div id="dpane-analysis">
+            <div class="drawer-kpis">
+                <div class="drawer-kpi" id="dRiskKpi" style="border-color:#EF4444">
+                    <div class="dkv" id="dRiskVal" style="color:#EF4444">—</div>
+                    <div class="dkl">Risk Score /10</div>
+                </div>
+                <div class="drawer-kpi" id="dSensKpi" style="border-color:#64748B">
+                    <div class="dkv" id="dSensVal" style="color:#64748B">—</div>
+                    <div class="dkl">Sensitivity</div>
+                </div>
+            </div>
+            <div class="drawer-section">
+                <div class="drawer-section-title"><i class="fas fa-tags"></i>Category</div>
+                <div style="font-size:.85rem;color:#1E293B;font-weight:600" id="dCategory">—</div>
+            </div>
+            <div class="drawer-section" id="dSummarySection">
+                <div class="drawer-section-title"><i class="fas fa-align-left"></i>AI Summary</div>
+                <div style="font-size:.82rem;color:#334155;line-height:1.65;background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:.65rem .85rem" id="dSummary"></div>
+            </div>
+            <div class="drawer-section" id="dPiiSection">
+                <div class="drawer-section-title"><i class="fas fa-user-secret" style="color:#DC2626"></i>PII & Sensitive Data Detected</div>
+                <div id="dPiiList"></div>
+            </div>
+            <div class="drawer-section" id="dFindingsSection">
+                <div class="drawer-section-title"><i class="fas fa-exclamation-triangle" style="color:#F59E0B"></i>Confidential Findings</div>
+                <div id="dFindings"></div>
+            </div>
+        </div>
+        <!-- CONTENT PANE -->
+        <div id="dpane-content" style="display:none">
+            <div style="font-size:.72rem;color:#94A3B8;margin-bottom:.65rem;display:flex;align-items:center;gap:.5rem">
+                <i class="fas fa-highlighter" style="color:#F59E0B"></i>
+                Sensitive terms are <span class="hl-red" style="font-size:.72rem">highlighted</span> in the document text below.
+            </div>
+            <div class="doc-content-wrap" id="dContentBox"><div class="content-loading"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading document content…</div></div>
+        </div>
+        <!-- AI OVERVIEW PANE -->
+        <div id="dpane-overview" style="display:none">
+            <div id="docOverviewEmpty">
+                <div style="background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);border-radius:12px;padding:2rem 1.5rem;text-align:center;color:#fff;margin-bottom:.5rem">
+                    <div style="width:52px;height:52px;background:rgba(124,58,237,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .85rem">
+                        <i class="fas fa-lightbulb" style="font-size:1.4rem;color:#A78BFA"></i>
+                    </div>
+                    <div style="color:#F1F5F9;font-weight:700;font-size:1rem;margin-bottom:.4rem">AI Document Overview</div>
+                    <p style="color:#94A3B8;font-size:.82rem;margin-bottom:1.25rem;line-height:1.6;max-width:300px;margin-left:auto;margin-right:auto">Generate a deep Gemini AI narrative covering compliance exposure, governance recommendations, and risk trajectory for this document.</p>
+                    <button onclick="getDocOverview()" id="docOverviewBtn" style="background:linear-gradient(135deg,#7C3AED,#4F46E5);border:none;color:#fff;padding:.5rem 1.6rem;border-radius:8px;font-weight:600;font-size:.88rem;cursor:pointer">
+                        <i class="fas fa-lightbulb me-2"></i>Generate AI Overview
+                    </button>
+                </div>
+            </div>
+            <div id="docOverviewResult" style="display:none"></div>
+            <div style="margin-top:.75rem;text-align:center">
+                <button onclick="getDocOverview()" id="docOverviewRegenBtn" style="display:none;background:transparent;border:1px solid rgba(124,58,237,.5);color:#A78BFA;padding:.35rem 1rem;border-radius:6px;font-size:.78rem;cursor:pointer">
+                    <i class="fas fa-sync-alt me-1"></i>Regenerate
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    var sitesData = [];
     var lastReport = null;
     var lastDocuments = [];
     var lastScanAiInsights = null;
     var scanActive = false;
     var scanController = null;
     var scanCancelled = false;
+    var docsByPath = {};
+    var drawerCurrentPath = null;
+    var drawerContentLoaded = false;
+    var docOverviewCache = {};  // keyed by doc path; stores {name, insight} for PDF export
 
-    document.addEventListener('DOMContentLoaded', function() { loadSites(); });
-
+    // Sites data injected server-side for instant load
+    var _serverSites = {{ sites | tojson }};
+    var sitesData = _serverSites || [];
     async function loadSites() {
         try {
-            var resp = await fetch('/api/scan/sites');
-            sitesData = await resp.json();
+            var data = _serverSites;
+            if (!data || !data.length) {
+                // Fallback to API if server data unavailable
+                var resp = await fetch('/api/scan/sites');
+                data = await resp.json();
+            }
+            sitesData = data;
             var totalDocs = sitesData.reduce(function(s,x){ return s + (x.doc_count||0); }, 0);
             document.getElementById('headerDocCount').textContent = sitesData.length + ' sites \u00b7 ' + totalDocs + ' documents';
             renderSiteCards(sitesData);
@@ -405,6 +589,8 @@
         var documents = data.documents || [];
         lastReport = report;
         lastDocuments = documents;
+        docsByPath = {};
+        documents.forEach(function(d){ if(d.path) docsByPath[d.path] = d; });
         document.getElementById('scanTotalCount').textContent = documents.length;
 
         var sorted = documents.slice().sort(function(a,b){ return b.risk_score - a.risk_score; });
@@ -458,14 +644,14 @@
         if (scanController) scanController.abort();
         document.getElementById('cancelScanBtn').disabled = true;
         document.getElementById('cancelScanBtn').innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Stopping…';
-        document.getElementById('scanEta').textContent = 'Cancelling…';
+        document.getElementById('scanEta').textContent = 'Canceling…';
     }
 
     function resetScanButtons() {
         document.getElementById('scanAllBtn').disabled = false;
         sitesData.forEach(function(s) {
             var btn = document.getElementById('btn-' + slugify(s.id));
-            if (btn) btn.disabled = false;
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-play"></i> Scan This Site'; }
         });
     }
 
@@ -520,12 +706,15 @@
             var piiHtml = pii.length > 0 ? '<span class="pii-chip"><i class="fas fa-exclamation-triangle"></i>' + pii.length + ' PII</span>' : '<span style="color:#94A3B8;font-size:.72rem">\u2014</span>';
             var sensColor = doc.sensitivity_level === 'High' ? '#DC2626' : doc.sensitivity_level === 'Moderate' ? '#D97706' : '#059669';
             var barColor = score >= 8.5 ? '#DC2626' : score >= 7.0 ? '#D97706' : score >= 5.0 ? '#3B82F6' : '#10B981';
-            return '<tr><td style="color:#94A3B8;font-size:.72rem">' + (i+1) + '</td>' +
+            return '<tr class="doc-row" data-path="' + escH(doc.path||'') + '" onclick="openDocView(this.dataset.path)">' +
+                '<td style="color:#94A3B8;font-size:.72rem">' + (i+1) + '</td>' +
                 '<td><div style="font-weight:600;font-size:.8rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escH(doc.name) + '">' + escH(doc.name) + '</div><div style="font-size:.69rem;color:#94A3B8">' + escH(doc.site||'') + '</div></td>' +
                 '<td style="font-size:.77rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escH(doc.functional_group||'\u2014') + '</td>' +
                 '<td><span style="font-size:.75rem;font-weight:700;color:' + sensColor + '">' + escH(doc.sensitivity_level||'\u2014') + '</span></td>' +
                 '<td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:' + (score*10) + '%;background:' + barColor + '"></div></div><span style="font-size:.78rem;font-weight:700;color:' + barColor + '">' + score.toFixed(1) + '</span></div></td>' +
-                '<td>' + piiHtml + '</td></tr>';
+                '<td>' + piiHtml + '</td>' +
+                '<td><button style="border:none;background:rgba(59,130,246,.1);color:#2563EB;font-size:.69rem;font-weight:600;padding:.25rem .55rem;border-radius:5px;cursor:pointer" onclick="event.stopPropagation();openDocView(\'' + escH(doc.path||'').replace(/'/g,'\\x27') + '\')"><i class="fas fa-eye me-1"></i>View</button></td>' +
+                '</tr>';
         }).join('');
 
         var byS = report.by_sensitivity || {};
@@ -578,6 +767,7 @@
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
         lastReport = null; lastDocuments = [];
+        lastScanAiInsights = null; docOverviewCache = {};
         sitesData.forEach(function(s) {
             var chip = document.getElementById('chip-' + slugify(s.id));
             if (chip) chip.style.display = 'none';
@@ -699,6 +889,307 @@
         btn.innerHTML = '<i class="fas fa-brain me-1"></i> AI Insights';
     }
 
+    // ── DOCUMENT DETAIL DRAWER ──────────────────────────────────────
+    function openDocView(path) {
+        if (!path) return;
+        drawerCurrentPath = path;
+        drawerContentLoaded = false;
+
+        // Switch to analysis tab by default
+        switchDrawerTab('analysis');
+
+        // Look up full doc data
+        var doc = docsByPath[path];
+        var cl  = (doc && doc.classification)  || {};
+        var ra  = (doc && doc.risk_assessment)  || {};
+
+        // Header
+        var name = (doc && doc.name) || path.split('/').pop();
+        document.getElementById('dName').textContent = name;
+        document.getElementById('dSite').textContent = (doc && doc.site) || '';
+        document.getElementById('dModified').textContent = doc && doc.modified
+            ? new Date(doc.modified).toLocaleDateString() : '';
+        document.getElementById('dSize').textContent = doc && doc.size_bytes
+            ? (doc.size_bytes < 1024 ? doc.size_bytes + ' B' : Math.round(doc.size_bytes/1024) + ' KB') : '';
+
+        // Risk KPI
+        var score = parseFloat(ra.risk_score || cl.risk_score || 0);
+        var riskColor = score >= 8? '#DC2626' : score >= 6.5? '#D97706' : score >= 4.5? '#2563EB' : '#059669';
+        var rkpi = document.getElementById('dRiskKpi');
+        var rval = document.getElementById('dRiskVal');
+        rkpi.style.borderColor = riskColor;
+        rval.style.color = riskColor;
+        rval.textContent = score.toFixed(1);
+
+        // Sensitivity KPI
+        var sens = cl.sensitivity_level || 'Low';
+        var sensColor = sens==='High'?'#DC2626': sens==='Moderate'?'#D97706':'#059669';
+        var skpi = document.getElementById('dSensKpi');
+        var sval = document.getElementById('dSensVal');
+        skpi.style.borderColor = sensColor;
+        sval.style.color = sensColor;
+        sval.textContent = sens;
+
+        // Category
+        document.getElementById('dCategory').textContent = cl.functional_group || cl.category || '—';
+
+        // Summary
+        var summaryEl = document.getElementById('dSummary');
+        var summarySection = document.getElementById('dSummarySection');
+        var summary = cl.document_summary || '';
+        if (summary) {
+            summaryEl.textContent = summary;
+            summarySection.style.display = '';
+        } else {
+            summarySection.style.display = 'none';
+        }
+
+        // PII
+        var piis = cl.pii_detected || [];
+        var piiSection = document.getElementById('dPiiSection');
+        var piiList = document.getElementById('dPiiList');
+        if (piis.length) {
+            piiList.innerHTML = piis.map(function(p) {
+                return '<span class="pii-tag"><i class="fas fa-exclamation-triangle"></i>' + escH(p.split(':')[0].trim()) + '</span>';
+            }).join('');
+            piiSection.style.display = '';
+        } else {
+            piiList.innerHTML = '<span style="font-size:.8rem;color:#94A3B8">No PII detected</span>';
+            piiSection.style.display = '';
+        }
+
+        // Findings
+        var findings = cl.confidential_findings || [];
+        var findSection = document.getElementById('dFindingsSection');
+        var findEl = document.getElementById('dFindings');
+        if (findings.length) {
+            findEl.innerHTML = findings.map(function(f) {
+                return '<div class="finding-item"><i class="fas fa-shield-alt"></i><span>' + escH(f) + '</span></div>';
+            }).join('');
+            findSection.style.display = '';
+        } else {
+            findSection.style.display = 'none';
+        }
+
+        // Reset content pane
+        document.getElementById('dContentBox').innerHTML =
+            '<div class="content-loading"><i class="fas fa-circle-notch fa-spin me-2"></i>Click "Document Content" tab to load</div>';
+
+        // Reset overview pane
+        document.getElementById('docOverviewEmpty').style.display = 'block';
+        document.getElementById('docOverviewResult').style.display = 'none';
+        document.getElementById('docOverviewResult').innerHTML = '';
+        document.getElementById('docOverviewRegenBtn').style.display = 'none';
+        var ovBtn = document.getElementById('docOverviewBtn');
+        if (ovBtn) { ovBtn.disabled = false; ovBtn.innerHTML = '<i class="fas fa-lightbulb me-2"></i>Generate AI Overview'; }
+
+        // Show drawer
+        document.getElementById('drawerOverlay').classList.add('open');
+        document.getElementById('docDrawer').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDocView() {
+        document.getElementById('drawerOverlay').classList.remove('open');
+        document.getElementById('docDrawer').classList.remove('open');
+        document.body.style.overflow = '';
+        drawerCurrentPath = null;
+    }
+
+    function switchDrawerTab(tab) {
+        ['analysis','content','overview'].forEach(function(t) {
+            document.getElementById('dpane-' + t).style.display = t === tab ? '' : 'none';
+            document.getElementById('dtab-' + t).classList.toggle('active', t === tab);
+        });
+        if (tab === 'content' && !drawerContentLoaded && drawerCurrentPath) {
+            loadDrawerContent(drawerCurrentPath);
+        }
+    }
+
+    async function getDocOverview() {
+        var path = drawerCurrentPath;
+        var doc  = docsByPath[path] || {};
+        var cl   = doc.classification  || {};
+        var ra   = doc.risk_assessment  || {};
+        var btn  = document.getElementById('docOverviewBtn');
+        var regen   = document.getElementById('docOverviewRegenBtn');
+        var resultEl = document.getElementById('docOverviewResult');
+        var emptyEl  = document.getElementById('docOverviewEmpty');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating…';
+
+        var score = parseFloat(ra.risk_score || cl.risk_score || 0);
+        var sens  = cl.sensitivity_level || 'Low';
+        var piis  = cl.pii_detected || [];
+        var group = cl.functional_group || cl.category || 'General';
+        var sensBucket = {High:0, Moderate:0, Low:0};
+        sensBucket[sens] = 1;
+        var singleReport = {
+            total_documents_scanned: 1,
+            average_risk_score: score,
+            high_risk_count: score >= 7 ? 1 : 0,
+            pii_detected_count: piis.length > 0 ? 1 : 0,
+            by_sensitivity: sensBucket,
+            by_group: {},
+            top_risks: [{
+                name: doc.name || path.split('/').pop(),
+                risk_score: score,
+                sensitivity_level: sens,
+                pii_detected: piis.length > 0 ? piis.map(function(p){ return p.split(':')[0].trim(); }).join(', ') : 'None'
+            }],
+            sensitive_data_alert: { types_found: piis.map(function(p){ return p.split(':')[0].trim(); }) }
+        };
+        singleReport.by_group[group] = 1;
+
+        try {
+            var resp = await fetch('/api/scan/ai_insights', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ site_id: 'Document: ' + (doc.name || path.split('/').pop()), report: singleReport })
+            });
+            var ins = await resp.json();
+            if (ins.error) throw new Error(typeof ins.error === 'object' ? (ins.error.message || JSON.stringify(ins.error)) : ins.error);
+
+            var regRows = '';
+            var regs = ins.regulatory_exposure || {};
+            ['gdpr','ccpa','hipaa','sox'].forEach(function(r) {
+                var val = regs[r] || 'Not assessed';
+                var noExp = val.toLowerCase().includes('no significant') || val.toLowerCase().includes('not applicable') || val.toLowerCase().includes('minimal');
+                regRows += '<tr><td style="padding:.45rem .5rem;font-weight:700;color:#94A3B8;font-size:.71rem;white-space:nowrap;width:55px">' + r.toUpperCase() + '</td>' +
+                    '<td style="padding:.45rem .5rem"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (noExp?'#34D399':'#F87171') + ';margin-right:.45rem;vertical-align:middle"></span>' +
+                    '<span style="font-size:.82rem;color:#CBD5E1">' + escH(val) + '</span></td></tr>';
+            });
+            var colors = ['#F87171','#FBBF24','#60A5FA'];
+            var actions = (ins.top_actions || []).map(function(a, i) {
+                return '<div style="display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.65rem">' +
+                    '<div style="background:' + (colors[i]||'#94A3B8') + ';color:#0F172A;font-size:.67rem;font-weight:800;padding:.2rem .45rem;border-radius:4px;flex-shrink:0;margin-top:.15rem;min-width:18px;text-align:center">' + (i+1) + '</div>' +
+                    '<div style="font-size:.84rem;line-height:1.55;color:#CBD5E1">' + escH(a) + '</div></div>';
+            }).join('');
+            var govItems = (ins.data_governance || []).map(function(g) {
+                return '<li style="margin-bottom:.5rem;font-size:.84rem;color:#CBD5E1;line-height:1.55">' + escH(g) + '</li>';
+            }).join('');
+
+            var docName = escH(doc.name || path.split('/').pop());
+            var timeStamp = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            resultEl.innerHTML =
+                '<div style="background:#1E293B;border:1px solid rgba(124,58,237,.35);border-radius:14px;padding:1.35rem 1.5rem;color:#E2E8F0">' +
+                  '<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.1rem;padding-bottom:.9rem;border-bottom:1px solid rgba(255,255,255,.08)">' +
+                    '<div style="background:linear-gradient(135deg,#7C3AED,#4F46E5);width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-lightbulb" style="color:#fff;font-size:.9rem"></i></div>' +
+                    '<div><div style="font-weight:700;font-size:.95rem;color:#F1F5F9">AI Overview &mdash; ' + docName + '</div>' +
+                    '<div style="font-size:.72rem;color:#64748B;margin-top:1px">Powered by Gemini AI &middot; ' + timeStamp + '</div></div>' +
+                  '</div>' +
+                  (ins.executive_summary ? '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.9rem 1rem;margin-bottom:.75rem"><div style="font-size:.65rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-chart-line"></i>Executive Summary</div><div style="font-size:.85rem;line-height:1.7;color:#CBD5E1">' + escH(ins.executive_summary) + '</div></div>' : '') +
+                  (ins.compliance_posture ? '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.9rem 1rem;margin-bottom:.75rem"><div style="font-size:.65rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-shield-alt"></i>Compliance Posture</div><div style="font-size:.85rem;line-height:1.7;color:#CBD5E1">' + escH(ins.compliance_posture) + '</div></div>' : '') +
+                  (actions ? '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.9rem 1rem;margin-bottom:.75rem"><div style="font-size:.65rem;font-weight:700;color:#F87171;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.65rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-tasks"></i>Top Priority Actions</div>' + actions + '</div>' : '') +
+                  (regRows ? '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.9rem 1rem;margin-bottom:.75rem"><div style="font-size:.65rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.55rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-globe"></i>Regulatory Exposure</div><table style="width:100%;border-collapse:collapse">' + regRows + '</table></div>' : '') +
+                  (govItems ? '<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.9rem 1rem;margin-bottom:.75rem"><div style="font-size:.65rem;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.55rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-sitemap"></i>Data Governance</div><ul style="padding-left:1.2rem;margin:0">' + govItems + '</ul></div>' : '') +
+                  (ins.risk_narrative ? '<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:.9rem 1rem"><div style="font-size:.65rem;font-weight:700;color:#FCA5A5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem"><i class="fas fa-exclamation-triangle"></i>Risk Trajectory</div><div style="font-size:.85rem;line-height:1.7;color:#FECACA">' + escH(ins.risk_narrative) + '</div></div>' : '') +
+                '</div>';
+
+            emptyEl.style.display = 'none';
+            resultEl.style.display = 'block';
+            regen.style.display = 'inline-block';
+            // Cache result so the PDF export can include it
+            docOverviewCache[path] = { name: doc.name || path.split('/').pop(), insight: ins };
+        } catch(e) {
+            resultEl.innerHTML = '<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:.9rem 1rem;color:#FCA5A5;font-size:.84rem"><i class="fas fa-exclamation-triangle me-2"></i>' + escH(e.message || 'Failed to generate overview') + '</div>';
+            emptyEl.style.display = 'none';
+            resultEl.style.display = 'block';
+            regen.style.display = 'inline-block';
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-lightbulb me-2"></i>Generate AI Overview';
+    }
+
+    async function loadDrawerContent(path) {
+        var box = document.getElementById('dContentBox');
+        box.innerHTML = '<div class="content-loading"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading document…</div>';
+        try {
+            var resp = await fetch('/api/documents/' + encodeURIComponent(path).replace(/%2F/g, '/'));
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            var data = await resp.json();
+            if (data.error) throw new Error(data.error);
+            drawerContentLoaded = true;
+
+            // Build highlighted content
+            var doc = docsByPath[path] || {};
+            var cl = doc.classification || {};
+            var piis = (cl.pii_detected || []).map(function(p){ return p.split(':')[0].trim().toLowerCase(); });
+            var findings = cl.confidential_findings || [];
+
+            // Keywords to highlight: PII type words + sensitive terms
+            var sensitiveTerms = piis.concat([
+                'ssn','social security','tax id','ein','routing','account number','iban','swift',
+                'password','credit card','passport','date of birth','dob','salary','payroll',
+                'bank account','wire transfer','confidential','proprietary','restricted'
+            ]);
+
+            var raw = data.content || '';
+            var truncated = data.full_length && data.full_length > raw.length;
+            var lines = raw.split('\n');
+            var htmlLines = lines.map(function(line) {
+                var lowerLine = line.toLowerCase();
+                var isSensitive = sensitiveTerms.some(function(t){ return t && lowerLine.includes(t); }) ||
+                    findings.some(function(f){ return f && lowerLine.includes(f.substring(0,30).toLowerCase()); });
+                var highlighted = escH(line);
+                if (isSensitive) {
+                    // Highlight matching terms within the line
+                    sensitiveTerms.forEach(function(term) {
+                        if (!term) return;
+                        var rx = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+                        highlighted = highlighted.replace(rx, '<span class="hl-red">$1</span>');
+                    });
+                    return '<span style="display:block;background:#FFF7ED;border-left:3px solid #F59E0B;padding-left:.4rem;margin-left:-.25rem">' + highlighted + '</span>';
+                }
+                return highlighted;
+            });
+            box.innerHTML = htmlLines.join('\n') +
+                (truncated ? '<div style="margin-top:.85rem"><button onclick="loadDrawerContentFull(\'' + path.replace(/'/g,"\\'") + '\')" style="display:inline-flex;align-items:center;gap:.45rem;background:#EFF6FF;border:1px solid #BFDBFE;color:#1D4ED8;border-radius:6px;padding:.4rem .85rem;font-size:.75rem;font-weight:600;cursor:pointer"><i class="fas fa-expand-alt"></i>View full document <span style="color:#93C5FD;font-weight:400">(' + data.full_length.toLocaleString() + ' chars)</span></button></div>' : '');
+        } catch(e) {
+            box.innerHTML = '<div style="color:#EF4444;font-size:.82rem;padding:1rem"><i class="fas fa-exclamation-triangle me-2"></i>Could not load content: ' + escH(e.message) + '</div>';
+        }
+    }
+
+    async function loadDrawerContentFull(path) {
+        var box = document.getElementById('dContentBox');
+        box.innerHTML = '<div class="content-loading"><i class="fas fa-circle-notch fa-spin me-2"></i>Loading full document…</div>';
+        try {
+            var resp = await fetch('/api/documents/' + encodeURIComponent(path).replace(/%2F/g, '/') + '?full=1');
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            var data = await resp.json();
+            if (data.error) throw new Error(data.error);
+            var doc = docsByPath[path] || {};
+            var cl = doc.classification || {};
+            var piis = (cl.pii_detected || []).map(function(p){ return p.split(':')[0].trim().toLowerCase(); });
+            var findings = cl.confidential_findings || [];
+            var sensitiveTerms = piis.concat(['ssn','social security','tax id','ein','routing','account number','iban','swift','password','credit card','passport','date of birth','dob','salary','payroll','bank account','wire transfer','confidential','proprietary','restricted']);
+            var raw = data.content || '';
+            var htmlLines = raw.split('\n').map(function(line) {
+                var lowerLine = line.toLowerCase();
+                var isSensitive = sensitiveTerms.some(function(t){ return t && lowerLine.includes(t); }) ||
+                    findings.some(function(f){ return f && lowerLine.includes(f.substring(0,30).toLowerCase()); });
+                var highlighted = escH(line);
+                if (isSensitive) {
+                    sensitiveTerms.forEach(function(term) {
+                        if (!term) return;
+                        var rx = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+                        highlighted = highlighted.replace(rx, '<span class="hl-red">$1</span>');
+                    });
+                    return '<span style="display:block;background:#FFF7ED;border-left:3px solid #F59E0B;padding-left:.4rem;margin-left:-.25rem">' + highlighted + '</span>';
+                }
+                return highlighted;
+            });
+            box.innerHTML = htmlLines.join('\n') +
+                '<div style="margin-top:.85rem"><button onclick="loadDrawerContent(\'' + path.replace(/'/g,"\\'") + '\')" style="display:inline-flex;align-items:center;gap:.45rem;background:#F1F5F9;border:1px solid #CBD5E1;color:#475569;border-radius:6px;padding:.4rem .85rem;font-size:.75rem;font-weight:600;cursor:pointer"><i class="fas fa-compress-alt"></i>Show preview only</button></div>';
+        } catch(e) {
+            box.innerHTML = '<div style="color:#EF4444;font-size:.82rem;padding:1rem"><i class="fas fa-exclamation-triangle me-2"></i>Could not load: ' + escH(e.message) + '</div>';
+        }
+    }
+
+    // Close drawer with Escape key
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDocView(); });
+
     function showToast(msg, isError) {
         var toast = document.getElementById('toast');
         var inner = document.getElementById('toastInner');
@@ -710,7 +1201,8 @@
 
     function downloadScanReport() {
         if (!lastReport) { showToast('No scan results to export.', true); return; }
-        var exportDocs = lastDocuments.length ? lastDocuments : (lastReport.documents || []);
+        // Always use the flat report.documents — lastDocuments has nested classification structure
+        var exportDocs = (lastReport.documents || []);
         if (!exportDocs.length) { showToast('No scan results to export.', true); return; }
         if (!window.jspdf) { showToast('PDF library not loaded - please refresh.', true); return; }
         var jsPDF = window.jspdf.jsPDF;
@@ -781,26 +1273,132 @@
         doc.setFillColor.apply(doc,C.navy); doc.rect(0,0,pageW,14,'F');
         doc.setFillColor.apply(doc,C.blue); doc.rect(0,0,4,14,'F');
         doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(10);
-        doc.text('All Scanned Documents - Ranked by Risk Score',margin+2,9.5);
-        var sorted=exportDocs.slice().sort(function(a,b){return b.risk_score-a.risk_score;});
+        doc.text('All Scanned Documents \u2014 Ranked by Risk Score',margin+2,9.5);
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor.apply(doc,C.s400);
+        doc.text(exportDocs.length + ' documents total',pageW-margin,9.5,{align:'right'});
+        var sorted=exportDocs.slice().sort(function(a,b){return parseFloat(b.risk_score||0)-parseFloat(a.risk_score||0);});
         var tableRows=sorted.map(function(d,i){
             var score=parseFloat(d.risk_score||0);
-            var piis=(d.pii_detected||[]).slice(0,3).join(', ')||'-';
-            return[i+1,d.name||'-',d.functional_group||'-',d.sensitivity_level||'-',score.toFixed(1)+'/10',piis];
+            var piis=(d.pii_detected||[]);
+            var piiStr=piis.length>0 ? piis.slice(0,4).map(function(p){return p.split(':')[0].trim();}).join(', ')+(piis.length>4?' (+'+( piis.length-4)+')':'') : '\u2014';
+            var siteName=(d.site||'').replace(/^demo_sharepoint\/?/i,'').replace(/_/g,' ').replace(/Site$/i,'').trim()||'\u2014';
+            return[i+1, d.name||'\u2014', siteName, d.functional_group||'\u2014', d.sensitivity_level||'\u2014', score.toFixed(1), piiStr];
         });
         doc.autoTable({
-            startY:18, head:[['#','Document','Category','Sensitivity','Risk Score','PII Found']],
-            body:tableRows, margin:{left:margin,right:margin},
+            startY:18,
+            head:[['#','Document','Site','Category','Sens.','Risk','PII Detected']],
+            body:tableRows,
+            margin:{left:margin,right:margin},
             headStyles:{fillColor:C.navyL,textColor:C.white,fontSize:7,fontStyle:'bold',halign:'center',cellPadding:2.5},
-            bodyStyles:{fontSize:6.5,textColor:C.s800,cellPadding:2},
+            bodyStyles:{fontSize:6.2,textColor:C.s800,cellPadding:2.2,valign:'middle'},
             alternateRowStyles:{fillColor:C.s100},
-            columnStyles:{0:{halign:'center',cellWidth:7},1:{cellWidth:60},2:{cellWidth:42},3:{halign:'center',cellWidth:22},4:{halign:'center',cellWidth:18},5:{cellWidth:'auto'}},
+            columnStyles:{
+                0:{halign:'center',cellWidth:7},
+                1:{cellWidth:50},
+                2:{cellWidth:26},
+                3:{cellWidth:34},
+                4:{halign:'center',cellWidth:16},
+                5:{halign:'center',cellWidth:14},
+                6:{cellWidth:'auto'}
+            },
             didParseCell:function(data){
-                if(data.section!=='body')return;
-                if(data.column.index===4){var v=parseFloat(data.cell.text[0]);data.cell.styles.textColor=v>=8?C.red:v>=6?C.orange:C.green;data.cell.styles.fontStyle='bold';}
-                if(data.column.index===3){var lvl=data.cell.text[0];data.cell.styles.textColor=lvl==='High'?C.red:lvl==='Moderate'?C.orange:C.green;data.cell.styles.fontStyle='bold';}
+                if(data.section!=='body') return;
+                var s=parseFloat(data.row.cells[5]&&data.row.cells[5].text[0]||'0');
+                if(data.column.index===5){
+                    data.cell.styles.textColor=s>=8?C.red:s>=7?C.orange:s>=5?C.blue:C.green;
+                    data.cell.styles.fontStyle='bold';
+                }
+                if(data.column.index===4){
+                    var lvl=data.cell.text[0];
+                    data.cell.styles.textColor=lvl==='High'?C.red:lvl==='Moderate'?C.orange:C.green;
+                    data.cell.styles.fontStyle='bold';
+                }
+                if(s>=8 && data.column.index===1){
+                    data.cell.styles.fontStyle='bold';
+                    data.cell.styles.textColor=C.red;
+                }
+            },
+            didDrawRow: function(data) {
+                if(data.section!=='body') return;
+                var s=parseFloat(data.row.cells[5]&&data.row.cells[5].text[0]||'0');
+                if(s>=8){
+                    doc.setFillColor.apply(doc,C.red);
+                    doc.rect(margin,data.row.y,2.5,data.row.height,'F');
+                }
             }
         });
+
+        // ── HIGH RISK DOCUMENT DETAILS ──
+        var highRisk = sorted.filter(function(d){ return parseFloat(d.risk_score||0) >= 7.0; });
+        if (highRisk.length) {
+            doc.addPage();
+            doc.setFillColor.apply(doc,C.navy); doc.rect(0,0,pageW,14,'F');
+            doc.setFillColor.apply(doc,C.red); doc.rect(0,0,4,14,'F');
+            doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+            doc.text('High-Risk Document Details',margin+2,9.5);
+            doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor.apply(doc,C.s400);
+            doc.text(highRisk.length + ' documents with risk \u2265 7.0',pageW-margin,9.5,{align:'right'});
+            var hy=20;
+            highRisk.forEach(function(d){
+                var score=parseFloat(d.risk_score||0);
+                var rColor=score>=8.5?C.red:score>=7?C.orange:C.blue;
+                var headH=8;
+                // Check overflow
+                if(hy+headH+14 > pageH-14){ doc.addPage(); hy=14; }
+                // Card header
+                doc.setFillColor.apply(doc,C.navyL); doc.roundedRect(margin,hy,cW,headH,1,1,'F');
+                doc.setFillColor.apply(doc,rColor); doc.rect(margin,hy,3.5,headH,'F');
+                doc.setFillColor.apply(doc,rColor); doc.roundedRect(margin+3.5,hy,3.5,headH,0,0,'F');
+                doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                var dName = (d.name||'').length>55 ? (d.name||'').slice(0,53)+'\u2026' : (d.name||'');
+                doc.text(dName, margin+9, hy+5.3);
+                // Risk badge on right
+                doc.setFillColor.apply(doc,rColor); doc.roundedRect(pageW-margin-20,hy+1,18,headH-2,1,1,'F');
+                doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+                doc.text('Risk '+score.toFixed(1), pageW-margin-11, hy+headH-2.3, {align:'center'});
+                hy+=headH+1;
+                // Card body
+                var siteName=(d.site||'').replace(/^demo_sharepoint\/?/i,'').replace(/_/g,' ').replace(/Site$/i,'').trim()||'';
+                var meta=[];
+                if(siteName) meta.push('Site: '+siteName);
+                if(d.functional_group) meta.push('Category: '+d.functional_group);
+                if(d.sensitivity_level) meta.push('Sensitivity: '+d.sensitivity_level);
+                var metaStr=meta.join('   \u00b7   ');
+                doc.setFillColor.apply(doc,C.s100); doc.roundedRect(margin,hy,cW,6.5,0,0,'F');
+                doc.setTextColor.apply(doc,C.s600); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+                doc.text(metaStr, margin+4, hy+4.5);
+                hy+=6.5;
+                // PII row
+                var piis=(d.pii_detected||[]);
+                if(piis.length){
+                    var piiStr='PII Detected: '+piis.join(', ');
+                    var piiLines=doc.splitTextToSize(piiStr, cW-8);
+                    var piiH=piiLines.length*4+5;
+                    if(hy+piiH>pageH-14){doc.addPage();hy=14;}
+                    doc.setFillColor(254,242,242); doc.roundedRect(margin,hy,cW,piiH,0,0,'F');
+                    doc.setFillColor.apply(doc,C.red); doc.rect(margin,hy,2.5,piiH,'F');
+                    doc.setTextColor.apply(doc,C.red); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+                    doc.text(piiLines, margin+5, hy+3.5);
+                    hy+=piiH;
+                }
+                // Summary row
+                var summary=(d.summary||'').trim();
+                if(summary){
+                    var sumLines=doc.splitTextToSize(summary, cW-8);
+                    var sumH=sumLines.length*4+5;
+                    if(hy+sumH>pageH-14){doc.addPage();hy=14;}
+                    doc.setFillColor(248,250,252); doc.roundedRect(margin,hy,cW,sumH,0,0,'F');
+                    doc.setFillColor.apply(doc,C.blue); doc.rect(margin,hy,2.5,sumH,'F');
+                    doc.setTextColor.apply(doc,C.s800); doc.setFont('helvetica','italic'); doc.setFontSize(6.5);
+                    doc.text(sumLines, margin+5, hy+3.5);
+                    hy+=sumH;
+                }
+                // Bottom border
+                doc.setDrawColor.apply(doc,C.s200); doc.setLineWidth(0.3);
+                doc.line(margin,hy,margin+cW,hy);
+                hy+=5;
+            });
+        }
         // ── AI INSIGHTS PAGE (if available) ──
         var ins = lastScanAiInsights;
         if (ins) {
@@ -891,6 +1489,101 @@
                 aiSection('Risk Trajectory', ins.risk_narrative, 220,38,38, 254,242,242, 127,29,29);
             }
         }
+
+        // ── PER-DOCUMENT AI OVERVIEW PAGES (generated via drawer "AI Overview" tab) ──
+        var ovEntries = Object.values(docOverviewCache);
+        ovEntries.forEach(function(entry) {
+            var oins = entry.insight;
+            var oName = entry.name;
+            doc.addPage();
+            doc.setFillColor.apply(doc,C.navyL); doc.rect(0,0,pageW,14,'F');
+            doc.setFillColor(124,58,237); doc.rect(0,0,4,14,'F');
+            doc.setTextColor.apply(doc,C.white); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+            doc.text('AI Overview \u2014 ' + (oName.length>55 ? oName.slice(0,53)+'\u2026' : oName), margin+2, 9.5);
+            doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor.apply(doc,C.s400);
+            doc.text('Per-document Gemini AI analysis', pageW-margin, 9.5, {align:'right'});
+            var oy = 20;
+            function ovSection(title, bodyText, accentR, accentG, accentB, bgR, bgG, bgB, textR, textG, textB) {
+                if (!bodyText) return;
+                accentR=accentR||124; accentG=accentG||58; accentB=accentB||237;
+                bgR=bgR||248; bgG=bgG||250; bgB=bgB||252;
+                textR=textR||30; textG=textG||41; textB=textB||59;
+                doc.setFillColor(30,41,59); doc.roundedRect(margin,oy,cW,7,0,0,'F');
+                doc.setFillColor(accentR,accentG,accentB); doc.rect(margin,oy,3,7,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                doc.text(title.toUpperCase(), margin+6, oy+4.8);
+                oy += 10;
+                var lines = doc.splitTextToSize(String(bodyText), cW-6);
+                var bh = Math.max(lines.length*4.5+8, 14);
+                doc.setFillColor(bgR,bgG,bgB); doc.roundedRect(margin,oy,cW,bh,1,1,'F');
+                doc.setTextColor(textR,textG,textB); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                doc.text(lines, margin+3, oy+5);
+                oy += bh + 6;
+                if (oy > pageH - 22) { doc.addPage(); oy = 14; }
+            }
+            ovSection('Executive Summary', oins.executive_summary);
+            ovSection('Compliance Posture', oins.compliance_posture);
+            if ((oins.top_actions||[]).length) {
+                doc.setFillColor(30,41,59); doc.roundedRect(margin,oy,cW,7,0,0,'F');
+                doc.setFillColor(220,38,38); doc.rect(margin,oy,3,7,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                doc.text('TOP PRIORITY ACTIONS', margin+6, oy+4.8);
+                oy += 10;
+                var oActColors = [[220,38,38],[217,119,6],[59,130,246]];
+                oins.top_actions.forEach(function(action, i) {
+                    var ac = oActColors[i]||[59,130,246];
+                    doc.setFillColor.apply(doc,ac); doc.roundedRect(margin,oy,6,6,0.5,0.5,'F');
+                    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                    doc.text(String(i+1), margin+3, oy+4.3, {align:'center'});
+                    var aLines = doc.splitTextToSize(String(action), cW-10);
+                    doc.setTextColor(30,41,59); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                    doc.text(aLines, margin+9, oy+4.3);
+                    oy += aLines.length*4.5 + 4;
+                    if (oy > pageH - 22) { doc.addPage(); oy = 14; }
+                });
+                oy += 5;
+            }
+            var oRegs = oins.regulatory_exposure || {};
+            if (Object.keys(oRegs).length) {
+                doc.setFillColor(30,41,59); doc.roundedRect(margin,oy,cW,7,0,0,'F');
+                doc.setFillColor(124,58,237); doc.rect(margin,oy,3,7,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                doc.text('REGULATORY EXPOSURE', margin+6, oy+4.8);
+                oy += 10;
+                ['gdpr','ccpa','hipaa','sox'].forEach(function(r) {
+                    var val = oRegs[r] || 'Not assessed';
+                    var noExp = val.toLowerCase().indexOf('no significant') >= 0 || val.toLowerCase().indexOf('not applicable') >= 0 || val.toLowerCase().indexOf('minimal') >= 0;
+                    doc.setFillColor(noExp?22:220, noExp?163:38, noExp?74:38); doc.circle(margin+3, oy+3, 2, 'F');
+                    doc.setTextColor(30,41,59); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+                    doc.text(r.toUpperCase()+':', margin+8, oy+4.5);
+                    var rLines = doc.splitTextToSize(val, cW-28);
+                    doc.setFont('helvetica','normal');
+                    doc.text(rLines, margin+24, oy+4.5);
+                    oy += Math.max(rLines.length*4.5, 7) + 3;
+                    if (oy > pageH - 22) { doc.addPage(); oy = 14; }
+                });
+                oy += 3;
+            }
+            if ((oins.data_governance||[]).length) {
+                doc.setFillColor(30,41,59); doc.roundedRect(margin,oy,cW,7,0,0,'F');
+                doc.setFillColor(124,58,237); doc.rect(margin,oy,3,7,'F');
+                doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                doc.text('DATA GOVERNANCE RECOMMENDATIONS', margin+6, oy+4.8);
+                oy += 10;
+                oins.data_governance.forEach(function(g) {
+                    doc.setFillColor(124,58,237); doc.circle(margin+2.5, oy+2.5, 1.5, 'F');
+                    var gLines = doc.splitTextToSize(String(g), cW-8);
+                    doc.setTextColor(30,41,59); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                    doc.text(gLines, margin+6, oy+4);
+                    oy += gLines.length*4.5 + 3;
+                    if (oy > pageH - 22) { doc.addPage(); oy = 14; }
+                });
+                oy += 3;
+            }
+            if (oins.risk_narrative) {
+                ovSection('Risk Trajectory', oins.risk_narrative, 220,38,38, 254,242,242, 127,29,29);
+            }
+        });
         var total=doc.internal.getNumberOfPages();
         for(var p=1;p<=total;p++){
             doc.setPage(p);

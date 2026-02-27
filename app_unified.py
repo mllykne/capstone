@@ -57,6 +57,36 @@ app.config['JSON_SORT_KEYS'] = False
 from dotenv import load_dotenv
 load_dotenv()
 
+# ── Security: secret key (required for sessions & CSRF tokens) ────────────────
+_secret = os.getenv('FLASK_SECRET_KEY')
+if not _secret:
+    import secrets
+    _secret = secrets.token_hex(32)
+    logger.warning("FLASK_SECRET_KEY not set — using a random key (sessions won't persist across restarts). Set it in .env for production.")
+app.secret_key = _secret
+
+# ── Rate limiting — protect Gemini API quota from abuse ───────────────────────
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],          # no blanket limit; apply per-route only
+    storage_uri='memory://',
+)
+
+# ── Security headers on every response ───────────────────────────────────────
+@app.after_request
+def _security_headers(response):
+    response.headers['X-Content-Type-Options']  = 'nosniff'
+    response.headers['X-Frame-Options']         = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection']        = '1; mode=block'
+    response.headers['Referrer-Policy']         = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy']      = 'geolocation=(), microphone=(), camera=()'
+    # Only send HSTS once you have HTTPS
+    # response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
 # Global instances
 rag_engine = RAGEngine()
 classifier = AIClassifier()
@@ -123,7 +153,22 @@ def upload():
 @app.route('/scan')
 def scan():
     """Site scanner page."""
-    return render_template('scan.html')
+    sites = []
+    for name, meta in MERIDIAN_SITES.items():
+        path = meta['path']
+        doc_count = _count_site_docs(path)
+        sites.append({
+            'id': name,
+            'name': name,
+            'description': meta['description'],
+            'icon': meta['icon'],
+            'color': meta['color'],
+            'url': meta['url'],
+            'doc_count': doc_count,
+            'path': str(path),
+            'exists': path.exists(),
+        })
+    return render_template('scan.html', sites=sites, sites_json=json.dumps(sites))
 
 
 @app.route('/dashboard')
@@ -193,11 +238,12 @@ def api_document_preview(file_path):
         if error:
             return jsonify({'error': error}), 400
         
+        full = request.args.get('full') == '1'
         return jsonify({
             'file': full_path.name,
             'path': file_path,
             'size': full_path.stat().st_size,
-            'content': text[:2000],  # First 2000 chars for preview
+            'content': text if full else text[:2000],
             'full_length': len(text)
         })
     
@@ -210,6 +256,7 @@ def api_document_preview(file_path):
 # ============================================================================
 
 @app.route('/api/classify', methods=['POST'])
+@limiter.limit('30 per hour; 5 per minute')
 def api_classify():
     """Classify a single document."""
     try:
@@ -273,6 +320,7 @@ def api_classify():
 # ============================================================================
 
 @app.route('/api/upload', methods=['POST'])
+@limiter.limit('20 per hour; 5 per minute')
 def api_upload():
     """Upload and classify a new document."""
     try:
@@ -599,6 +647,7 @@ def api_scan_sites():
 
 
 @app.route('/api/scan/site', methods=['POST'])
+@limiter.limit('10 per hour; 3 per minute')
 def api_scan_site():
     """
     Scan a specific Meridian SharePoint site.
@@ -820,13 +869,13 @@ def _generate_local_insights(site_id, total, avg, high_r, pii_cnt,
     if mod_s > 0:
         actions.append(
             f"Review {mod_s} Moderate-sensitivity document(s) to confirm classifications are accurate "
-            f"and apply appropriate labelling and access controls."
+            f"and apply appropriate labeling and access controls."
         )
     if not actions:
         actions.append("Maintain current classification policies and schedule periodic re-scans.")
     if len(actions) < 3:
         actions.append(
-            "Implement a data governance policy requiring sensitivity labelling on all new documents at creation time."
+            "Implement a data governance policy requiring sensitivity labeling on all new documents at creation time."
         )
     if len(actions) < 3:
         actions.append(
@@ -988,7 +1037,8 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
         models_to_try = [
             classifier.model,
             'gemini-2.0-flash-lite',
-            'gemini-flash-lite-latest',
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-8b',
         ]
         raw = None
         last_err = None
@@ -1004,7 +1054,7 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
                 except Exception as exc:
                     err[0] = exc
             t = threading.Thread(target=_call, daemon=True)
-            t.start(); t.join(timeout=30)
+            t.start(); t.join(timeout=60)
             if t.is_alive():
                 return None, TimeoutError(f"{model_name} timed out")
             return result[0], err[0]
@@ -1209,6 +1259,14 @@ def get_site_icon(site_name: str) -> str:
         'Operations Site': 'folder-operations',
     }
     return icons.get(site_name, 'folder')
+
+
+@app.errorhandler(429)
+def rate_limit_exceeded(e):
+    return jsonify({
+        'error': 'Too many requests. Please wait before trying again.',
+        'retry_after': str(e.description)
+    }), 429
 
 
 if __name__ == '__main__':
