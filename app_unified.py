@@ -1283,4 +1283,5 @@ if __name__ == '__main__':
     
     # Use environment variable for debug mode
     debug_mode = os.getenv('FLASK_DEBUG', '0') == '1'
-    app.run(debug=debug_mode, port=5000)
+    port = int(os.getenv('PORT', 5000))   # Railway injects PORT; local default is 5000
+    app.run(debug=debug_mode, host='0.0.0.0', port=port)

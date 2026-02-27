@@ -22,5 +22,8 @@ python-dotenv==1.0.0
 # Security
 flask-limiter==3.5.0
 
+# Production WSGI server (Railway / Render)
+gunicorn==21.2.0
+
 # Utilities
 requests==2.31.0
