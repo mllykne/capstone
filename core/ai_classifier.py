@@ -10,6 +10,7 @@ Output: Functional group, sensitivity level, confidence, reasoning
 
 import logging
 import json
+import re
 import time
 from typing import Dict, Optional
 import os
@@ -286,11 +287,29 @@ class AIClassifier:
 
         return result
 
+    # Control characters / injection patterns to strip from user-supplied strings
+    _CTRL_STRIP = re.compile(r'[\r\n\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')
+    # Prompt-injection phrases sometimes embedded in filenames or document text
+    _INJECT_STRIP = re.compile(
+        r'(ignore (all |previous |prior |above )?(instructions?|prompts?|rules?)|'
+        r'system prompt|you are now|forget (everything|all)|do not classify|'
+        r'override (instructions?|classification))',
+        re.IGNORECASE
+    )
+
     def _build_prompt(self, content: str, file_name: str, file_size: int = None,
                       pre_analysis: dict = None) -> str:
         """Build Gemini prompt for classification with enhanced sensitivity analysis and PII detection."""
         sensitivity_str = ', '.join(self.SENSITIVITY_LEVELS)
         pre_analysis = pre_analysis or {}
+
+        # --- Sanitize user-supplied inputs before embedding in prompt ---
+        # Strip control characters and newlines from filename (prevents log/prompt injection)
+        file_name = self._CTRL_STRIP.sub('', str(file_name))[:255]
+        # Remove obvious prompt-injection phrases from filename
+        file_name = self._INJECT_STRIP.sub('[removed]', file_name)
+        # Strip null bytes from content; hard cap already applied below
+        content = self._CTRL_STRIP.sub(' ', str(content))
 
         # Smart chunking: take first 10 000 + last 2 000 chars for large docs
         max_content = 12000

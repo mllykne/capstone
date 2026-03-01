@@ -83,9 +83,26 @@ def _security_headers(response):
     response.headers['X-XSS-Protection']        = '1; mode=block'
     response.headers['Referrer-Policy']         = 'strict-origin-when-cross-origin'
     response.headers['Permissions-Policy']      = 'geolocation=(), microphone=(), camera=()'
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+        "font-src 'self' https://cdnjs.cloudflare.com; "
+        "img-src 'self' data:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'"
+    )
     # Only send HSTS once you have HTTPS
     # response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
+
+# ── Reject oversized JSON payloads before any route logic runs ────────────────
+@app.before_request
+def _limit_json_payload():
+    """Block JSON request bodies over 1 MB to prevent DoS via huge payloads."""
+    if request.content_type and 'application/json' in request.content_type:
+        if request.content_length and request.content_length > 1 * 1024 * 1024:
+            return jsonify({'error': 'Request payload too large'}), 413
 
 # Global instances
 rag_engine = RAGEngine()
@@ -96,6 +113,28 @@ scanner = SharePointScanner()
 # ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
+
+# Allowed actions for human verification endpoint
+_VERIFY_ACTIONS = {'accept', 'reject', 'correct'}
+
+# Regex to strip CRLF and other control characters used in log/header injection
+_CTRL_RE = re.compile(r'[\r\n\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')
+
+def sanitize_str(value, max_len: int = 500) -> str:
+    """Strip control characters and truncate. Returns empty string for non-strings."""
+    if not isinstance(value, str):
+        return ''
+    cleaned = _CTRL_RE.sub('', value)
+    return cleaned[:max_len]
+
+def sanitize_file_path(value, max_len: int = 300) -> str:
+    """Sanitize a user-supplied file path string."""
+    if not isinstance(value, str):
+        return ''
+    # Strip null bytes, control chars, shell metacharacters
+    cleaned = _CTRL_RE.sub('', value)
+    cleaned = re.sub(r'[;|&`$!]', '', cleaned)
+    return cleaned[:max_len]
 
 def allowed_file(filename):
     """Check if file type is allowed."""
@@ -260,22 +299,27 @@ def api_document_preview(file_path):
 def api_classify():
     """Classify a single document."""
     try:
-        data = request.json
-        file_path = data.get('file_path')
+        data = request.json or {}
+        file_path = sanitize_file_path(data.get('file_path', ''))
         
         if not file_path:
             return jsonify({'error': 'No file path provided'}), 400
         
         # Normalize path separators and construct full path
         file_path = file_path.replace('\\', '/')
-        full_path = project_root / file_path
+        full_path = (project_root / file_path).resolve()
         
-        # Security checks
+        # Resolve allowed base dirs to prevent symlink/traversal bypasses
+        allowed_bases = [
+            (project_root / 'demo_sharepoint').resolve(),
+            UPLOAD_FOLDER.resolve(),
+        ]
+        
+        # Security checks — use resolved paths to block ../ traversal
         if not full_path.exists() or not full_path.is_file():
             return jsonify({'error': 'File not found'}), 404
         
-        if not (str(full_path).startswith(str(project_root / 'demo_sharepoint')) or 
-                str(full_path).startswith(str(UPLOAD_FOLDER))):
+        if not any(str(full_path).startswith(str(base)) for base in allowed_bases):
             return jsonify({'error': 'Access denied'}), 403
         
         # Extract text
@@ -965,11 +1009,12 @@ def api_scan_ai_insights():
     """Generate Gemini-powered narrative insights for a completed scan report."""
     import time
     start_time = time.time()
-    logger.info(f"Starting AI insights generation for site: {request.json.get('site_id', 'All Sites') if request.json else 'Unknown'}")
+    _raw_sid = (request.json or {}).get('site_id', 'All Sites') if request.json else 'Unknown'
+    logger.info(f"Starting AI insights generation for site: {sanitize_str(_raw_sid, 100)}")
     
     try:
         data = request.json or {}
-        site_id = data.get('site_id', 'All Sites')
+        site_id = sanitize_str(data.get('site_id', 'All Sites'), 200)
         report = data.get('report', {})
         logger.info(f"Processing report with {report.get('total_documents_scanned', 0)} documents")
 
@@ -1201,14 +1246,24 @@ def api_export_json():
 def api_verify_classification():
     """Store human verification/correction of AI classification."""
     try:
-        data = request.json
-        file_path = data.get('file_path')
-        action = data.get('action')  # 'accept', 'reject', 'correct'
+        data = request.json or {}
+        file_path = sanitize_file_path(data.get('file_path', ''))
+        action = sanitize_str(data.get('action', ''), 20).lower()
         corrections = data.get('corrections', {})
-        reason = data.get('reason', '')
+        reason = sanitize_str(data.get('reason', ''), 1000)
         
         if not file_path or not action:
             return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Validate action against allowlist to prevent injection via stored data
+        if action not in _VERIFY_ACTIONS:
+            return jsonify({'error': f'Invalid action. Must be one of: {sorted(_VERIFY_ACTIONS)}'}), 400
+        
+        # Sanitize corrections dict — only allow known string/list values
+        if not isinstance(corrections, dict):
+            corrections = {}
+        corrections = {sanitize_str(k, 100): sanitize_str(v, 500) if isinstance(v, str) else v
+                       for k, v in list(corrections.items())[:20]}
         
         # Create verification record
         verification = {
