@@ -1002,6 +1002,17 @@
                 
                 allDocuments = data.documents;
 
+                // Prune stale localStorage entries for files that no longer exist on the server
+                const validPaths = new Set(allDocuments.map(d => d.path));
+                let pruned = false;
+                Object.keys(classifiedDocuments).forEach(p => {
+                    if (!validPaths.has(p)) { delete classifiedDocuments[p]; pruned = true; }
+                });
+                Object.keys(docStatuses).forEach(p => {
+                    if (!validPaths.has(p)) { delete docStatuses[p]; pruned = true; }
+                });
+                if (pruned) persistToLocalStorage();
+
                 // Reconcile each doc's status + classification from localStorage
                 allDocuments.forEach(doc => {
                     const saved = classifiedDocuments[doc.path];
