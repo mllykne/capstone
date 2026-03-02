@@ -2230,9 +2230,23 @@
             loadDocumentContent(currentDocPath);
         }
 
-        async function classifySelectedDocuments() {
-            const paths = [...selectedDocuments];
-            if (!paths.length) return;
+        // Classify a single path with automatic 429 retry-backoff
+        async function classifyOnePath(path, retries) {
+            retries = retries || 0;
+            const resp = await fetch('/api/classify', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ file_path: path })
+            });
+            if (resp.status === 429 && retries < 5) {
+                // Back off: 2s, 4s, 8s, 16s, 32s
+                const delay = Math.pow(2, retries + 1) * 1000;
+                await new Promise(res => setTimeout(res, delay));
+                return classifyOnePath(path, retries + 1);
+            }
+            return resp.json();
+        }
+
+        async function _runBatchClassify(paths) {
             let done = 0;
             showBatchPopup(paths.length);
             for (const path of paths) {
@@ -2241,12 +2255,8 @@
                 const name = doc ? doc.name : path.split('/').pop();
                 updateBatchPopup(done, paths.length, name);
                 try {
-                    const resp = await fetch('/api/classify', {
-                        method: 'POST', headers: {'Content-Type':'application/json'},
-                        body: JSON.stringify({ file_path: path })
-                    });
-                    const result = await resp.json();
-                    if (!result.error) {
+                    const result = await classifyOnePath(path);
+                    if (result && !result.error) {
                         classifiedDocuments[path] = result;
                         docStatuses[path] = docStatuses[path] || 'classified';
                         result.status = docStatuses[path];
@@ -2257,8 +2267,10 @@
                             allDocuments[docIdx].status = docStatuses[path];
                         }
                     }
-                } catch(e) { if (batchCancelled) break; /* skip other failures */ }
+                } catch(e) { if (batchCancelled) break; }
                 done++;
+                // Small pacing delay to avoid burst-rate issues
+                if (!batchCancelled) await new Promise(res => setTimeout(res, 200));
             }
             persistToLocalStorage();
             const classifiedCount = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
@@ -2269,43 +2281,16 @@
             finishBatchPopup(done, paths.length);
         }
 
+        async function classifySelectedDocuments() {
+            const paths = [...selectedDocuments];
+            if (!paths.length) return;
+            await _runBatchClassify(paths);
+        }
+
         async function classifyAllUnclassified() {
             const paths = allDocuments.filter(d => d.status === 'unclassified').map(d => d.path);
             if (!paths.length) { showToast('All documents are already classified!', 'info'); return; }
-            let done = 0;
-            showBatchPopup(paths.length);
-            for (const path of paths) {
-                if (batchCancelled) break;
-                const doc = allDocuments.find(d => d.path === path);
-                const name = doc ? doc.name : path.split('/').pop();
-                updateBatchPopup(done, paths.length, name);
-                try {
-                    const resp = await fetch('/api/classify', {
-                        method: 'POST', headers: {'Content-Type':'application/json'},
-                        body: JSON.stringify({ file_path: path })
-                    });
-                    const result = await resp.json();
-                    if (!result.error) {
-                        classifiedDocuments[path] = result;
-                        docStatuses[path] = docStatuses[path] || 'classified';
-                        result.status = docStatuses[path];
-                        const docIdx = allDocuments.findIndex(d => d.path === path);
-                        if (docIdx !== -1) {
-                            allDocuments[docIdx].classification = result.classification;
-                            allDocuments[docIdx].risk_assessment = result.risk_assessment;
-                            allDocuments[docIdx].status = docStatuses[path];
-                        }
-                    }
-                } catch(e) { if (batchCancelled) break; /* skip other failures */ }
-                done++;
-            }
-            persistToLocalStorage();
-            const classifiedCount = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
-            document.getElementById('classifiedDocs').textContent = classifiedCount;
-            document.getElementById('unclassifiedDocs').textContent = allDocuments.length - classifiedCount;
-            updateReportButton();
-            renderDocuments(filteredDocuments);
-            finishBatchPopup(done, paths.length);
+            await _runBatchClassify(paths);
         }
 
         function showBatchPopup(total) {

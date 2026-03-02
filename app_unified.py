@@ -295,7 +295,7 @@ def api_document_preview(file_path):
 # ============================================================================
 
 @app.route('/api/classify', methods=['POST'])
-@limiter.limit('500 per hour; 60 per minute')
+@limiter.limit('600 per hour')
 def api_classify():
     """Classify a single document."""
     try:
