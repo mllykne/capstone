@@ -722,6 +722,7 @@
                     <span class="popup-count" id="batchPopupCount"></span>
                 </div>
             </div>
+            <div id="batchPopupModelInfo" style="display:none;padding:.4rem .75rem .1rem"></div>
             <div id="batchPopupCancel" style="padding:.5rem .75rem .25rem;display:none">
                 <button onclick="cancelBatchClassification()" id="batchCancelBtn" style="width:100%;background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;font-size:.78rem;font-weight:600;padding:.4rem;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem">
                     <i class="fas fa-stop-circle"></i>Stop Classification
@@ -2248,6 +2249,7 @@
 
         async function _runBatchClassify(paths) {
             let done = 0;
+            const modelCounts = {};
             showBatchPopup(paths.length);
             for (const path of paths) {
                 if (batchCancelled) break;
@@ -2266,6 +2268,9 @@
                             allDocuments[docIdx].risk_assessment = result.risk_assessment;
                             allDocuments[docIdx].status = docStatuses[path];
                         }
+                        // Track which model was used
+                        const mu = (result.classification && result.classification.model_used) || 'unknown';
+                        modelCounts[mu] = (modelCounts[mu] || 0) + 1;
                     }
                 } catch(e) { if (batchCancelled) break; }
                 done++;
@@ -2278,7 +2283,7 @@
             document.getElementById('unclassifiedDocs').textContent = allDocuments.length - classifiedCount;
             updateReportButton();
             renderDocuments(filteredDocuments);
-            finishBatchPopup(done, paths.length);
+            finishBatchPopup(done, paths.length, modelCounts);
         }
 
         async function classifySelectedDocuments() {
@@ -2322,7 +2327,7 @@
             document.getElementById('batchPopupText').textContent = currentName || '';
         }
 
-        function finishBatchPopup(done, total) {
+        function finishBatchPopup(done, total, modelCounts) {
             document.getElementById('batchPopupSpinner').style.display = 'none';
             
             // Add completed styling to progress bar
@@ -2335,6 +2340,32 @@
             document.getElementById('batchPopupText').textContent = batchCancelled ? 'Stopped by user.' : 'Done!';
             document.getElementById('batchPopupTitle').textContent = batchCancelled ? 'Classification Stopped' : 'Classification Complete';
             document.getElementById('batchPopupSubtitle').textContent = batchCancelled ? done + ' document' + (done!==1?'s':'') + ' classified before stopping.' : done + ' document' + (done!==1?'s':'') + ' successfully classified.';
+
+            // Model used summary line
+            const miEl = document.getElementById('batchPopupModelInfo');
+            if (miEl && modelCounts && Object.keys(modelCounts).length) {
+                const modelLabels = { 'keyword_fallback': 'Keyword Fallback' };
+                const parts = Object.entries(modelCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([m, n]) => {
+                        const label = m.startsWith('gemini/') ? 'Gemini (' + m.replace('gemini/','') + ')'
+                                    : m.startsWith('ollama/') ? 'Ollama — ' + m.replace('ollama/','')
+                                    : (modelLabels[m] || m);
+                        const color = m.startsWith('gemini/') ? '#2563EB'
+                                    : m.startsWith('ollama/') ? '#7C3AED'
+                                    : '#92400E';
+                        return '<span style="display:inline-flex;align-items:center;gap:.25rem">'
+                            + '<span style="width:7px;height:7px;border-radius:50%;background:' + color + ';flex-shrink:0"></span>'
+                            + '<span style="color:' + color + ';font-weight:600">' + label + '</span>'
+                            + '<span style="color:#64748B">×' + n + '</span></span>';
+                    }).join('<span style="color:#CBD5E1;margin:0 .3rem">|</span>');
+                miEl.style.display = 'block';
+                miEl.innerHTML = '<div style="font-size:.7rem;color:#64748B;display:flex;flex-wrap:wrap;align-items:center;gap:.3rem">'
+                    + '<i class="fas fa-microchip" style="color:#94A3B8;font-size:.65rem"></i><span style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#94A3B8">Models used:</span> ' + parts + '</div>';
+            } else if (miEl) {
+                miEl.style.display = 'none';
+            }
+
             document.getElementById('batchPopupActions').style.display = 'flex';
             document.getElementById('batchPopupCancel').style.display = 'none';
         }

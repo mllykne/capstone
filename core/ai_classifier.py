@@ -121,6 +121,7 @@ class AIClassifier:
                 result = self._parse_response(response.text)
                 result = self._post_validate(result, pre_analysis)
                 result['classification_status'] = 'success'
+                result['model_used'] = f'gemini/{self.model}'
                 return result
 
             except Exception as e:
@@ -1300,4 +1301,5 @@ RESPOND IN JSON FORMAT ONLY — no markdown, no code fences:
             'reasoning': reasoning,
             'classification_status': 'enhanced_fallback',
             'error_message': 'API unavailable; using enhanced heuristic analysis',
+            'model_used': 'keyword_fallback',
         }
