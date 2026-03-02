@@ -89,7 +89,7 @@ def _security_headers(response):
         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
         "font-src 'self' https://cdnjs.cloudflare.com; "
         "img-src 'self' data:; "
-        "connect-src 'self'; "
+        "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
         "frame-ancestors 'none'"
     )
     # Only send HSTS once you have HTTPS
@@ -295,7 +295,7 @@ def api_document_preview(file_path):
 # ============================================================================
 
 @app.route('/api/classify', methods=['POST'])
-@limiter.limit('30 per hour; 5 per minute')
+@limiter.limit('500 per hour; 60 per minute')
 def api_classify():
     """Classify a single document."""
     try:
