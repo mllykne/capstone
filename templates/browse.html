@@ -1839,7 +1839,7 @@
                     '<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">' +
                     '<div style="background:linear-gradient(135deg,#7C3AED,#4F46E5);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-brain" style="color:#fff;font-size:.95rem"></i></div>' +
                     '<div><div style="font-weight:700;font-size:1.05rem;color:#F1F5F9">AI Overview &mdash; Classification Analysis</div>' +
-                    '<div style="font-size:.73rem;color:#64748B;margin-top:1px">' + (ins.fallback ? 'Rule-based Analysis' : 'Powered by Gemini AI') + ' &middot; ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div>' +
+                    '<div style="font-size:.73rem;color:#64748B;margin-top:1px">' + (ins.model_used ? ins.model_used.replace('gemini/','Gemini ').replace('rule_based_fallback','Rule-based Analysis') : (ins.fallback ? 'Rule-based Analysis' : 'Gemini AI')) + ' &middot; ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div>' +
                     '<button onclick="exportAiOverviewPdf()" style="margin-left:auto;background:#7C3AED;border:none;color:#fff;padding:.4rem 1rem;border-radius:7px;font-size:.78rem;cursor:pointer;font-weight:700;flex-shrink:0;box-shadow:0 1px 6px rgba(124,58,237,.45)" title="Export AI Overview as PDF"><i class="fas fa-file-pdf me-1"></i>Export PDF</button>' +
                     '</div>' +
                     fallbackBanner +
@@ -2259,6 +2259,31 @@
             document.getElementById('classifyButtonContainer').style.display = 'none';
             document.getElementById('verificationSection').style.display = 'block';
             document.getElementById('verificationStatus').textContent = 'Pending review';
+
+            // Model used badge
+            const mu = cl.model_used || '';
+            const muLabel = mu.startsWith('gemini/') ? '\u2713 Gemini (' + mu.replace('gemini/','') + ')'
+                          : mu.startsWith('ollama/') ? '\u2713 Ollama \u2014 ' + mu.replace('ollama/','')
+                          : mu === 'keyword_fallback' ? '\u26A0 Keyword Fallback'
+                          : mu ? mu : null;
+            const muColor = mu.startsWith('gemini/') ? '#2563EB' : mu.startsWith('ollama/') ? '#7C3AED' : '#92400E';
+            const muBg    = mu.startsWith('gemini/') ? 'rgba(37,99,235,.08)' : mu.startsWith('ollama/') ? 'rgba(124,58,237,.08)' : 'rgba(146,64,14,.08)';
+            let muEl = document.getElementById('brwModelBadge');
+            if (!muEl) {
+                muEl = document.createElement('div');
+                muEl.id = 'brwModelBadge';
+                muEl.style.cssText = 'margin-top:.5rem;font-size:.68rem;font-weight:600;padding:.2rem .55rem;border-radius:5px;display:inline-block';
+                document.getElementById('classificationResults').appendChild(muEl);
+            }
+            if (muLabel) {
+                muEl.textContent = muLabel;
+                muEl.style.background = muBg;
+                muEl.style.color = muColor;
+                muEl.style.border = '1px solid ' + muColor + '33';
+                muEl.style.display = 'inline-block';
+            } else {
+                muEl.style.display = 'none';
+            }
 
             // Update tabs
             document.getElementById('content-tab').innerHTML =

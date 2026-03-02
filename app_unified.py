@@ -1086,6 +1086,7 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
         ]
         raw = None
         last_err = None
+        succeeded_model = None
 
         def _try_generate(client, model_name, prompt_text):
             """Attempt a generate_content call; return (text, error)."""
@@ -1127,6 +1128,7 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
                     raise err
                 if text:
                     raw = text
+                    succeeded_model = model_name
                     logger.info(f"  {model_name} succeeded in {elapsed:.2f}s (key {key_idx+1})")
                     break
                 logger.warning(f"  {model_name} returned empty response")
@@ -1141,6 +1143,7 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
                 top_docs=top_docs, pii_types=pii_types
             )
             fallback['fallback'] = True
+            fallback['model_used'] = 'rule_based_fallback'
             return jsonify(fallback)
 
         logger.info(f"Raw response received, length: {len(raw)} characters")
@@ -1184,6 +1187,7 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
 
         return jsonify({
             'status': 'success',
+            'model_used': f'gemini/{succeeded_model}',
             'site_id': site_id,
             'executive_summary': exec_summary,
             'compliance_posture': compliance,
