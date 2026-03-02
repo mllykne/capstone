@@ -1147,7 +1147,19 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
                     logger.info(f"Gemini exhausted — trying Groq ({groq_model}) for AI insights")
                     completion = g_client.chat.completions.create(
                         model=groq_model,
-                        messages=[{"role": "user", "content": prompt}],
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": (
+                                    "You are a data security analysis assistant. "
+                                    "Respond in plain text only. "
+                                    "Do NOT use markdown, bold, italics, bullet symbols, or headers. "
+                                    "Use exactly the section labels given in the prompt (e.g. EXECUTIVE_SUMMARY:) "
+                                    "with no extra formatting around them."
+                                )
+                            },
+                            {"role": "user", "content": prompt}
+                        ],
                         temperature=0.2,
                         max_tokens=2000,
                     )
@@ -1173,6 +1185,19 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
 
         logger.info(f"Raw response received, length: {len(raw)} characters")
         parsing_start = time.time()
+
+        # Strip markdown formatting that some models (e.g. LLaMA via Groq) add
+        # so the label-based parser works regardless of the model used.
+        def _strip_markdown(text):
+            # Remove bold/italic markers around labels: **LABEL:** -> LABEL:
+            text = re.sub(r'\*{1,3}([A-Z_]+)\*{1,3}\s*:', r'\1:', text)
+            # Remove markdown headers: ## LABEL: -> LABEL:
+            text = re.sub(r'^#{1,4}\s*([A-Z_]+)\s*:', r'\1:', text, flags=re.MULTILINE)
+            # Remove stray ** or __ bold markers
+            text = re.sub(r'\*{2,}|_{2,}', '', text)
+            return text
+
+        raw = _strip_markdown(raw)
 
         def extract_section(text, label, end_labels):
             pattern = rf'{label}:\s*(.*?)(?=(?:{"|".join(end_labels)}):|\Z)'
