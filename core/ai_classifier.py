@@ -151,38 +151,45 @@ class AIClassifier:
         cl = content.lower()
         fn = file_name.lower()
         findings = []
-        pii_hits = []
+        pii_hits = []           # ALL signals combined (for backward compat / UI display)
+        high_risk_pii = []     # Only genuinely sensitive PII (forces High sensitivity)
+        contextual_signals = []  # Informational context — NOT automatic High
         domain_scores = {g: 0 for g in self.FUNCTIONAL_GROUPS if g != 'Outliers / Others'}
 
         # ── PII scanners (extract actual values where possible) ──────────────
-        def _find(pattern, label, sample_fmt=None, flags=0):
+        def _find(pattern, label, sample_fmt=None, flags=0, is_high_risk=False):
             matches = list(re.finditer(pattern, c, flags))
             if matches:
                 samples = [m.group(0)[:40] for m in matches[:3]]
                 entry = label + (f": {', '.join(samples)}" if sample_fmt else f" ({len(matches)} match{'es' if len(matches)>1 else ''})")
                 pii_hits.append(entry)
                 findings.append(entry)
+                if is_high_risk:
+                    high_risk_pii.append(entry)
+                else:
+                    contextual_signals.append(entry)
                 return len(matches)
             return 0
 
-        _find(r'\b\d{3}-\d{2}-\d{4}\b', 'SSN', sample_fmt=True)
-        _find(r'\b(?:4[0-9]{3}|5[1-5][0-9]{2}|3[47][0-9]{2})[\s-]?\d{4}[\s-]?\d{4}[\s-]?(?:\d{3,4})\b', 'Credit Card', sample_fmt=True)
-        _find(r'\b(?:[Rr]outing|ABA|RTN)[\s:=]+\d{9}\b', 'Routing Number', sample_fmt=True)
-        _find(r'\b[A-Z]{6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3})?\b', 'SWIFT/BIC Code', sample_fmt=True)
-        _find(r'\b(?:[Aa]ccount|[Aa]cct)\.?\s*(?:#|[Nn]o\.?|[Nn]um(?:ber)?)?\s*[:=]?\s*\d{6,17}\b', 'Bank Account', sample_fmt=True)
-        _find(r'\b[A-Z]{2}\d{2}[A-Z0-9]{4}\d{7,}\b', 'IBAN', sample_fmt=True)
-        _find(r'\b[Ww]ire\s+[Tt]ransfer\b', 'Wire Transfer Instructions')
-        _find(r'\b(?:password|passwd|pwd)\s*[:=]\s*\S{4,}', 'Password/Credential', sample_fmt=False, flags=re.IGNORECASE)
-        _find(r'\bapi[_\-]?key\s*[:=]\s*[A-Za-z0-9_\-]{16,}', 'API Key', sample_fmt=False, flags=re.IGNORECASE)
-        _find(r'\bsecret[_\-]?(?:key|token)\s*[:=]\s*\S{10,}', 'Secret Key', sample_fmt=False, flags=re.IGNORECASE)
-        _find(r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b', 'Email Address', sample_fmt=True)
-        _find(r'\b\(?\d{3}\)?[\s.\-]\d{3}[\s.\-]\d{4}\b', 'Phone Number', sample_fmt=True)
-        _find(r'\bEMP[-\s#]?\d{3,}|\b[Ee]mployee\s*(?:ID|#|No\.?)\s*[:=]?\s*[\w\d\-]+', 'Employee ID', sample_fmt=True)
-        _find(r'\bDOB\b|\b[Dd]ate\s+of\s+[Bb]irth\s*[:=]?\s*\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}', 'Date of Birth', sample_fmt=True)
-        _find(r'\b\$[\d,]{4,}(?:\.\d{2})?\b', 'Dollar Amount', sample_fmt=True)
-        _find(r'\b(?:salary|compensation|payroll|base\s+pay)\s*[:=]?\s*\$?[\d,]+', 'Salary/Compensation', sample_fmt=True, flags=re.IGNORECASE)
-        _find(r'\b(?:[Mm]edical|[Hh]ealth|HIPAA|PHI|patient\s+(?:ID|record))', 'Medical/Health Data')
-        _find(r'\b(?:GDPR|CCPA|PCI[\-\s]DSS|SOX|HIPAA)\b', 'Regulatory Framework')
+        _find(r'\b\d{3}-\d{2}-\d{4}\b', 'SSN', sample_fmt=True, is_high_risk=True)
+        _find(r'\b(?:4[0-9]{3}|5[1-5][0-9]{2}|3[47][0-9]{2})[\s-]?\d{4}[\s-]?\d{4}[\s-]?(?:\d{3,4})\b', 'Credit Card', sample_fmt=True, is_high_risk=True)
+        _find(r'\b(?:[Rr]outing|ABA|RTN)[\s:=]+\d{9}\b', 'Routing Number', sample_fmt=True, is_high_risk=True)
+        _find(r'\b[A-Z]{6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3})?\b', 'SWIFT/BIC Code', sample_fmt=True, is_high_risk=True)
+        _find(r'\b(?:[Aa]ccount|[Aa]cct)\.?\s*(?:#|[Nn]o\.?|[Nn]um(?:ber)?)?\s*[:=]?\s*\d{6,17}\b', 'Bank Account', sample_fmt=True, is_high_risk=True)
+        _find(r'\b[A-Z]{2}\d{2}[A-Z0-9]{4}\d{7,}\b', 'IBAN', sample_fmt=True, is_high_risk=True)
+        _find(r'\b[Ww]ire\s+[Tt]ransfer\b', 'Wire Transfer Instructions', is_high_risk=True)
+        _find(r'\b(?:password|passwd|pwd)\s*[:=]\s*\S{4,}', 'Password/Credential', sample_fmt=False, flags=re.IGNORECASE, is_high_risk=True)
+        _find(r'\bapi[_\-]?key\s*[:=]\s*[A-Za-z0-9_\-]{16,}', 'API Key', sample_fmt=False, flags=re.IGNORECASE, is_high_risk=True)
+        _find(r'\bsecret[_\-]?(?:key|token)\s*[:=]\s*\S{10,}', 'Secret Key', sample_fmt=False, flags=re.IGNORECASE, is_high_risk=True)
+        _find(r'\b(?:salary|compensation|payroll|base\s+pay)\s*[:=]?\s*\$?[\d,]+', 'Salary/Compensation', sample_fmt=True, flags=re.IGNORECASE, is_high_risk=True)
+        _find(r'\b(?:[Mm]edical|[Hh]ealth|HIPAA|PHI|patient\s+(?:ID|record))', 'Medical/Health Data', is_high_risk=True)
+        _find(r'\bDOB\b|\b[Dd]ate\s+of\s+[Bb]irth\s*[:=]?\s*\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}', 'Date of Birth', sample_fmt=True, is_high_risk=True)
+        # ── Contextual signals — informational only, NOT automatic High ──────
+        _find(r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b', 'Email Address', sample_fmt=True, is_high_risk=False)
+        _find(r'\b\(?\d{3}\)?[\s.\-]\d{3}[\s.\-]\d{4}\b', 'Phone Number', sample_fmt=True, is_high_risk=False)
+        _find(r'\bEMP[-\s#]?\d{3,}|\b[Ee]mployee\s*(?:ID|#|No\.?)\s*[:=]?\s*[\w\d\-]+', 'Employee ID', sample_fmt=True, is_high_risk=False)
+        _find(r'\b\$[\d,]{4,}(?:\.\d{2})?\b', 'Dollar Amount', sample_fmt=True, is_high_risk=False)
+        _find(r'\b(?:GDPR|CCPA|PCI[\-\s]DSS|SOX|HIPAA)\b', 'Regulatory Framework', is_high_risk=False)
 
         # ── Domain keyword scoring ────────────────────────────────────────────
         kw_map = {
@@ -389,13 +396,16 @@ class AIClassifier:
 
         return {
             'pii_hits': pii_hits,
+            'high_risk_pii': high_risk_pii,
+            'contextual_signals': contextual_signals,
             'pii_count': len(pii_hits),
+            'high_risk_count': len(high_risk_pii),
             'domain_scores': domain_scores,
             'top_domain': top_domain,
             'top_score': top_score,
             'second_domain': second_domain,
             'second_score': second_score,
-            'has_high_pii': any(t in ' '.join(pii_hits) for t in ['SSN', 'Credit Card', 'Bank Account', 'Routing', 'Password', 'API Key', 'IBAN', 'SWIFT', 'Wire Transfer']),
+            'has_high_pii': len(high_risk_pii) > 0,
         }
 
     def _post_validate(self, result: dict, pre_analysis: dict) -> dict:
@@ -432,12 +442,15 @@ class AIClassifier:
                     f"based on keyword score {top_score} vs runner-up {pre_analysis.get('second_score',0)}] "
                     + result['reasoning'])
 
-        # 4. Bump risk_score when multiple PII types present
-        n_pii = len(pii)
-        if n_pii >= 3:
+        # 4. Bump risk_score only when genuine high-risk PII is present
+        # (email addresses, phone numbers, dollar amounts alone do NOT bump risk)
+        n_high_risk = len(pre_analysis.get('high_risk_pii', []))
+        if n_high_risk >= 3:
             result['risk_score'] = max(float(result.get('risk_score', 5)), 8.0)
-        elif n_pii >= 1:
-            result['risk_score'] = max(float(result.get('risk_score', 5)), 6.0)
+        elif n_high_risk >= 2:
+            result['risk_score'] = max(float(result.get('risk_score', 5)), 6.5)
+        elif n_high_risk == 1:
+            result['risk_score'] = max(float(result.get('risk_score', 5)), 5.5)
 
         return result
 
@@ -475,6 +488,8 @@ class AIClassifier:
             content_truncated = True
 
         # Build pre-analysis cheat-sheet block
+        high_risk_pii = pre_analysis.get('high_risk_pii', [])
+        contextual_signals = pre_analysis.get('contextual_signals', [])
         pii_hits = pre_analysis.get('pii_hits', [])
         top_domain  = pre_analysis.get('top_domain', 'Unknown')
         top_score   = pre_analysis.get('top_score', 0)
@@ -487,8 +502,11 @@ class AIClassifier:
         ds_lines = '  ' + '\n  '.join(f"{g}: {s}" for g, s in domain_scores_sorted) if domain_scores_sorted else '  (none)'
 
         pre_block = f"""--- PRE-ANALYSIS SIGNALS (extracted by deterministic regex scan — treat as ground truth) ---
-PII / sensitive values detected:
-{chr(10).join('  - ' + h for h in pii_hits) if pii_hits else '  None detected'}
+HIGH-RISK PII detected (SSN, credentials, account numbers, salary, medical — REQUIRE High sensitivity if present):
+{chr(10).join('  - ' + h for h in high_risk_pii) if high_risk_pii else '  None detected'}
+
+Contextual signals (email addresses, phone numbers, regulatory mentions, dollar amounts — informational only, do NOT automatically force High sensitivity):
+{chr(10).join('  - ' + h for h in contextual_signals) if contextual_signals else '  None detected'}
 
 Keyword domain scores (higher = stronger evidence):
 {ds_lines}
@@ -500,43 +518,40 @@ Keyword domain scores (higher = stronger evidence):
 
 {pre_block}
 IMPORTANT: The PRE-ANALYSIS SIGNALS above were extracted by deterministic regex patterns and are highly reliable. Use them to:
-- Confirm or upgrade sensitivity level (if PII was found → High sensitivity)
+- Confirm or upgrade sensitivity level ONLY when HIGH-RISK PII was found (SSN, account numbers, passwords, API keys, salary data, medical data). Contextual signals like email addresses, phone numbers, or regulatory framework mentions alone do NOT force High sensitivity.
 - Validate or adjust your functional group choice (high keyword score for a domain is strong evidence)
 - Populate pii_detected with the specific types listed (add exact examples from the document)
-- Do NOT downgrade sensitivity if the pre-analysis found high-risk PII
 
 ENHANCED SENSITIVITY CLASSIFICATION LOGIC:
 
-HIGH SENSITIVITY - Document contains ANY of:
-- Personal identifiers: SSNs (###-##-#### format), employee IDs with personal data, passport numbers, driver's license numbers
-- Financial data: Bank account numbers, credit card numbers (16 digits), investment account numbers, routing numbers
-- Contracts with legal liability: indemnification clauses, settlement amounts, litigation exposure
-- Protected health information: medical records, patient IDs, health insurance information
-- Security credentials: API keys, passwords, encryption keys, database connection strings, access tokens
-- Regulated data: GDPR-protected personal data, HIPAA-covered information, PCI-DSS payment data
-- Executive information: C-level compensation, board materials, strategic acquisition plans
-- Legal matters: litigation documents, settlement agreements, regulatory violation notices
+HIGH SENSITIVITY - Document must contain AT LEAST ONE of these specific items:
+- Personal identifiers: Actual SSNs (###-##-#### pattern), passport numbers, driver's license numbers with personal details
+- Financial account data: Actual bank account numbers, credit card numbers, routing numbers, IBAN/SWIFT codes, wire transfer instructions with account details
+- Payroll/salary records: Specific named individual salary figures, payroll run data, compensation files
+- Security credentials: Actual working API keys, passwords, encryption keys, database connection strings, access tokens (NOT placeholder examples)
+- Protected health information: Actual medical records, patient IDs, health insurance claim files
+- Active legal matters: Litigation case files with financial exposure, signed settlement agreements with dollar amounts, active regulatory violation notices
+- Executive/board confidential: C-level individual compensation, M&A target documents, board meeting minutes with strategic decisions
 
-MODERATE SENSITIVITY - Document contains:
-- Internal business plans or confidential strategies
-- Client contact information (names, emails, phone numbers)
-- Pricing models, discount structures, or competitive pricing
-- Performance reviews (without personal identifiers)
-- Internal competitive analysis or market intelligence
-- Financial forecasts or budget planning (not actual account numbers)
-- Employee organizational charts or reporting structures
-- Internal security procedures (without actual credentials)
-- Vendor contracts or procurement agreements
+MODERATE SENSITIVITY - Document contains sensitive business information but NO high-risk PII above:
+- Financial reports and forecasts with dollar figures (budgets, P&L, revenue forecasts) — NOT account numbers
+- Internal business strategy, competitive analysis, or confidential planning documents
+- Client contact information (names, emails, phone numbers) or client-specific pricing
+- Performance reviews, employee evaluations (without SSNs or payroll data)
+- Internal security procedures and policies (without actual credentials)
+- Standard vendor/service contracts, NDAs, procurement agreements
+- Employee organizational information (org charts, headcount reports)
 - Internal meeting notes with business-sensitive discussions
+- Any document containing email addresses or phone numbers as its most sensitive element
 
 LOW SENSITIVITY - Document contains:
-- Public-facing marketing content or press releases
-- Generic standard operating procedures (SOPs)
+- Public-facing marketing content, press releases, brand guidelines
+- Generic standard operating procedures (SOPs) without sensitive data examples
 - Published materials or external communications
 - General training documentation without sensitive examples
-- Public news, announcements, or industry information
-- Non-confidential policy documents
-- General process documentation
+- General process documentation, workflow descriptions
+- Employee handbooks, company policies with no personal employee data
+- Informational documents that only mention regulatory frameworks (e.g. a document explaining what GDPR is, or a compliance checklist)
 
 PII DETECTION PATTERNS TO IDENTIFY:
 - Social Security Numbers: XXX-XX-XXXX, XXXXXXXXX (9 digits)
@@ -675,7 +690,8 @@ DOCUMENT CONTENT:{" (truncated — first 10k + last 2k chars)" if content_trunca
 
 ENHANCED CLASSIFICATION INSTRUCTIONS:
 1. FIRST review the PRE-ANALYSIS SIGNALS at the top — they are deterministic regex results, not guesses.
-2. If the pre-analysis found PII (SSN, credit card, bank account, password, API key, etc.) → sensitivity is HIGH. Do not contradict this.
+2. If the pre-analysis found HIGH-RISK PII (SSN, credit card, bank account, routing number, password, API key, salary/payroll data, medical data, wire transfer details) → sensitivity MUST be High.
+3. Contextual signals (email address, phone number, regulatory framework mention, general dollar amounts in reports) are informational — they should influence your judgment but do NOT automatically force High. A budget report with dollar figures is Moderate. A marketing doc with an email address is Low or Moderate.
 3. If the pre-analysis keyword domain scores show a clear winner (score ≥ 4), weight that heavily when choosing the functional group.
 4. Then read the full document content, scanning for additional context and specific PII examples to cite.
 5. Identify the PRIMARY SUBJECT MATTER of the document — what field or discipline is this fundamentally about?
@@ -684,7 +700,7 @@ ENHANCED CLASSIFICATION INSTRUCTIONS:
 8. Apply DISAMBIGUATION RULES — consulting/advisory documents are classified by WHAT subject they cover, not WHO they were written for.
 9. MUST classify to ONE of the first 9 groups — avoid "Outliers / Others" unless absolutely impossible.
 10. Provide TWO confidence scores: functional_group_confidence (0.0-1.0) and sensitivity_confidence (0.0-1.0).
-11. Calculate risk_score (0-10): High sensitivity + 3+ PII types = 9-10; High + 1-2 PII = 7-8; Moderate = 3-6; Low = 0-3.
+11. Calculate risk_score (0-10): High sensitivity WITH 2+ high-risk PII types = 8-10; High WITH 1 high-risk PII type = 6-8; Moderate = 3-6; Low = 0-3. A document with only email addresses or phone numbers should score 2-4 maximum.
 12. In pii_detected, include SPECIFIC EXAMPLES lifted from the document (e.g., "SSN: 123-45-6789", "Email: john@example.com").
 13. In reasoning, QUOTE specific text from the document to justify every classification decision.
 
@@ -1053,7 +1069,7 @@ RESPOND IN JSON FORMAT ONLY — no markdown, no code fences:
         elif any(x in file_lower for x in ['financial', 'budget', 'invoice', 'revenue', 'expense', 'accounting', 'ledger']):
             group = 'Finance and Accounting'
             confidence = 0.8 if any(x in content_lower for x in ['account number', 'bank', 'financial', 'revenue', 'expense']) else 0.6
-            sensitivity = 'High' if pii_detected or any(x in content_lower for x in ['account', 'bank', 'credit']) else 'Moderate'
+            sensitivity = 'High' if pii_detected else 'Moderate'
             reasoning_factors.append('Finance-related filename and content indicators')
             
         elif any(x in file_lower for x in ['contract', 'legal', 'compliance', 'policy', 'terms', 'agreement']):
