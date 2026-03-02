@@ -652,7 +652,8 @@
             <div><div class="stat-val text-warning" id="unclassifiedDocs">-</div><div class="text-muted" style="font-size:0.75rem">Unclassified</div></div>
             <div><div class="stat-val text-success" id="classifiedDocs">-</div><div class="text-muted" style="font-size:0.75rem">Classified</div></div>
             <div><div class="stat-val text-secondary" id="totalSites">-</div><div class="text-muted" style="font-size:0.75rem">Sites</div></div>
-            <small class="text-muted ms-auto" id="documentCount"></small>
+            <div id="modelBreakdownStat" style="display:none;margin-left:auto;padding-left:.75rem;border-left:1px solid #E2E8F0"></div>
+            <small class="text-muted" id="documentCount"></small>
         </div>
 
         <!-- Search & Filter toolbar -->
@@ -976,6 +977,31 @@
             } catch(e) {
                 console.warn('localStorage persist failed:', e);
             }
+            renderModelBreakdown();
+        }
+
+        function renderModelBreakdown() {
+            const el = document.getElementById('modelBreakdownStat');
+            if (!el) return;
+            const counts = {};
+            Object.values(classifiedDocuments).forEach(data => {
+                const mu = (data.classification && data.classification.model_used) || null;
+                if (mu) counts[mu] = (counts[mu] || 0) + 1;
+            });
+            if (!Object.keys(counts).length) { el.style.display = 'none'; return; }
+            const parts = Object.entries(counts).sort((a,b) => b[1]-a[1]).map(([m, n]) => {
+                const label = m.startsWith('gemini/') ? 'Gemini' : m.startsWith('ollama/') ? 'Ollama' : 'Keyword';
+                const color = m.startsWith('gemini/') ? '#2563EB' : m.startsWith('ollama/') ? '#7C3AED' : '#92400E';
+                return '<span style="display:inline-flex;align-items:center;gap:.2rem;font-size:.72rem">'
+                    + '<span style="width:6px;height:6px;border-radius:50%;background:' + color + '"></span>'
+                    + '<span style="color:' + color + ';font-weight:600">' + label + '</span>'
+                    + '<span style="color:#94A3B8">' + n + '</span></span>';
+            }).join('<span style="color:#CBD5E1;margin:0 .2rem">·</span>');
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.gap = '.4rem';
+            el.style.flexWrap = 'wrap';
+            el.innerHTML = '<span style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#94A3B8">AI Model</span>' + parts;
         }
 
         // Load documents on page load
@@ -1029,6 +1055,7 @@
 
                 filteredDocuments = [...allDocuments];
 
+                renderModelBreakdown();
                 updateSummaryCards(data);
                 // Override server counts with localStorage-reconciled counts
                 const reconClassified = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
