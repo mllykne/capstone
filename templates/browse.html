@@ -2269,8 +2269,8 @@
                     }
                 } catch(e) { if (batchCancelled) break; }
                 done++;
-                // Small pacing delay to avoid burst-rate issues
-                if (!batchCancelled) await new Promise(res => setTimeout(res, 200));
+                // Pacing delay: keeps requests ~10/min so Gemini free-tier quota is not exceeded
+                if (!batchCancelled) await new Promise(res => setTimeout(res, 1500));
             }
             persistToLocalStorage();
             const classifiedCount = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
