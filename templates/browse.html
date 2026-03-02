@@ -2312,8 +2312,8 @@
                     }
                 } catch(e) { if (batchCancelled) break; }
                 done++;
-                // Pacing delay: keeps requests ~10/min so Gemini free-tier quota is not exceeded
-                if (!batchCancelled) await new Promise(res => setTimeout(res, 1500));
+                // Pacing: Gemini free tier = 15 RPM max. 5s gap = ~12 RPM, safely under the limit.
+                if (!batchCancelled) await new Promise(res => setTimeout(res, 5000));
             }
             persistToLocalStorage();
             const classifiedCount = allDocuments.filter(d => ['classified','accepted','corrected'].includes(d.status)).length;
