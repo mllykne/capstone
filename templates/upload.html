@@ -376,6 +376,7 @@
                             <h6>Document Classification</h6>
                             <p class="mb-2"><strong>Functional Group:</strong> <span id="functionalGroup"></span></p>
                             <p class="mb-2"><strong>Sensitivity Level:</strong> <span id="sensitivityLevel" class="badge"></span></p>
+                            <p class="mb-2" id="modelUsedRow" style="display:none"><strong>Classified by:</strong> <span id="modelUsedBadge" style="font-size:.75rem;font-weight:600;padding:.2rem .55rem;border-radius:5px;display:inline-block"></span></p>
                             
                             <h6 class="mt-4">Confidence Scores</h6>
                             <div class="mb-3">
@@ -586,6 +587,24 @@
             const sensitivityBadge = document.getElementById('sensitivityLevel');
             sensitivityBadge.textContent = c.sensitivity_level;
             sensitivityBadge.className = `badge ${getSensitivityBadgeClass(c.sensitivity_level)}`;
+
+            // Model used badge
+            const mu = c.model_used || '';
+            if (mu) {
+                const muLabel = mu.startsWith('gemini/') ? '\u2713 Gemini \u2014 ' + mu.replace('gemini/','')
+                              : mu.startsWith('groq/')   ? '\u2713 Groq \u2014 ' + mu.replace('groq/','')
+                              : mu.startsWith('ollama/') ? '\u2713 Ollama \u2014 ' + mu.replace('ollama/','')
+                              : mu === 'keyword_fallback' ? '\u26A0 Keyword Fallback'
+                              : mu;
+                const muColor = mu.startsWith('gemini/') ? '#2563EB' : mu.startsWith('groq/') ? '#10B981' : mu.startsWith('ollama/') ? '#7C3AED' : '#92400E';
+                const muBg    = mu.startsWith('gemini/') ? 'rgba(37,99,235,.1)' : mu.startsWith('groq/') ? 'rgba(16,185,129,.1)' : mu.startsWith('ollama/') ? 'rgba(124,58,237,.1)' : 'rgba(146,64,14,.1)';
+                const badge = document.getElementById('modelUsedBadge');
+                badge.textContent = muLabel;
+                badge.style.color = muColor;
+                badge.style.background = muBg;
+                badge.style.border = `1px solid ${muColor}40`;
+                document.getElementById('modelUsedRow').style.display = '';
+            }
 
             // Confidence scores
             const groupConf = (c.functional_group_confidence * 100) || 0;
