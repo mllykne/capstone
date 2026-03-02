@@ -1087,6 +1087,7 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
         raw = None
         last_err = None
         succeeded_model = None
+        succeeded_provider = 'gemini'
 
         def _try_generate(client, model_name, prompt_text):
             """Attempt a generate_content call; return (text, error)."""
@@ -1134,6 +1135,30 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
                 logger.warning(f"  {model_name} returned empty response")
             if raw:
                 break  # one key succeeded — stop trying more keys
+
+        if raw is None:
+            # ── Groq fallback ────────────────────────────────────────────────
+            groq_key = os.getenv('GROQ_API_KEY')
+            groq_model = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
+            if groq_key:
+                try:
+                    from groq import Groq as GroqClient
+                    g_client = GroqClient(api_key=groq_key)
+                    logger.info(f"Gemini exhausted — trying Groq ({groq_model}) for AI insights")
+                    completion = g_client.chat.completions.create(
+                        model=groq_model,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.2,
+                        max_tokens=2000,
+                    )
+                    groq_text = completion.choices[0].message.content if completion.choices else ''
+                    if groq_text:
+                        raw = groq_text
+                        succeeded_model = groq_model
+                        succeeded_provider = 'groq'
+                        logger.info(f"Groq insights succeeded ({groq_model})")
+                except Exception as groq_err:
+                    logger.warning(f"Groq insights failed: {groq_err}")
 
         if raw is None:
             logger.warning("All API keys and models exhausted — using rule-based local fallback")
@@ -1187,7 +1212,7 @@ RISK_NARRATIVE: [2-3 sentences about risk trajectory and consequences if unaddre
 
         return jsonify({
             'status': 'success',
-            'model_used': f'gemini/{succeeded_model}',
+            'model_used': f'{succeeded_provider}/{succeeded_model}',
             'site_id': site_id,
             'executive_summary': exec_summary,
             'compliance_posture': compliance,

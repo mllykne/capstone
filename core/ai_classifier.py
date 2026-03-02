@@ -52,6 +52,10 @@ class AIClassifier:
         self.max_retries = 3
         self.retry_delay = 2  # seconds
 
+        # Groq fallback (used when Gemini quota is exhausted)
+        self.groq_api_key = os.getenv('GROQ_API_KEY')
+        self.groq_model = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
+
         # Local Ollama fallback (used when Gemini quota is exhausted)
         self.ollama_url = os.getenv('OLLAMA_URL', 'http://localhost:11434')
         self.ollama_model = os.getenv('OLLAMA_MODEL', 'llama3.2')
@@ -128,16 +132,16 @@ class AIClassifier:
                 error_str = str(e)
                 logger.error(f"Attempt {attempt + 1} failed: {error_str}")
 
-                # On quota/rate-limit error skip remaining retries and go straight to Ollama
+                # On quota/rate-limit error skip remaining retries and go to Groq fallback
                 if self._is_quota_error(e):
-                    logger.warning("Gemini quota/rate-limit reached — trying local Ollama fallback")
-                    return self._classify_with_ollama(prompt, pre_analysis, file_name, content)
+                    logger.warning("Gemini quota/rate-limit reached — trying Groq fallback")
+                    return self._classify_with_groq(prompt, pre_analysis, file_name, content)
 
                 if attempt < self.max_retries - 1:
                     time.sleep(self.retry_delay)
                 else:
                     logger.error(f"All retries exhausted for {file_name}")
-                    return self._classify_with_ollama(prompt, pre_analysis, file_name, content)
+                    return self._classify_with_groq(prompt, pre_analysis, file_name, content)
 
     def _pre_analyze(self, content: str, file_name: str) -> dict:
         """Run fast regex + keyword scan BEFORE calling the LLM.
@@ -834,6 +838,51 @@ RESPOND IN JSON FORMAT ONLY — no markdown, no code fences:
             'too many requests',
         ]
         return any(s in msg for s in quota_signals)
+
+    def _classify_with_groq(
+        self,
+        prompt: str,
+        pre_analysis: dict,
+        file_name: str,
+        content: str = None,
+    ) -> Dict:
+        """Try to classify using the Groq API (fast LLM inference).
+        Falls back to Ollama if Groq key is missing or the call fails.
+
+        Requires:  pip install groq
+        Set GROQ_API_KEY and optionally GROQ_MODEL (default llama-3.3-70b-versatile).
+        """
+        if not self.groq_api_key:
+            logger.info("GROQ_API_KEY not set — skipping Groq, trying Ollama")
+            return self._classify_with_ollama(prompt, pre_analysis, file_name, content)
+
+        try:
+            from groq import Groq
+            client = Groq(api_key=self.groq_api_key)
+            logger.info(f"Calling Groq ({self.groq_model}) for {file_name}")
+            completion = client.chat.completions.create(
+                model=self.groq_model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.1,
+                max_tokens=800,
+            )
+            text = completion.choices[0].message.content if completion.choices else ''
+            if not text:
+                raise ValueError('Empty response from Groq')
+
+            result = self._parse_response(text)
+            result = self._post_validate(result, pre_analysis)
+            result['classification_status'] = 'success'
+            result['model_used'] = f'groq/{self.groq_model}'
+            logger.info(f"Groq classification succeeded for {file_name}")
+            return result
+
+        except ImportError:
+            logger.warning("groq package not installed — falling back to Ollama")
+        except Exception as e:
+            logger.warning(f"Groq classification failed ({e}) — falling back to Ollama")
+
+        return self._classify_with_ollama(prompt, pre_analysis, file_name, content)
 
     def _classify_with_ollama(
         self,

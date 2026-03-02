@@ -990,8 +990,8 @@
             });
             if (!Object.keys(counts).length) { el.style.display = 'none'; return; }
             const parts = Object.entries(counts).sort((a,b) => b[1]-a[1]).map(([m, n]) => {
-                const label = m.startsWith('gemini/') ? 'Gemini' : m.startsWith('ollama/') ? 'Ollama' : 'Keyword';
-                const color = m.startsWith('gemini/') ? '#2563EB' : m.startsWith('ollama/') ? '#7C3AED' : '#92400E';
+                const label = m.startsWith('gemini/') ? 'Gemini' : m.startsWith('groq/') ? 'Groq' : m.startsWith('ollama/') ? 'Ollama' : 'Keyword';
+                const color = m.startsWith('gemini/') ? '#2563EB' : m.startsWith('groq/') ? '#10B981' : m.startsWith('ollama/') ? '#7C3AED' : '#92400E';
                 return '<span style="display:inline-flex;align-items:center;gap:.2rem;font-size:.72rem">'
                     + '<span style="width:6px;height:6px;border-radius:50%;background:' + color + '"></span>'
                     + '<span style="color:' + color + ';font-weight:600">' + label + '</span>'
@@ -1839,7 +1839,7 @@
                     '<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">' +
                     '<div style="background:linear-gradient(135deg,#7C3AED,#4F46E5);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-brain" style="color:#fff;font-size:.95rem"></i></div>' +
                     '<div><div style="font-weight:700;font-size:1.05rem;color:#F1F5F9">AI Overview &mdash; Classification Analysis</div>' +
-                    '<div style="font-size:.73rem;color:#64748B;margin-top:1px">' + (ins.model_used ? ins.model_used.replace('gemini/','Gemini ').replace('rule_based_fallback','Rule-based Analysis') : (ins.fallback ? 'Rule-based Analysis' : 'Gemini AI')) + ' &middot; ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div>' +
+                    '<div style="font-size:.73rem;color:#64748B;margin-top:1px">' + (ins.model_used ? ins.model_used.replace('gemini/','Gemini ').replace('groq/','Groq ').replace('ollama/','Ollama ').replace('rule_based_fallback','Rule-based Analysis') : (ins.fallback ? 'Rule-based Analysis' : 'Gemini AI')) + ' &middot; ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + '</div></div>' +
                     '<button onclick="exportAiOverviewPdf()" style="margin-left:auto;background:#7C3AED;border:none;color:#fff;padding:.4rem 1rem;border-radius:7px;font-size:.78rem;cursor:pointer;font-weight:700;flex-shrink:0;box-shadow:0 1px 6px rgba(124,58,237,.45)" title="Export AI Overview as PDF"><i class="fas fa-file-pdf me-1"></i>Export PDF</button>' +
                     '</div>' +
                     fallbackBanner +
@@ -2263,11 +2263,12 @@
             // Model used badge
             const mu = cl.model_used || '';
             const muLabel = mu.startsWith('gemini/') ? '\u2713 Gemini (' + mu.replace('gemini/','') + ')'
+                          : mu.startsWith('groq/')   ? '\u2713 Groq \u2014 ' + mu.replace('groq/','')
                           : mu.startsWith('ollama/') ? '\u2713 Ollama \u2014 ' + mu.replace('ollama/','')
                           : mu === 'keyword_fallback' ? '\u26A0 Keyword Fallback'
                           : mu ? mu : null;
-            const muColor = mu.startsWith('gemini/') ? '#2563EB' : mu.startsWith('ollama/') ? '#7C3AED' : '#92400E';
-            const muBg    = mu.startsWith('gemini/') ? 'rgba(37,99,235,.08)' : mu.startsWith('ollama/') ? 'rgba(124,58,237,.08)' : 'rgba(146,64,14,.08)';
+            const muColor = mu.startsWith('gemini/') ? '#2563EB' : mu.startsWith('groq/') ? '#10B981' : mu.startsWith('ollama/') ? '#7C3AED' : '#92400E';
+            const muBg    = mu.startsWith('gemini/') ? 'rgba(37,99,235,.08)' : mu.startsWith('groq/') ? 'rgba(16,185,129,.08)' : mu.startsWith('ollama/') ? 'rgba(124,58,237,.08)' : 'rgba(146,64,14,.08)';
             let muEl = document.getElementById('brwModelBadge');
             if (!muEl) {
                 muEl = document.createElement('div');
@@ -2412,9 +2413,11 @@
                     .sort((a, b) => b[1] - a[1])
                     .map(([m, n]) => {
                         const label = m.startsWith('gemini/') ? 'Gemini (' + m.replace('gemini/','') + ')'
+                                    : m.startsWith('groq/')   ? 'Groq — ' + m.replace('groq/','')
                                     : m.startsWith('ollama/') ? 'Ollama — ' + m.replace('ollama/','')
                                     : (modelLabels[m] || m);
                         const color = m.startsWith('gemini/') ? '#2563EB'
+                                    : m.startsWith('groq/')   ? '#10B981'
                                     : m.startsWith('ollama/') ? '#7C3AED'
                                     : '#92400E';
                         return '<span style="display:inline-flex;align-items:center;gap:.25rem">'
